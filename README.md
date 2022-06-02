@@ -24,3 +24,5 @@ Example: `./sysmon once OPTION` which can be _**ONLY**_ mem, cpu or load
 
 ## notes
 You might **NOT** be able to view the temperature, or the temperature might **NOT** be accurate, since sysmon reads `/sys/class/thermal/thermal_zone0/temp` or `/sys/class/hwmon/hwmon1/temp1_input` to get the temperature. _**You will NOT see the temperature if you have an AMD cpu**_
+
+many thanks to [skyblueborb](https://github.com/skyblueborb) for helping me test, fix and making the cpu temperature possible
