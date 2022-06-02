@@ -1,0 +1,454 @@
+#!/usr/bin/env python3
+
+from re import search
+from sys import exit, argv
+from time import sleep, time
+from glob import glob
+from curses import endwin, initscr, curs_set
+from _curses import error
+from datetime import datetime
+from traceback import format_exc
+from subprocess import check_output
+
+
+def tobytes(kb):
+    return kb * 1024
+
+
+def convertbytes(fsize, units=(' bytes',' KiB',' MiB',' GiB',' TiB')):
+    return "{:.2f}{}".format(float(fsize), units[0]) if fsize < 1024 else convertbytes(fsize / 1024, units[1:])
+
+
+def meminfo():
+    """/proc/meminfo"""
+    
+    try:
+        file = open('/proc/meminfo', 'r')
+        data = str(file.read())
+
+        ramtotal = search('MemTotal.*', data)[0].replace(' ', '').split(':')[1].replace('kB', '')
+        ramavail = search('MemAvailable.*', data)[0].replace(' ', '').split(':')[1].replace('kB', '')
+        ramcc = search('Cached.*', data)[0].replace(' ', '').split(':')[1].replace('kB', '')
+        ramused = int(ramtotal.replace('kB', '')) - int(ramavail.replace('kB', ''))
+        ramusedperc = round((int(ramused) / int(ramtotal)) * 100, 1)
+        ramavailperc = round(100 - ramusedperc, 1)
+        ramccusedperc = round((int(ramcc) / int(ramtotal)) * 100, 1)
+
+        if int(search('SwapTotal.*', data)[0].replace(' ', '').split(':')[1].replace('kB', '')) != 0:
+            swaptotal = search('SwapTotal.*', data)[0].replace(' ', '').split(':')[1].replace('kB', '')
+            swapfree = search('SwapFree.*', data)[0].replace(' ', '').split(':')[1].replace('kB', '')
+            swapcc = search('SwapCached.*', data)[0].replace(' ', '').split(':')[1].replace('kB', '')
+            swapused = int(swaptotal.replace('kB', '')) - int(swapfree.replace('kB', ''))
+            swapusedperc = round((int(swapused) / int(swaptotal)) * 100, 1)
+            swapavailperc = round(100 - swapusedperc, 1)
+            swapccusedperc = round((int(swapcc) / int(swaptotal)) * 100, 1)
+
+            return f'-----------------------------------\n RAM:\n       Total: {convertbytes(tobytes(int(ramtotal)))}\n        Used: {convertbytes(tobytes(int(ramused)))} ({str(ramusedperc)[:4]}%)\n   Available: {convertbytes(tobytes(int(ramavail)))} ({str(ramavailperc)[:4]}%)\n      Cached: {convertbytes(tobytes(int(ramcc)))} ({str(ramccusedperc)[:4]}%)\n\n Swap:\n       Total: {convertbytes(tobytes(int(swaptotal)))}\n        Used: {convertbytes(tobytes(int(swapused)))} ({str(swapusedperc)[:4]}%)\n   Available: {convertbytes(tobytes(int(swapfree)))} ({str(swapavailperc)[:4]}%)\n      Cached: {convertbytes(tobytes(int(swapcc)))} ({str(swapccusedperc)[:4]}%)\n-----------------------------------'
+
+        else:
+            return f'-----------------------------------\n RAM:\n   Total:     {convertbytes(tobytes(int(ramtotal)))}\n   Used:      {convertbytes(tobytes(int(ramused)))} ({str(ramusedperc)[:4]}%)\n   Available: {convertbytes(tobytes(int(ramavail)))} ({str(ramavailperc)[:4]}%)\n   Cached:    {convertbytes(tobytes(int(ramcc)))} ({str(ramccusedperc)[:4]}%)\n\n Swap:\n   Disabled/Not available\n-----------------------------------'
+
+    except FileNotFoundError:
+        exit('Couldnt find /proc/meminfo file')
+
+    except PermissionError:
+        exit('Couldnt read the file. Do you have read permissions for /proc/meminfo file? Try running as root')
+
+    except Exception:
+        exit(f'Error while trying to read /proc/meminfo:\n{format_exc()}')
+
+
+def getcputemp(cores):
+    try:
+        temps = []
+
+        for file in glob('/sys/devices/platform/coretemp.0/hwmon/hwmon*/name'):
+            with open(file, 'r') as data:
+                if str(data.readline()).replace('\n', '') == 'coretemp':
+                    temp_directory = file.split('name')[0]
+
+                    for tempfile in glob(f'{temp_directory}/temp*_input'):
+                        with open(tempfile, 'r') as temp:
+                            temp = float(temp.read()) / 1000
+                            temps.append(temp)
+
+        temperature = sum(temps) / cores
+
+        if temperature != 0.0:
+            return round(temperature)
+
+        else:
+            try:
+                with open('/sys/class/thermal/thermal_zone0/temp', 'r') as cputemp:
+                    return round(float(cputemp.readline()) / 1000)
+
+            except OSError:
+                try:
+                    with open('/sys/class/hwmon/hwmon1/temp1_input', 'r') as cputemp:
+                        return round(float(cputemp.readline()) / 1000)
+
+                except OSError:
+                    try:
+                        temps = []
+
+                        for file in glob('/sys/devices/platform/coretemp.0/hwmon/hwmon*/name'):
+                            with open(file, 'r') as data:
+                                if str(data.readline()).replace('\n', '') == 'coretemp':
+                                    temp_directory = file.split('name')[0]
+
+                                    for tempfile in glob(f'{temp_directory}/temp*_input'):
+                                        with open(tempfile, 'r') as temp:
+                                            temp = float(temp.read()) / 1000
+                                            temps.append(temp)
+
+                        return round(sum(temps) / cores)
+
+                    except OSError:
+                        return '?? °C'
+
+    except OSError:
+        return '?? °C'
+
+
+def cpu_usage():
+    try:
+        oldata = check_output('head -n1 /proc/stat', shell=True, text=True).replace('cpu ', 'cpu').replace('\n', '').split(' ')
+
+        try:
+            sleep(1)
+
+        except KeyboardInterrupt:
+            endwin()
+            curs_set(1)
+            exit()
+
+        data = check_output('head -n1 /proc/stat', shell=True, text=True).replace('cpu ', 'cpu').replace('\n', '').split(' ')
+
+        prev = int(oldata[1]) + int(oldata[2]) + int(oldata[3]) + int(oldata[6]) + int(oldata[7])
+        current = int(data[1]) + int(data[2]) + int(data[3]) + int(data[6]) + int(data[7])
+
+        total = (int(oldata[1]) + int(oldata[2]) + int(oldata[3]) + int(oldata[4]) + int(oldata[5])
+        + int(oldata[6]) + int(oldata[7])) - (int(data[1]) + int(data[2]) + int(data[3]) +
+                int(data[4]) + int(data[5]) + int(data[6]) + int(data[7]))
+
+        return str(round(100 * ((prev - current) / total)))
+
+
+    except FileNotFoundError:
+        exit('Couldnt find /proc/stat file')
+
+    except PermissionError:
+        exit('Couldnt read the file. Do you have read permissions for /proc/stat file? Try running as root')
+
+    except Exception:
+        exit(f'Error while trying to read /proc/stat:\n{format_exc()}')
+
+
+def cpu_info():
+    """/proc/cpuinfo"""
+
+    try:
+        file = open('/proc/cpuinfo', 'r')
+        data = str(file.read())
+
+        freq = search('cpu MHz.*', data)[0].replace('\t', '').split(':')[1].replace(' ', '')
+        model = search('model name.*', data)[0].replace('\t', '').split(':')[1].replace('         ', ' ')[1:]
+        cachesize = search('cache size.*', data)[0].replace('\t', '').split(':')[1][1:]
+        architecture = check_output("uname -m", shell=True, text=True).replace('\n', '')
+        cores = search('cpu cores.*', data)[0].replace('\t', '').split(':')[1][1:]
+        threads = int(search('siblings.*', data)[0].replace('\t', '').split(':')[1][1:])
+
+        return f'---------------------------------------------------------\n         Usage: {cpu_usage()}% ({str(getcputemp(int(cores)))} °C)\n           CPU: {model}\n Cores/Threads: {cores}/{threads}\n Max frequency: {freq} MHz\n         Cache: {cachesize}\n  Architecture: {architecture}\n---------------------------------------------------------'
+
+
+    except FileNotFoundError:
+        exit('Couldnt find /proc/cpuinfo file')
+
+    except PermissionError:
+        exit('Couldnt read the file. Do you have read permissions for /proc/cpuinfo file? Try running as root')
+
+    except Exception:
+        exit(f'Error while trying to read /proc/cpuinfo:\n{format_exc()}')
+
+
+def loadavg_uptime():
+    """/proc/loadavg"""
+
+    try:
+        file = open('/proc/loadavg', 'r')
+        uptime_file = open('/proc/uptime', 'r')
+
+        data = file.read()
+        uptime_data = str(uptime_file.read())
+
+        onemin = data.split(' ')[0]
+        fivemin = data.split(' ')[1]
+        fiveteenmin = data.split(' ')[2]
+        threadactive = data.split(' ')[3].split('/')[0]
+        threadtotal = data.split(' ')[3].split('/')[1]
+
+        uptime_secs = int(uptime_data.split('.')[0])
+
+        if uptime_secs < 60:
+            uptime = f'{uptime_secs} seconds'
+
+        else:
+            uptime = uptime_format(int(uptime_data.split('.')[0]))
+        
+        up_since = int(str(time()).split('.')[0]) - int(uptime_secs)
+        up_since_format = datetime.fromtimestamp(up_since).strftime('%A %B %d %Y, %I:%M %p')
+
+        return f'-----------------------------------------------------------------\n System load: (1, 5, 15 mins)\n   {onemin}, {fivemin}, {fiveteenmin} | {threadactive} active thread(s), {threadtotal} total threads\n\n System up for {uptime} \n   Since {up_since_format}\n-----------------------------------------------------------------'
+
+
+    except FileNotFoundError:
+        exit('Couldnt find /proc/loadavg file')
+
+    except PermissionError:
+        exit('Couldnt read the file. Do you have read permissions for /proc/loadavg file? Try running as root')
+
+    except Exception:
+        exit(f'Error while trying to read /proc/loadavg:\n{format_exc()}')
+
+
+def uptime_format(seconds, granularity=2):
+    intervals = (('weeks', 604800), ('days', 86400), ('hours', 3600), ('minutes', 60))
+    result = []
+
+    for name, count in intervals:
+        value = seconds // count
+
+        if value:
+            seconds -= value * count
+
+            if value == 1:
+                name = name.rstrip('s')
+
+            result.append(f'{value} {name}')
+
+    # return ', '.join(result[:granularity])
+
+    return ', '.join(result)
+
+
+def signature():
+    try:
+        return f'--------------------------------\n SysMon on {search("NAME.*", str(open("/etc/os-release", "r").read()))[0].split("=")[1]} | {datetime.now().strftime("%I:%M:%S %p")}\n--------------------------------\n'
+
+    except Exception:
+        return f'----------------------\n SysMon | {datetime.now().strftime("%I:%M:%S %p")}\n----------------------\n'
+
+
+def meminfo_format(display=None):
+    if display == 'nomem':
+        # return ' mem disabled\n--------------'
+        return ''
+
+    return f'           {meminfo.__doc__}\n{meminfo()}'
+
+
+def cpuinfo_format(display=None):
+    if display == 'nocpu':
+        # return ' cpu disabled\n--------------'
+        return ''
+
+    return f'                       {cpu_info.__doc__}\n{cpu_info()}'
+
+
+def loadavg_uptime_format(display=None):
+    if display == 'noload':
+        # return ' load disabled\n---------------'
+        return ''
+
+    return f'                          {loadavg_uptime.__doc__}\n{loadavg_uptime()}'
+
+
+try:
+    argv[1] # 1 since 0 == filename
+
+
+    if argv[1] == 'mem':
+        screen = initscr()
+        curs_set(0)
+
+        while True:
+            screen.addstr(signature())
+            screen.addstr(meminfo_format())
+
+            try:
+                screen.refresh()
+                sleep(1)
+                screen.clear()
+
+            except KeyboardInterrupt:
+                endwin()
+                curs_set(1)
+                exit()
+
+
+    if argv[1] == 'cpu':
+        screen = initscr()
+        curs_set(0)
+
+        while True:
+            screen.addstr(signature())
+            screen.addstr(cpuinfo_format())
+
+            try:
+                screen.refresh()
+                sleep(1)
+                screen.clear()
+
+            except KeyboardInterrupt:
+                endwin()
+                curs_set(1)
+                exit()
+
+
+    if argv[1] == 'load':
+        screen = initscr()
+        curs_set(0)
+
+        while True:
+            screen.addstr(signature())
+            screen.addstr(loadavg_uptime_format())
+
+            try:
+                screen.refresh()
+                sleep(1)
+                screen.clear()
+
+            except KeyboardInterrupt:
+                endwin()
+                curs_set(1)
+                exit()
+
+
+    if 'nocpu' in argv or 'nomem' in argv or 'noload' in argv:
+        screen = initscr()
+        curs_set(0)
+
+        while True:
+            try:
+                screen.addstr(signature())
+                screen.addstr(f'{cpuinfo_format(argv[1])}\n{meminfo_format(argv[2])}\n{loadavg_uptime_format(argv[3])}')
+
+                try:
+                    screen.refresh()
+                    sleep(1)
+                    screen.clear()
+
+                except KeyboardInterrupt:
+                    endwin()
+                    curs_set(1)
+                    exit()
+
+            except error:
+                endwin()
+                curs_set(1)
+                exit('Please resize your terminal (Rows and columns must be higher or equal to 34 66. Run the "stty size command")')
+
+
+    if 'nocpu' in argv:
+        screen = initscr()
+        curs_set(0)
+
+        while True:
+            screen.addstr(signature())
+            screen.addstr(f'{meminfo_format()}\n{loadavg_uptime_format()}')
+
+            try:
+                screen.refresh()
+                sleep(1)
+                screen.clear()
+
+            except KeyboardInterrupt:
+                endwin()
+                curs_set(1)
+                exit()
+
+
+    if 'nomem' in argv:
+        screen = initscr()
+        curs_set(0)
+
+        while True:
+            screen.addstr(signature())
+            screen.addstr(f'{cpuinfo_format()}\n{loadavg_uptime_format()}')
+
+            try:
+                screen.refresh()
+                sleep(1)
+                screen.clear()
+
+            except KeyboardInterrupt:
+                endwin()
+                curs_set(1)
+                exit()
+
+
+    if 'noload' in argv:
+        screen = initscr()
+        curs_set(0)
+
+        while True:
+            screen.addstr(signature())
+            screen.addstr(f'{cpuinfo_format()}\n{meminfo_format()}')
+
+            try:
+                screen.refresh()
+                sleep(1)
+                screen.clear()
+
+            except KeyboardInterrupt:
+                endwin()
+                curs_set(1)
+                exit()
+
+
+    if 'once' in argv:
+        valid_options = ['mem', 'cpu', 'load']
+
+        if argv[2] not in valid_options:
+            exit(f'"{argv[2]}" is not a valid option')
+
+
+        if argv[2] == 'mem':
+            print(signature(), meminfo_format())
+
+
+        if argv[2] == 'cpu':
+            print(signature(), cpuinfo_format())
+
+
+        if argv[2] == 'load':
+            print(signature(), loadavg_uptime_format())
+
+
+    if 'help' in argv:
+        exit('SysMon, a system monitor aiming to be fast and ready to use\n\nHow to use:\n By default, when running without options itll display everything, memory usage, cpu and load times\n There are 3 options:\n  1) mem ----> RAM and swap usage\n  3) cpu ----> CPU information\n  4) load ---> Load averange and uptime of your system\n\n If you dont want to see everything, run: ./sysmon Xcpu Xmem Xload where X can be ONLY "yes" or "no", for example ./sysmon yescpu yesmem noload\n You can also "print" the options once, with the "once" option. Example: ./sysmon once OPTION (which can be mem, cpu or load)')
+
+
+except IndexError:
+    screen = initscr()
+    curs_set(0)
+
+    while True:
+        try:
+            screen.addstr(signature())
+            screen.addstr(f'{cpuinfo_format()}\n{meminfo_format()}\n{loadavg_uptime_format()}')
+
+            try:
+                screen.refresh()
+                # sleep(1) # NOT SURE ABOUT THIS!
+                screen.clear()
+
+            except KeyboardInterrupt:
+                endwin()
+                curs_set(1)
+                exit()
+
+        except error:
+            endwin()
+            curs_set(1)
+            exit('Please resize your terminal (Rows and columns must be higher or equal to 34 66. Run the "stty size command")')
