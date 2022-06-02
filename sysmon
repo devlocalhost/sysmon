@@ -112,7 +112,7 @@ def getcputemp(cores):
 
 def cpu_usage():
     try:
-        oldata = check_output('head -n1 /proc/stat', shell=True, text=True).replace('cpu ', 'cpu').replace('\n', '').split(' ')
+        oldata = str(open('/proc/stat', 'r').readline()).replace('cpu ', 'cpu').replace('\n', '').split(' ')
 
         try:
             sleep(1)
@@ -122,7 +122,7 @@ def cpu_usage():
             curs_set(1)
             exit()
 
-        data = check_output('head -n1 /proc/stat', shell=True, text=True).replace('cpu ', 'cpu').replace('\n', '').split(' ')
+        data = str(open('/proc/stat', 'r').readline()).replace('cpu ', 'cpu').replace('\n', '').split(' ')
 
         prev = int(oldata[1]) + int(oldata[2]) + int(oldata[3]) + int(oldata[6]) + int(oldata[7])
         current = int(data[1]) + int(data[2]) + int(data[3]) + int(data[6]) + int(data[7])
