@@ -22,6 +22,11 @@ You can also print the options, with the "once" option
 
 Example: `./sysmon once OPTION` which can be **ONLY** mem, cpu or load
 
+## bug/suggestion/correction
+please open a issue, including traceback and a screenshot if you found a bug
+
+if you want to suggest a new feature, or if you found something that is not correct (for example, incorrect cpu temperature or ram) feel free to open an issue
+
 ## notes
 You might **NOT** be able to view the temperature, or the temperature might **NOT** be accurate, since sysmon reads `/sys/class/thermal/thermal_zone0/temp` or `/sys/class/hwmon/hwmon1/temp1_input` to get the temperature. **You will NOT see the temperature if you have an AMD cpu**
 
