@@ -14,15 +14,15 @@ By default, when running without options itll display everything, memory usage, 
 + cpu ----> CPU information
 + load ---> Load averange and uptime of your system
 
-If you dont want to see everything, run: `./sysmon Xcpu Xmem Xload` where X can be _**ONLY**_ "yes" or "no"
+If you dont want to see everything, run: `./sysmon Xcpu Xmem Xload` where X can be **ONLY** "yes" or "no"
 
 Example: `./sysmon yescpu yesmem noload`
 
 You can also print the options, with the "once" option
 
-Example: `./sysmon once OPTION` which can be _**ONLY**_ mem, cpu or load
+Example: `./sysmon once OPTION` which can be **ONLY** mem, cpu or load
 
 ## notes
-You might **NOT** be able to view the temperature, or the temperature might **NOT** be accurate, since sysmon reads `/sys/class/thermal/thermal_zone0/temp` or `/sys/class/hwmon/hwmon1/temp1_input` to get the temperature. _**You will NOT see the temperature if you have an AMD cpu**_
+You might **NOT** be able to view the temperature, or the temperature might **NOT** be accurate, since sysmon reads `/sys/class/thermal/thermal_zone0/temp` or `/sys/class/hwmon/hwmon1/temp1_input` to get the temperature. **You will NOT see the temperature if you have an AMD cpu**
 
 many thanks to [skyblueborb](https://github.com/skyblueborb) for helping me test, fix and making the cpu temperature possible
