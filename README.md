@@ -22,6 +22,8 @@ You can also print the options, with the "once" option
 
 Example: `./sysmon once OPTION` which can be **ONLY** mem, cpu or load
 
+You can also check `./sysmon help` for help
+
 ## bug/suggestion/correction
 please open a issue, including traceback and a screenshot if you found a bug
 
