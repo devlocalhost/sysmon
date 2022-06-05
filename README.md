@@ -8,7 +8,9 @@ using [**curses**](https://docs.python.org/3/howto/curses.html)
 sysmon is *another* system monitor designed to be **ready to use** and easy to understand. it uses [**linux's /proc pseudo filesystem**](https://www.kernel.org/doc/html/latest/filesystems/proc.html) to read information and [**curses**](https://docs.python.org/3/howto/curses.html) display them
 
 ## help and usage
-By default, when running without options itll display everything, memory usage, cpu and load times\n There are 3 options: The options are:
+By default, when running without options itll display everything, memory usage, cpu and load times
+
+There are 3 options:
 
 + mem --> RAM and swap usage
 + cpu ----> CPU information
