@@ -46,7 +46,7 @@ def meminfo():
             return f'-----------------------------------\n RAM:\n       Total: {convertbytes(tobytes(int(ramtotal)))}\n        Used: {convertbytes(tobytes(int(ramused)))} ({str(ramusedperc)[:4]}%)\n   Available: {convertbytes(tobytes(int(ramavail)))} ({str(ramavailperc)[:4]}%)\n      Cached: {convertbytes(tobytes(int(ramcc)))} ({str(ramccusedperc)[:4]}%)\n\n Swap:\n       Total: {convertbytes(tobytes(int(swaptotal)))}\n        Used: {convertbytes(tobytes(int(swapused)))} ({str(swapusedperc)[:4]}%)\n   Available: {convertbytes(tobytes(int(swapfree)))} ({str(swapavailperc)[:4]}%)\n      Cached: {convertbytes(tobytes(int(swapcc)))} ({str(swapccusedperc)[:4]}%)\n-----------------------------------'
 
         else:
-            return f'-----------------------------------\n RAM:\n   Total:     {convertbytes(tobytes(int(ramtotal)))}\n   Used:      {convertbytes(tobytes(int(ramused)))} ({str(ramusedperc)[:4]}%)\n   Available: {convertbytes(tobytes(int(ramavail)))} ({str(ramavailperc)[:4]}%)\n   Cached:    {convertbytes(tobytes(int(ramcc)))} ({str(ramccusedperc)[:4]}%)\n\n Swap:\n   Disabled/Not available\n-----------------------------------'
+            return f'-----------------------------------\n RAM:\n       Total: {convertbytes(tobytes(int(ramtotal)))}\n        Used: {convertbytes(tobytes(int(ramused)))} ({str(ramusedperc)[:4]}%)\n   Available: {convertbytes(tobytes(int(ramavail)))} ({str(ramavailperc)[:4]}%)\n      Cached: {convertbytes(tobytes(int(ramcc)))} ({str(ramccusedperc)[:4]}%)\n\n Swap:\n   Disabled/Not available\n-----------------------------------'
 
     except FileNotFoundError:
         exit('Couldnt find /proc/meminfo file')
