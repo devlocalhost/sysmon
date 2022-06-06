@@ -8,23 +8,15 @@ using [**curses**](https://docs.python.org/3/howto/curses.html)
 sysmon is *another* system monitor designed to be **ready to use** and easy to understand. it uses [**linux's /proc pseudo filesystem**](https://www.kernel.org/doc/html/latest/filesystems/proc.html) to read information and [**curses**](https://docs.python.org/3/howto/curses.html) display them
 
 ## help and usage
-By default, when running without options it will display everything, memory usage, cpu and load times
+Usage: ./sysmon OPTS where OPTS can be:
++ mem ----> Display RAM and swap (if available) usage (total, used, free, cached, %)
++ cpu ----> Display CPU information (model, usage, temperature, cores & threads, max frequency, cache, architecture)
++ load ---> Display Load averange (1, 5 and 15 mins) and uptime (total, since when) of your system
++ nomem --> Dont display memory stats
++ nocpu --> Dont display cpu stats
++ noload -> Dont display load times and uptime
 
-There are 3 options:
-
-+ mem --> RAM and swap usage
-+ cpu ----> CPU information
-+ load ---> Load averange and uptime of your system
-
-If you don't want to see everything, run: `./sysmon Xcpu Xmem Xload` where X can be **ONLY** "yes" or "no"
-
-Example: `./sysmon yescpu yesmem noload`
-
-You can also print the options, with the "once" option
-
-Example: `./sysmon once OPTION` which can be **ONLY** mem, cpu or load
-
-You can also check `./sysmon help` for help
+By default, when running without options it will display everything, memory usage, cpu and load times. If you dont want to see an option run: ./sysmon XOPT where X can be yes or no and OPT cpu, mem or load for example ./sysmon noload. You can also "print" the options once, with the "once" option. Example: ./sysmon once OPT (which can be mem, cpu or load)
 
 ## bug/suggestion/correction
 please open a issue, including traceback and a screenshot if you found a bug

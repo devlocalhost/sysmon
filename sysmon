@@ -324,29 +324,29 @@ try:
                 exit()
 
 
-    if 'nocpu' in argv or 'nomem' in argv or 'noload' in argv:
-        screen = initscr()
-        curs_set(0)
+    # if 'nocpu' in argv or 'nomem' in argv or 'noload' in argv:
+    #     screen = initscr()
+    #     curs_set(0)
 
-        while True:
-            try:
-                screen.addstr(signature())
-                screen.addstr(f'{cpuinfo_format(argv[1])}\n{meminfo_format(argv[2])}\n{loadavg_uptime_format(argv[3])}')
+    #     while True:
+    #         try:
+    #             screen.addstr(signature())
+    #             screen.addstr(f'{cpuinfo_format(argv[1])}\n{meminfo_format(argv[2])}\n{loadavg_uptime_format(argv[3])}')
 
-                try:
-                    screen.refresh()
-                    sleep(1)
-                    screen.clear()
+    #             try:
+    #                 screen.refresh()
+    #                 sleep(1)
+    #                 screen.clear()
 
-                except KeyboardInterrupt:
-                    endwin()
-                    curs_set(1)
-                    exit()
+    #             except KeyboardInterrupt:
+    #                 endwin()
+    #                 curs_set(1)
+    #                 exit()
 
-            except error:
-                endwin()
-                curs_set(1)
-                exit('Please resize your terminal (Rows and columns must be higher or equal to 34 66. Run the "stty size command")')
+    #         except error:
+    #             endwin()
+    #             curs_set(1)
+    #             exit('Please resize your terminal (Rows and columns must be higher or equal to 34 66. Run the "stty size command")')
 
 
     if 'nocpu' in argv:
@@ -426,7 +426,7 @@ try:
 
 
     if 'help' in argv:
-        exit('SysMon, a system monitor aiming to be fast and ready to use\n\nHow to use:\n By default, when running without options itll display everything, memory usage, cpu and load times\n There are 3 options:\n  1) mem ----> RAM and swap usage\n  3) cpu ----> CPU information\n  4) load ---> Load averange and uptime of your system\n\n If you dont want to see everything, run: ./sysmon Xcpu Xmem Xload where X can be ONLY "yes" or "no", for example ./sysmon yescpu yesmem noload\n You can also "print" the options once, with the "once" option. Example: ./sysmon once OPTION (which can be mem, cpu or load)')
+        exit(' -> [!] SysMon, a system monitor aiming to be fast and ready to use\n |\n -> [??] How to use: ./sysmon OPTS where OPTS can be:\n |  1) mem ----> Display RAM and swap (if available) usage       | 4) nomem ----> Dont display RAM and swap usape\n |  2) cpu ----> ~~~~~~~ CPU information                         | 5) nocpu ----> ~~~~ ~~~~~~~ CPU information \n |  3) load ---> ~~~~~~~ Load averange and uptime of your system | 6) noload ---> ~~~~ ~~~~~~~ load and uptime \n -> [?] By default, when running without options it will display everything, memory usage, cpu and load times\n  \\-> [!] If you dont want to see an option run: ./sysmon XOPT where X can be yes or no and OPT cpu, mem or load for example ./sysmon noload\n   \\-> [!!] You can also "print" the options once, with the "once" option. Example: ./sysmon once OPTION (which can be mem, cpu or load)')
 
 
 except IndexError:
