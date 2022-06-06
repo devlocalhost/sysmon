@@ -324,31 +324,6 @@ try:
                 exit()
 
 
-    # if 'nocpu' in argv or 'nomem' in argv or 'noload' in argv:
-    #     screen = initscr()
-    #     curs_set(0)
-
-    #     while True:
-    #         try:
-    #             screen.addstr(signature())
-    #             screen.addstr(f'{cpuinfo_format(argv[1])}\n{meminfo_format(argv[2])}\n{loadavg_uptime_format(argv[3])}')
-
-    #             try:
-    #                 screen.refresh()
-    #                 sleep(1)
-    #                 screen.clear()
-
-    #             except KeyboardInterrupt:
-    #                 endwin()
-    #                 curs_set(1)
-    #                 exit()
-
-    #         except error:
-    #             endwin()
-    #             curs_set(1)
-    #             exit('Please resize your terminal (Rows and columns must be higher or equal to 34 66. Run the "stty size command")')
-
-
     if 'nocpu' in argv:
         screen = initscr()
         curs_set(0)
