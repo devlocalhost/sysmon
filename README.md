@@ -5,18 +5,22 @@ using [**curses**](https://docs.python.org/3/howto/curses.html)
 ![sysmon screenshot](sysmon-screen.png)
 
 ## what is sysmon
-sysmon is *another* system monitor designed to be **ready to use** and easy to understand. it uses [**linux's /proc pseudo filesystem**](https://www.kernel.org/doc/html/latest/filesystems/proc.html) to read information and [**curses**](https://docs.python.org/3/howto/curses.html) display them
+sysmon is *another* system monitor designed to be **ready to use** and easy to understand. it uses [**linux's /proc pseudo filesystem**](https://www.kernel.org/doc/html/latest/filesystems/proc.html) to read information and [**curses**](https://docs.python.org/3/howto/curses.html) to display them
 
 ## help and usage
 Usage: ./sysmon OPTS where OPTS can be:
 + mem ----> Display RAM and swap (if available) usage (total, used, free, cached, %)
 + cpu ----> Display CPU information (model, usage, temperature, cores & threads, max frequency, cache, architecture)
 + load ---> Display Load averange (1, 5 and 15 mins) and uptime (total, since when) of your system
++ net ----> Display network statistics (download, upload, speed)
 + nomem --> Dont display memory stats
 + nocpu --> Dont display cpu stats
 + noload -> Dont display load times and uptime
++ nonet --> Dont display network statistics
 
 By default, when running without options it will display everything, memory usage, cpu and load times. If you dont want to see an option run: ./sysmon XOPT where X can be yes or no and OPT cpu, mem or load for example ./sysmon noload. You can also "print" the options once, with the "once" option. Example: ./sysmon once OPT (which can be mem, cpu or load)
+
+Note: you cannot choose a different adaptor/device for network stats (for now, maybe in the fture it could be a feature)
 
 ## bug/suggestion/correction
 please open a issue, including traceback and a screenshot if you found a bug
