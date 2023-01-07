@@ -8,6 +8,9 @@ using [**curses**](https://docs.python.org/3/howto/curses.html)
 ## what is sysmon
 sysmon is *another* system monitor designed to be **ready to use** and easy to understand. it uses [**linux's /proc pseudo filesystem**](https://www.kernel.org/doc/html/latest/filesystems/proc.html) to read information and [**curses**](https://docs.python.org/3/howto/curses.html) to display them
 
+## why 2 files?
+because i like the old layout too of sysmon. theres also the cpu temp feature which is not in new sysmon. i strongly suggest you to use the new sysmon, because of better code
+
 ## help and usage
 ```
 sysmon - a SYStem MONitor written in python, designed to be easy to understand
@@ -40,4 +43,7 @@ if you want to suggest a new feature, or if you found something that is not corr
 ## notes
 You might **NOT** be able to view the temperature, or the temperature might **NOT** be accurate, because sysmon reads `/sys/class/thermal/thermal_zone0/temp` or `/sys/class/hwmon/hwmon1/temp1_input` to get the temperature, and your system might report it in a different file for example. If sysmon cannot read the temperature, it will display "??". **You will NOT see the temperature if you have an AMD cpu**. If you know how to fix this, please open an issue or pull request 
 
+## credits
 many thanks to [skyblueborb](https://github.com/skyblueborb) for helping me test, fix and make the cpu temperature feature better
+
+also many thanks to [ari](https://ari-web.xyz/gh) for helping me with the padding/formatting of the text
