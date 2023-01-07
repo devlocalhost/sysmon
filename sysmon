@@ -1,144 +1,99 @@
 #!/usr/bin/env python3
 
-from os import environ, makedirs, getcwd
-from re import search, sub
-from sys import exit, argv
-from time import sleep, time
-from glob import glob
-from curses import endwin, initscr, curs_set
-from _curses import error
+"""
+sysmon - a SYStem MONitor written in python, designed to be easy
+to understand, and "ready to use", without installing dependecies (except curses)
+
+made by dev64 (also known as .dev, devlocalhost)
+"""
+
+
+import os
+import sys
+import glob
+import time
+import curses
+import shutil
+import subprocess
+
 from datetime import datetime
-from traceback import format_exc
-from subprocess import check_output
+
+# sysmon basic functions start
 
 
-def tobytes(kb):
-    return kb * 1024
+# def spaces_fix(padding, length):
+#     """
+#     i dont really know how to explain this... for now
+#     """
+
+#     # do i really need this?
+
+#     return " " * (padding - length)
 
 
-def convertbytes(fsize, units=(' bytes',' KiB',' MiB',' GiB',' TiB')):
-    return "{:.2f}{}".format(float(fsize), units[0]) if fsize < 1024 else convertbytes(fsize / 1024, units[1:])
+def convert_bytes(fsize, units=(" bytes", " KiB", " MiB", " GiB", " TiB")):
+    """convert bytes to k, m, g and t"""
+
+    return (
+        f"{float(fsize):.2f}{units[0]}"
+        if fsize < 1024
+        else convert_bytes(fsize / 1024, units[1:])
+    )
 
 
-def cleancpu_model(model):
-    # replace_stuff = ['\(TM\)', '\(tm\)', '\(r\)', '\(R\)', 'CPU', 'Processor', 'processor' '[a-zA-Z]+-Core*', '[0-9]+-Core*', ', [0-9]+ Compute Cores', '\sCore [a-zA-Z0-9]+', 'Core[^s][a-zA-Z0-9]+', ', altivec supported', '\(\"AuthenticAMD\"\)', 'Chip Revision', 'Technologies, Inc', ' +']
-
-    replace_stuff = ['\(TM\)', '\(tm\)', '\(r\)', '\(R\)', 'Processor', 'processor', 'with Radeon * Graphics', ', altivec supported', 'Chip Revision*', 'Technologies, Inc', '[a-zA-Z0-9]+-Core', 'Core[0-9]|Core [0-9]', '\"AuthenticAMD.', '[0-9] Compute Cores', ',', 'with Radeon\s[0-9]..\sGraphics', ' +'] # with Radeon thing is not a good idea...
-
-    for text in replace_stuff:
-        model = sub(text, ' ', model)
-
-    return model.strip(' ')
+def en_open(file, method="r"):
+    """modifying the default open method so i dont have to define encoding every time"""
+    return open(file, method, encoding="utf-8")
 
 
-def getcputemp(cores):
-    try:
-        temps = []
+def detect_network_adapter():
+    """detect an active network adapter/card/whatever and return its directory"""
+    adp_directory = None
 
-        for file in glob('/sys/devices/platform/coretemp.0/hwmon/hwmon*/name'):
-            with open(file, 'r') as data:
-                if str(data.readline()).replace('\n', '') == 'coretemp':
-                    temp_directory = file.split('name')[0]
+    for adapter_dir in glob.glob("/sys/class/net/*"):
+        with en_open(adapter_dir + "/type") as device_type:
+            if int(device_type.read()) != 772:  # loopback device
 
-                    for tempfile in glob(f'{temp_directory}/temp*_input'):
-                        with open(tempfile, 'r') as temp:
-                            temp = float(temp.read()) / 1000
-                            temps.append(temp)
+                with en_open(adapter_dir + "/operstate") as status:
+                    if status.read().replace("\n", "") == "up":
+                        adp_directory = adapter_dir
+                        # adp_name = adapter_dir.split("/")[4]
 
-        temperature = sum(temps) / cores
-
-        if temperature != 0.0:
-            return round(temperature)
-
-        else:
-            try:
-                with open('/sys/class/thermal/thermal_zone0/temp', 'r') as cputemp:
-                    return round(float(cputemp.readline()) / 1000)
-
-            except OSError:
-                try:
-                    with open('/sys/class/hwmon/hwmon1/temp1_input', 'r') as cputemp:
-                        return round(float(cputemp.readline()) / 1000)
-
-                except OSError:
-                    try:
-                        temps = []
-
-                        for file in glob('/sys/devices/platform/coretemp.0/hwmon/hwmon*/name'):
-                            with open(file, 'r') as data:
-                                if str(data.readline()).replace('\n', '') == 'coretemp':
-                                    temp_directory = file.split('name')[0]
-
-                                    for tempfile in glob(f'{temp_directory}/temp*_input'):
-                                        with open(tempfile, 'r') as temp:
-                                            temp = float(temp.read()) / 1000
-                                            temps.append(temp)
-
-                        return round(sum(temps) / cores)
-
-                    except OSError:
-                        return '?? °C'
-
-    except OSError:
-        return '?? °C'
+    return adp_directory
 
 
-def cpu_usage():
-    try:
-        oldata = str(open('/proc/stat', 'r').readline()).replace('cpu ', 'cpu').replace('\n', '').split(' ')
+def file_has(string, lines):
+    """checking if file contains string. return string if contains else return None"""
 
-        try:
-            sleep(1)
+    has_string = None
 
-        except KeyboardInterrupt:
-            endwin()
-            curs_set(1)
-            exit()
+    for line in lines:
+        if line.startswith(string):
+            has_string = line.replace("\t", "").split(":")[1]
+            # .replace(" ", "").replace("\n", "")
 
-        data = str(open('/proc/stat', 'r').readline()).replace('cpu ', 'cpu').replace('\n', '').split(' ')
-
-        prev = int(oldata[1]) + int(oldata[2]) + int(oldata[3]) + int(oldata[6]) + int(oldata[7])
-        current = int(data[1]) + int(data[2]) + int(data[3]) + int(data[6]) + int(data[7])
-
-        total = (int(oldata[1]) + int(oldata[2]) + int(oldata[3]) + int(oldata[4]) + int(oldata[5])
-        + int(oldata[6]) + int(oldata[7])) - (int(data[1]) + int(data[2]) + int(data[3]) +
-                int(data[4]) + int(data[5]) + int(data[6]) + int(data[7]))
-
-        return str(round(100 * ((prev - current) / total)))
+    return has_string
 
 
-    except FileNotFoundError:
-        exit('Couldnt find /proc/stat file')
+def clean_output(text):
+    """
+    cleans the output that sysmon reads, so it gets only 1005744
+    instead of MemTotal:        1005744 kB
+    """
 
-    except PermissionError:
-        exit('Couldnt read the file. Do you have read permissions for /proc/stat file? Try running as root')
-
-    except Exception:
-        exit(f'Error while trying to read /proc/stat:\n{format_exc()}')
+    return text.split(":")[0].replace(" ", "").replace("\n", "").replace("kB", "")
 
 
-def network_adapter_detect():
-    adapter_name, adapter_dir = None, None
+def to_bytes(kilobytes):
+    """convert kilobytes to bytes"""
 
-    for adp_name in glob('/sys/class/net/*'):
-        for file_dir in glob(adp_name + '/*'):
-            try:
-                with open(file_dir, 'r') as status:
-                    data = status.read().replace('\n', '')
-
-                    if data == 'up':
-                        adapter_name = file_dir.split('/')[4]
-                        adapter_dir = adp_name
-                        break
-
-            except: # Exception as exc:
-                pass # print(f'Err: Got {exc}')
-
-    return (adapter_name, adapter_dir)
+    return kilobytes * 1024
 
 
 def uptime_format(seconds):
-    intervals = (('weeks', 604800), ('days', 86400), ('hours', 3600), ('minutes', 60))
+    """format the uptime from seconds to a human readable format"""
+
+    intervals = (("weeks", 604800), ("days", 86400), ("hours", 3600), ("minutes", 60))
     result = []
 
     for name, count in intervals:
@@ -148,413 +103,575 @@ def uptime_format(seconds):
             seconds -= value * count
 
             if value == 1:
-                name = name.rstrip('s')
+                name = name.rstrip("s")
 
-            result.append(f'{value} {name}')
+            result.append(f"{value} {name}")
 
-    # return ', '.join(result[:granularity])
+    return ", ".join(result)
 
-    return ', '.join(result)
+
+def clean_cpu_model(model):
+    """cleaning cpu model"""
+    replace_stuff = [
+        "(R)",
+        "(TM)",
+        "(tm)",
+        "Processor",
+        "processor",
+        '"AuthenticAMD"',
+        "Chip Revision",
+        "Technologies, Inc",
+        "CPU",
+    ]
+
+    for text in replace_stuff:
+        model = model.replace(text, "")
+
+    return " ".join(model.split()).split("@", maxsplit=1)[0].rstrip(" ")
+
+
+# sysmon basic functions end
+
+# sysmon cpu
+
+
+def cpu_usage():
+    """
+    /proc/stat - cpu uasge of the system
+    """
+    os.makedirs("/tmp/sysmon_save", exist_ok=True)
+
+    try:
+        if not os.path.exists("/tmp/sysmon_save/cpu_old_data"):
+            with en_open("/tmp/sysmon_save/cpu_old_data", "a") as temp_file:
+                temp_file.write("cpu.758102.17.259220.2395399.122421.3.1284")
+
+        with en_open("/tmp/sysmon_save/cpu_old_data") as old_stats:
+            old_stats = old_stats.readline().split(".")
+            previous_data = (
+                int(old_stats[1])
+                + int(old_stats[2])
+                + int(old_stats[3])
+                + int(old_stats[6])
+                + int(old_stats[7])
+            )
+
+        with en_open("/proc/stat") as new_stats:
+            new_stats = (
+                new_stats.readline().replace("cpu ", "cpu").replace("\n", "").split(" ")
+            )
+
+            current_data = (
+                int(new_stats[1])
+                + int(new_stats[2])
+                + int(new_stats[3])
+                + int(new_stats[6])
+                + int(new_stats[7])
+            )
+
+        total = sum(map(int, old_stats[1:])) - sum(map(int, new_stats[1:]))
+
+        with en_open("/tmp/sysmon_save/cpu_old_data", "w") as update_data:
+            update_data.write(".".join(new_stats))
+
+        return round(100 * ((previous_data - current_data) / total))
+
+    except FileNotFoundError:
+        sys.exit("Couldnt find /proc/stat file")
+
+    except PermissionError:
+        sys.exit(
+            "Couldnt read the file. Do you have read permissions for /proc/stat file?"
+        )
+
+
+def cpuinfo():
+    """
+    /proc/cpuinfo - cpu information
+    """
+
+    try:
+        with en_open("/proc/cpuinfo") as cpuinfo_file:
+            read_file = cpuinfo_file.readlines()
+
+            cpu_freq = file_has("cpu MHz", read_file).replace("\n", "").replace(" ", "")
+
+            # sys.exit(cpu_freq)
+
+            model = clean_cpu_model(file_has("model name", read_file))
+            cache_size = (
+                file_has("cache size", read_file)
+                .replace(" ", "")
+                .replace("\n", "")
+                .replace("KB", "")
+            )
+            architecture = subprocess.check_output(
+                "uname -m", shell=True, text=True
+            ).replace("\n", "")
+
+            try:  # prob not a good idea
+                total_cores = (
+                    file_has("cpu cores", read_file).replace(" ", "").replace("\n", "")
+                )
+
+            except AttributeError:
+                total_cores = subprocess.check_output(
+                    "nproc", shell=True, text=True
+                ).replace("\n", "")
+
+            try:
+                total_threads = (
+                    file_has("siblings", read_file).replace(" ", "").replace("\n", "")
+                )
+
+            except AttributeError:
+                total_threads = subprocess.check_output(
+                    "nproc --all", shell=True, text=True
+                ).replace("\n", "")
+
+            cpu_usage_num = cpu_usage()
+
+        return (
+            f"          Usage: {cpu_usage_num}% "
+            + " " * (3 - len(str(cpu_usage_num)))
+            + f"| {architecture} {model}\n"
+            f"  Cores/Threads: {total_cores}/{total_threads} @ {cpu_freq} MHz"
+            f" with {convert_bytes(to_bytes(int(cache_size)))} cache memory"
+        )
+
+    except FileNotFoundError:
+        sys.exit("Couldnt find /proc/cpuinfo file")
+
+    except PermissionError:
+        sys.exit(
+            "Couldnt read the file. Do you have read permissions for /proc/cpuinfo file?"
+        )
+
+
+# sysmon cpu
+
+# sysmon loadavg
+
+
+def loadavg():
+    """
+    /proc/loadavg - system load times and uptime
+    """
+
+    try:
+        uptime_fmt = "Unknown"
+
+        with open("/proc/loadavg", encoding="utf-8") as load_times_file:
+            load_times_data = load_times_file.read()
+
+            onemin = load_times_data.split(" ")[0]
+            fivemin = load_times_data.split(" ")[1]
+            fiveteenmin = load_times_data.split(" ")[2]
+            threadactive = load_times_data.split(" ")[3].split("/")[0]
+            threadtotal = load_times_data.split(" ")[3].split("/")[1]
+
+        with open("/proc/uptime", encoding="utf-8") as uptime_file:
+            uptime_data = uptime_file.read()
+            uptime_secs = int(uptime_data.split(".", maxsplit=1)[0])
+
+        if uptime_secs < 60:
+            uptime_fmt = f"{uptime_secs} seconds"
+
+        else:
+            uptime_fmt = uptime_format(int(uptime_data.split(".", maxsplit=1)[0]))
+
+        up_since_fmt = datetime.fromtimestamp(
+            int(str(time.time()).split(".", maxsplit=1)[0]) - int(uptime_secs)
+        ).strftime("%A %B %d %Y, %I:%M:%S %p")
+
+        return (
+            f"  System load: {onemin}, {fivemin}, {fiveteenmin} (1, 5, 15 mins)\n"
+            f"      Threads: {threadactive} active, {threadtotal} total"
+            f"\n\n  System up for {uptime_fmt}\n   Since {up_since_fmt}"
+        )
+
+    except FileNotFoundError:
+        sys.exit("Couldnt find /proc/meminfo file")
+
+    except PermissionError:
+        sys.exit(
+            "Couldnt read the file. Do you have read permissions for /proc/loadavg file?"
+        )
+
+
+# sysmon loadavg
+
+# sysmon meminfo
 
 
 def meminfo():
-    """/proc/meminfo"""
-    
+    """
+    /proc/meminfo - system memory (ram) and swap information
+    """
+
     try:
-        file = open('/proc/meminfo', 'r')
-        data = str(file.read())
+        with open("/proc/meminfo", encoding="utf-8") as meminfo_file:
+            meminfo_data = meminfo_file.readlines()
 
-        ramtotal = search('MemTotal.*', data)[0].replace(' ', '').split(':')[1].replace('kB', '')
-        ramavail = search('MemAvailable.*', data)[0].replace(' ', '').split(':')[1].replace('kB', '')
-        ramcc = search('Cached.*', data)[0].replace(' ', '').split(':')[1].replace('kB', '')
-        ramused = int(ramtotal.replace('kB', '')) - int(ramavail.replace('kB', ''))
-        ramusedperc = round((int(ramused) / int(ramtotal)) * 100, 1)
-        ramavailperc = round(100 - ramusedperc, 1)
-        ramccusedperc = round((int(ramcc) / int(ramtotal)) * 100, 1)
+            memory_total = to_bytes(
+                int(clean_output(file_has("MemTotal", meminfo_data)))
+            )
+            memory_available = to_bytes(
+                int(clean_output(file_has("MemAvailable", meminfo_data)))
+            )
+            memory_cached = to_bytes(
+                int(clean_output(file_has("Cached", meminfo_data)))
+            )
 
-        if int(search('SwapTotal.*', data)[0].replace(' ', '').split(':')[1].replace('kB', '')) != 0:
-            swaptotal = search('SwapTotal.*', data)[0].replace(' ', '').split(':')[1].replace('kB', '')
-            swapfree = search('SwapFree.*', data)[0].replace(' ', '').split(':')[1].replace('kB', '')
-            swapcc = search('SwapCached.*', data)[0].replace(' ', '').split(':')[1].replace('kB', '')
-            swapused = int(swaptotal.replace('kB', '')) - int(swapfree.replace('kB', ''))
-            swapusedperc = round((int(swapused) / int(swaptotal)) * 100, 1)
-            swapavailperc = round(100 - swapusedperc, 1)
-            swapccusedperc = round((int(swapcc) / int(swaptotal)) * 100, 1)
+            memory_used = round(memory_total - memory_available)
 
-            return f'------------------------------------------------------------------\n RAM:                            Swap: \n      Total: {convertbytes(tobytes(int(ramtotal)))}                Total: {convertbytes(tobytes(int(swaptotal)))}\n       Used: {convertbytes(tobytes(int(ramused)))} ({str(ramusedperc)[:4].strip(".")}%)         Used: {convertbytes(tobytes(int(swapused)))} ({str(swapusedperc)[:4].strip(".")}%)\n  Available: {convertbytes(tobytes(int(ramavail)))} ({str(ramavailperc)[:4].strip(".")}%)    Available: {convertbytes(tobytes(int(swapfree)))} ({str(swapavailperc)[:4].strip(".")}%)\n     Cached: {convertbytes(tobytes(int(ramcc)))} ({str(ramccusedperc)[:4].strip(".")}%)       Cached: {convertbytes(tobytes(int(swapcc)))} ({str(swapccusedperc)[:4].strip(".")}%)\n------------------------------------------------------------------'
+            memory_used_percent = round((int(memory_used) / int(memory_total)) * 100, 1)
+            memory_available_percent = round(100 - memory_used_percent, 1)
+
+            if to_bytes(int(clean_output(file_has("SwapTotal", meminfo_data)))) != 0:
+                swap_total = to_bytes(
+                    int(clean_output(file_has("SwapTotal", meminfo_data)))
+                )
+                swap_available = to_bytes(
+                    int(clean_output(file_has("SwapFree", meminfo_data)))
+                )
+                swap_cached = to_bytes(
+                    int(clean_output(file_has("SwapCached", meminfo_data)))
+                )
+
+                swap_used = round(swap_total - swap_available)
+
+                swap_used_percent = round((int(swap_used) / int(swap_total)) * 100, 1)
+                swap_available_percent = round(100 - swap_used_percent, 1)
+
+                memory_used_format = (
+                    f"{convert_bytes(memory_used)} ({memory_used_percent}%)"
+                )
+                memory_avail_format = (
+                    f"{convert_bytes(memory_available)} "
+                    f"({memory_available_percent}%)"
+                )
+
+                return (
+                    "  RAM:                           Swap:\n"
+                    f"       Total: {convert_bytes(memory_total)}"
+                    + " " * (25 - len(convert_bytes(swap_total)))
+                    + f"Total: {convert_bytes(swap_total)}\n"
+                    f"        Used: {memory_used_format}"
+                    + " " * (26 - len(memory_used_format))
+                    + f"Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
+                    f"   Available: {memory_avail_format}"
+                    + " " * (21 - len(memory_avail_format))
+                    + f"Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
+                    f"      Cached: {convert_bytes(memory_cached)}"
+                    + " " * (24 - len(convert_bytes(memory_cached)))
+                    + f"Cached: {convert_bytes(swap_cached)}"
+                )
+
+            return (
+                "  RAM:                           Swap: Disabled or not available\n"
+                f"       Total: {convert_bytes(memory_total)}\n"
+                f"        Used: {convert_bytes(memory_used)} ({memory_used_percent}%)\n"
+                f"   Available: {convert_bytes(memory_available)} ({memory_available_percent}%)\n"
+                f"      Cached: {convert_bytes(memory_cached)}"
+            )
+
+    except FileNotFoundError:
+        sys.exit("Couldnt find /proc/meminfo file")
+
+    except PermissionError:
+        sys.exit(
+            "Couldnt read the file. Do you have read permissions for /proc/meminfo file?"
+        )
+
+
+# sysmon meminfo
+
+# sysmon net
+
+
+def network_stats():
+    """
+    /sys/class/net/ - network stats, and speed
+    """
+
+    adapter_directory = detect_network_adapter()
+
+    if adapter_directory is not None:
+        os.makedirs("/tmp/sysmon_save", exist_ok=True)
+        save_directory = "/tmp/sysmon_save/"
+
+        if not os.path.isfile(f"{save_directory}rx") and not os.path.isfile(
+            f"{save_directory}tx"
+        ):
+            with en_open(f"{save_directory}rx", "w") as rx_file:
+                rx_file.write("0")
+
+            with en_open(f"{save_directory}tx", "w") as tx_file:
+                tx_file.write("0")
+
+        with en_open(adapter_directory + "/statistics/rx_bytes") as received:
+            received = int(received.read().replace("\n", ""))
+
+        with en_open(adapter_directory + "/statistics/tx_bytes") as transferred:
+            transferred = int(transferred.read().replace("\n", ""))
+
+        with en_open(f"{save_directory}rx") as recv_speed:
+            recv_speed = abs(int(recv_speed.read().replace("\n", "")) - received)
+
+        with en_open(f"{save_directory}tx") as transf_speed:
+            transf_speed = abs(int(transf_speed.read().replace("\n", "")) - transferred)
+
+        with en_open(f"{save_directory}rx", "w") as rxsave:
+            rxsave.write(str(received))
+
+        with en_open(f"{save_directory}tx", "w") as txsave:
+            txsave.write(str(transferred))
+
+        human_received = convert_bytes(received)
+        human_transferred = convert_bytes(transferred)
+
+        return (
+            f"       Device: {adapter_directory.split('/')[4]}\n"
+            f"     Received: {human_received}"
+            + " " * (14 - len(human_received))
+            + f"({received} bytes)\n"
+            f"  Transferred: {human_transferred}"
+            + " " * (14 - len(human_transferred))
+            + f"({transferred} bytes)\n"
+            f"        Speed: Down {convert_bytes(recv_speed)}"
+            + " " * (14 - len(convert_bytes(recv_speed)))
+            + f"| Up {convert_bytes(transf_speed)}"
+        )
+
+    return "  No adapter available"
+
+
+# sysmon net
+
+# sysmon disk usage
+
+
+def statvfs(disk_name=None):
+    """
+    shutils disk usage (which uses os.statvfs) - get partition usage
+    """
+    if not disk_name:
+        disk_name = "/"
+
+    total, used, free = shutil.disk_usage(disk_name)
+
+    converted_total = convert_bytes(total)
+    converted_used = convert_bytes(used)
+    converted_free = convert_bytes(free)
+
+    used_percent = round((int(used) / int(total)) * 100, 1)
+    available_percent = round(100 - used_percent, 1)
+
+    return (
+        f"  Total: {converted_total}\n"
+        + f"   Used: {converted_used} ({used_percent}%)\n"
+        + f"   Free: {converted_free} ({available_percent}%)"
+    )
+
+
+# sysmon disk usage
+
+
+def main(print_out):
+    """main printing method, what you see when you run sysmon"""
+
+    curses.curs_set(0)
+    curses.use_default_colors()
+
+    point_name = "/"
+
+    try:
+        if sys.argv[1] == "point":
+            point_name = sys.argv[2]
+
+            del sys.argv[1]
+            del sys.argv[1]
+
+    except IndexError:
+        pass
+
+    plugins_functions = {
+        "cpuinfo": cpuinfo,
+        "meminfo": meminfo,
+        "loadavg": loadavg,
+        "net": network_stats,
+        "statvfs": lambda: statvfs(point_name),
+    }
+
+    try:
+        if sys.argv[1] in plugins_functions:
+            try:
+                point_name = sys.argv[2]
+
+            except IndexError:
+                pass
+
+            while True:
+                print_out.addstr(
+                    f"--- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
+                    + "-" * 41
+                    + "\n"
+                )
+
+                if sys.argv[1] in ("cpuinfo", "loadavg", "meminfo"):
+                    print_out.addstr(f" --- /proc/{sys.argv[1]} " + "-" * 47 + "\n")
+
+                elif sys.argv[1] == "net":
+                    print_out.addstr(" --- /sys/class/net " + "-" * 46 + "\n")
+
+                else:
+                    print_out.addstr(
+                        f" --- mountpoint {point_name} "
+                        + "-" * (45 - len(point_name))
+                        + "----\n"
+                    )
+
+                print_out.addstr(plugins_functions[sys.argv[1]]())
+
+                print_out.addstr("\n" + "-" * 66)
+
+                try:
+                    print_out.refresh()
+                    time.sleep(1)
+                    print_out.clear()
+
+                except KeyboardInterrupt:
+                    curses.endwin()
+                    curses.curs_set(1)
+                    sys.exit()
+
+        elif sys.argv[1] == "help":
+            sys.exit(
+                "sysmon - a SYStem MONitor written in python, designed to be easy"
+                ' to understand\n         and "ready to use", with only ONE '
+                "dependecy: curses\n\n"
+                "Usage: sysmon ARG which can be: cpuinfo, meminfo, loadavg, net, and statvfs\n"
+                "                                or bl ARG1 ARGX\n"
+                " Explanation:\n"
+                "     - cpuinfo: cpu information such as model, cores & threads, and freq\n"
+                "     - meminfo: memory and swap information like used, total, available and"
+                "\n                cached\n"
+                "     - loadavg: load times, uptime, and threads running\n"
+                "     -     net: network stats, including up/down speed\n"
+                "     -  stavfs: mountpoint usage, like used, total and free\n"
+                '            To change which mountpoint to show, use "point MOUNTPOINT"\n'
+                "            for example: sysmon point /mnt/usb/\n"
+                "     -      bl: blacklist a plugin\n\n"
+                "Notes:\n"
+                "  - CPU frequency isnt always the same, this depends on the kernel config\n"
+                '  - Cached memory is part of used memory (cached - used = "actual" used)\n'
+                "  - Was planning to add cpu temperature, but its kinda confusing (because\n"
+                "   of different methods possible, which dont work on every hardware)"
+            )
+
+        elif sys.argv[1] == "bl":
+            del sys.argv[0]
+            del sys.argv[0]
+
+            try:
+                for plugin_arg in sys.argv:
+                    del plugins_functions[plugin_arg]
+
+                while True:
+                    print_out.addstr(
+                        f"--- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
+                        + "-" * 41
+                    )
+
+                    for plugin in plugins_functions:
+                        if plugin in ("cpuinfo", "loadavg", "meminfo"):
+                            print_out.addstr(
+                                f"\n --- /proc/{plugin} " + "-" * 47 + "\n"
+                            )
+
+                        elif plugin == "net":
+                            print_out.addstr("\n --- /sys/class/net " + "-" * 46 + "\n")
+
+                        else:
+                            print_out.addstr(
+                                f"\n --- mountpoint {point_name} "
+                                + "-" * (45 - len(point_name))
+                                + "----\n"
+                            )
+
+                        print_out.addstr(plugins_functions[plugin]() + "\n")
+
+                    print_out.addstr("-" * 66)
+
+                    try:
+                        print_out.refresh()
+                        time.sleep(1)
+                        print_out.clear()
+
+                    except KeyboardInterrupt:
+                        curses.endwin()
+                        curses.curs_set(1)
+                        sys.exit()
+
+            except IndexError:
+                sys.exit(f'"{sys.argv[1]}" is not a valid plugin')
 
         else:
-            return f'-----------------------------------\n RAM:\n       Total: {convertbytes(tobytes(int(ramtotal)))}\n        Used: {convertbytes(tobytes(int(ramused)))} ({str(ramusedperc)[:4].strip(".")}%)\n   Available: {convertbytes(tobytes(int(ramavail)))} ({str(ramavailperc)[:4].strip(".")}%)\n      Cached: {convertbytes(tobytes(int(ramcc)))} ({str(ramccusedperc)[:4].strip(".")}%)\n\n Swap:\n   Disabled/Not available\n-----------------------------------'
+            sys.exit(f'"{sys.argv[1]}" is not a valid plugin or argument')
 
-    except FileNotFoundError:
-        exit('Couldnt find /proc/meminfo file')
-
-    except PermissionError:
-        exit('Couldnt read the file. Do you have read permissions for /proc/meminfo file? Try running as root')
-
-    except Exception:
-        exit(f'Error while trying to read /proc/meminfo:\n{format_exc()}')
-
-
-def cpu_info():
-    """/proc/cpuinfo"""
-
-    try:
-        file = open('/proc/cpuinfo', 'r')
-        data = str(file.read())
-
-        freq = search('cpu MHz.*', data)[0].replace('\t', '').split(':')[1].replace(' ', '')
-        model = cleancpu_model(search('model name.*', data)[0].replace('\t', '').split(':')[1])
-
-        cachesize = search('cache size.*', data)[0].replace('\t', '').split(':')[1][1:]
-        architecture = check_output("uname -m", shell=True, text=True).replace('\n', '')
-        cores = search('cpu cores.*', data)[0].replace('\t', '').split(':')[1][1:]
-        threads = int(search('siblings.*', data)[0].replace('\t', '').split(':')[1][1:])
-
-        return f'---------------------------------------------------------\n         Usage: {cpu_usage()}% ({str(getcputemp(int(cores)))} °C)\n           CPU: {model}\n Cores/Threads: {cores}/{threads} @ {freq} MHz\n         Cache: {cachesize}, Architecture: {architecture}\n---------------------------------------------------------'
-
-
-    except FileNotFoundError:
-        exit('Couldnt find /proc/cpuinfo file')
-
-    except PermissionError:
-        exit('Couldnt read the file. Do you have read permissions for /proc/cpuinfo file? Try running as root')
-
-    except Exception:
-        exit(f'Error while trying to read /proc/cpuinfo:\n{format_exc()}')
-
-
-def loadavg_uptime():
-    """/proc/loadavg"""
-
-    try:
-        uptime = 'Unknown'
-
-        file = open('/proc/loadavg', 'r')
-        uptime_file = open('/proc/uptime', 'r')
-
-        data = file.read()
-        uptime_data = str(uptime_file.read())
-
-        onemin = data.split(' ')[0]
-        fivemin = data.split(' ')[1]
-        fiveteenmin = data.split(' ')[2]
-        threadactive = data.split(' ')[3].split('/')[0]
-        threadtotal = data.split(' ')[3].split('/')[1]
-
-        uptime_secs = int(uptime_data.split('.')[0])
-
-        if uptime_secs < 60:
-            uptime = f'{uptime_secs} seconds'
-
-        else:
-            uptime = uptime_format(int(uptime_data.split('.')[0]))
-        
-        up_since = int(str(time()).split('.')[0]) - int(uptime_secs)
-        up_since_format = datetime.fromtimestamp(up_since).strftime('%A %B %d %Y, %I:%M %p')
-
-        return f'-----------------------------------------------------------------\n System load: (1, 5, 15 mins)\n   {onemin}, {fivemin}, {fiveteenmin} | {threadactive} active thread(s), {threadtotal} total threads\n\n System up for {uptime} \n   Since {up_since_format}\n-----------------------------------------------------------------'
-
-
-    except FileNotFoundError:
-        exit('Couldnt find /proc/loadavg file')
-
-    except PermissionError:
-        exit('Couldnt read the file. Do you have read permissions for /proc/loadavg file? Try running as root')
-
-    except Exception:
-        exit(f'Error while trying to read /proc/loadavg:\n{format_exc()}')
-
-
-def network_stats(adpt_name, adpt_dir):
-    """/sys/class/net/"""
-
-    savedir = None
-
-    if adpt_dir != None:
-        try:
-            homedir = environ['HOME']
-            makedirs(f'{homedir}/.sysmon_save', exist_ok=True)
-
-            savedir = f'{homedir}/.sysmon_save/'
-
-            try:
-                rx = open(f'{savedir}rx')
-                tx = open(f'{savedir}tx')
-
-            except FileNotFoundError:
-                rx = open(f'{savedir}rx', 'w')
-                tx = open(f'{savedir}tx', 'w')
-
-                rx.write('0')
-                tx.write('0')
-
-                rx.close()
-                tx.close()
-
-        except KeyError:
-            makedirs(f'{os.getcwd()}/.save', exist_ok=True)
-            savedir = f'{os.getcwd()}/.save/'
-
-            open(f'{savedir}rx', 'w').write('0').close()
-            open(f'{savedir}tx', 'w').write('0').close()
-
-        try:
-            received = int(open(adpt_dir + '/statistics/rx_bytes', 'r').read().replace('\n', ''))
-            transferred = int(open(adpt_dir + '/statistics/tx_bytes', 'r').read().replace('\n', ''))
-
-            speed_r = abs(int(open(f'{savedir}rx', 'r').read().replace('\n', '')) - received)
-            speed_t = abs(int(open(f'{savedir}tx', 'r').read().replace('\n', '')) - transferred)
-
-            with open(f'{savedir}rx', 'w') as rxsave:
-                rxsave.write(str(received))
-
-            with open(f'{savedir}tx', 'w') as txsave:
-                txsave.write(str(transferred))
-
-
-            return f'---------------------------------------------------------------\n        Received: {convertbytes(received)} ({received} bytes)\n     Transferred: {convertbytes(transferred)} ({transferred} bytes)\n Speed (per sec): {convertbytes(speed_r)} ↓ / ↑ {convertbytes(speed_t)}\n---------------------------------------------------------------'
-
-
-        except PermissionError:
-            exit(f'Couldnt read the file. Do you have read permissions for /sys/class/net/{adpt_name}/statistics/tx AND rx_bytes files? Try running as root')
-
-        except Exception:
-            exit(f'Error while trying to read /sys/class/net/{adpt_name}/statistics/tx OR rx_bytes:\n{format_exc()}')
-
-    else:
-        return f'---------------------------------------------------------------\n No adapters found\n---------------------------------------------------------------'
-
-
-def signature():
-    try:
-        return f'--------------------------------\n SysMon on {search("NAME.*", str(open("/etc/os-release", "r").read()))[0].split("=")[1]} | {datetime.now().strftime("%I:%M:%S %p")}\n--------------------------------\n'
-
-    except Exception:
-        return f'----------------------\n SysMon | {datetime.now().strftime("%I:%M:%S %p")}\n----------------------\n'
-
-
-def meminfo_format():
-    return f'                          {meminfo.__doc__}\n{meminfo()}'
-
-
-def cpuinfo_format():
-    return f'                      {cpu_info.__doc__}\n{cpu_info()}'
-
-
-def loadavg_uptime_format():
-    return f'                          {loadavg_uptime.__doc__}\n{loadavg_uptime()}'
-
-
-def network_stats_format():
-    adaptr = network_adapter_detect()
-
-    return f'                     {network_stats.__doc__}{adaptr[0]}\n{network_stats(adaptr[0], adaptr[1])}'
-
-
-try:
-    argv[1]
-
-
-    if argv[1] == 'mem':
-        screen = initscr()
-        curs_set(0)
-
+    except IndexError:
         while True:
-            screen.addstr(signature())
-            screen.addstr(meminfo_format())
+            try:
+                print_out.addstr(
+                    f"--- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
+                    + "-" * 41
+                    + "\n"
+                )
+
+                print_out.addstr(
+                    " --- /proc/cpuinfo " + "-" * 47 + "\n" + cpuinfo() + "\n\n"
+                )
+
+                print_out.addstr(
+                    " --- /proc/meminfo " + "-" * 47 + "\n" + meminfo() + "\n\n"
+                )
+
+                print_out.addstr(
+                    " --- /proc/loadavg " + "-" * 47 + "\n" + loadavg() + "\n\n"
+                )
+
+                print_out.addstr(
+                    " --- /sys/class/net " + "-" * 46 + "\n" + network_stats() + "\n\n"
+                )
+
+                print_out.addstr(
+                    f" --- mountpoint {point_name} "
+                    + "-" * (45 - len(point_name))
+                    + "----\n"
+                    + statvfs(point_name)
+                    + "\n"
+                    + "-" * 66
+                )
+
+            except curses.error:
+                print_out.refresh()
+                print_out.clear()
+
+                curses.endwin()
+                curses.curs_set(1)
+
+                sys.exit("Please resize your terminal (67x30)")
 
             try:
-                screen.refresh()
-                sleep(1)
-                screen.clear()
+                print_out.refresh()
+                time.sleep(1)
+                print_out.clear()
 
             except KeyboardInterrupt:
-                endwin()
-                curs_set(1)
-                exit()
+                curses.endwin()
+                curses.curs_set(1)
+                sys.exit()
 
 
-    if argv[1] == 'cpu':
-        screen = initscr()
-        curs_set(0)
-
-        while True:
-            screen.addstr(signature())
-            screen.addstr(cpuinfo_format())
-
-            try:
-                screen.refresh()
-                sleep(1)
-                screen.clear()
-
-            except KeyboardInterrupt:
-                endwin()
-                curs_set(1)
-                exit()
-
-
-    if argv[1] == 'load':
-        screen = initscr()
-        curs_set(0)
-
-        while True:
-            screen.addstr(signature())
-            screen.addstr(loadavg_uptime_format())
-
-            try:
-                screen.refresh()
-                sleep(1)
-                screen.clear()
-
-            except KeyboardInterrupt:
-                endwin()
-                curs_set(1)
-                exit()
-
-
-    if argv[1] == 'net':
-        screen = initscr()
-        curs_set(0)
-
-        while True:
-            screen.addstr(signature())
-            screen.addstr(network_stats_format())
-
-            try:
-                screen.refresh()
-                sleep(1)
-                screen.clear()
-
-            except KeyboardInterrupt:
-                endwin()
-                curs_set(1)
-                exit()
-
-
-    if 'nocpu' in argv:
-        screen = initscr()
-        curs_set(0)
-
-        while True:
-            screen.addstr(signature())
-            screen.addstr(f'{meminfo_format()}\n{loadavg_uptime_format()}\n{network_stats_format()}')
-
-            try:
-                screen.refresh()
-                sleep(1)
-                screen.clear()
-
-            except KeyboardInterrupt:
-                endwin()
-                curs_set(1)
-                exit()
-
-
-    if 'nomem' in argv:
-        screen = initscr()
-        curs_set(0)
-
-        while True:
-            screen.addstr(signature())
-            screen.addstr(f'{cpuinfo_format()}\n{loadavg_uptime_format()}\n{network_stats_format()}')
-
-            try:
-                screen.refresh()
-                sleep(1)
-                screen.clear()
-
-            except KeyboardInterrupt:
-                endwin()
-                curs_set(1)
-                exit()
-
-
-    if 'noload' in argv:
-        screen = initscr()
-        curs_set(0)
-
-        while True:
-            screen.addstr(signature())
-            screen.addstr(f'{cpuinfo_format()}\n{meminfo_format()}\n{network_stats_format()}')
-
-            try:
-                screen.refresh()
-                sleep(1)
-                screen.clear()
-
-            except KeyboardInterrupt:
-                endwin()
-                curs_set(1)
-                exit()
-
-
-    if 'nonet' in argv:
-        screen = initscr()
-        curs_set(0)
-
-        while True:
-            screen.addstr(signature())
-            screen.addstr(f'{cpuinfo_format()}\n{meminfo_format()}\n{loadavg_uptime_format()}')
-
-            try:
-                screen.refresh()
-                sleep(1)
-                screen.clear()
-
-            except KeyboardInterrupt:
-                endwin()
-                curs_set(1)
-                exit()
-
-
-    if 'once' in argv:
-        valid_options = ['mem', 'cpu', 'load', 'net']
-
-        if argv[2] not in valid_options:
-            exit(f'"{argv[2]}" is not a valid option')
-
-
-        if argv[2] == 'mem':
-            print(signature(), meminfo_format())
-
-
-        if argv[2] == 'cpu':
-            print(signature(), cpuinfo_format())
-
-
-        if argv[2] == 'load':
-            print(signature(), loadavg_uptime_format())
-
-
-        if argv[2] == 'net':
-            print(signature(), network_stats_format())
-
-
-    if 'help' in argv:
-        exit(' -> [!] SysMon, a system monitor aiming to be fast and ready to use\n |\n -> [??] How to use: ./sysmon OPTS where OPTS can be:\n |  1) mem ------> Display RAM and swap (if available) usage\n |  2) cpu ------> ~~~~~~~ CPU information\n |  3) load -----> ~~~~~~~ Load averange and uptime of your system\n |  4) (!) net ------> ~~~~~~~ network statistics\n |  5) nomem ----> Dont display RAM and swap usape\n |  6) nocpu ----> ~~~~ ~~~~~~~ CPU information\n |  7) noload ---> ~~~~ ~~~~~~~ load and uptime\n |  8) nonet ----> ~~~~ ~~~~~~~ network statistics\n |\n -> (!) If 2 adaptors or more (eth0, wlan0, etc) are in use AND status is up, sysmon will pick the first adaptor that has the status up!\n -> [?] By default, when running without options it will display everything, memory usage, cpu and load times\n  \\-> [!] If you dont want to see an option run: ./sysmon XOPT where X can be yes or no and OPT cpu, mem or load for example ./sysmon noload\n   \\-> [!!] You can also "print" the options once, with the "once" option. Example: ./sysmon once OPTION (which can be mem, cpu or load)')
-
-
-except IndexError:
-    screen = initscr()
-    curs_set(0)
-
-    while True:
-        try:
-            screen.addstr(signature())
-            screen.addstr(f'{cpuinfo_format()}\n{meminfo_format()}\n{loadavg_uptime_format()}\n{network_stats_format()}')
-
-            try:
-                screen.refresh()
-                # sleep(1) # NOT SURE ABOUT THIS!
-                screen.clear()
-
-            except KeyboardInterrupt:
-                endwin()
-                curs_set(1)
-                exit()
-
-        except error:
-            endwin()
-            curs_set(1)
-            exit('Please resize your terminal (Rows and columns must be higher or equal to 26 67. Run the "stty size command")')
+curses.wrapper(main)
