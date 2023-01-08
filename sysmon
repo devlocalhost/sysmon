@@ -21,16 +21,6 @@ from datetime import datetime
 # sysmon basic functions start
 
 
-# def spaces_fix(padding, length):
-#     """
-#     i dont really know how to explain this... for now
-#     """
-
-#     # do i really need this?
-
-#     return " " * (padding - length)
-
-
 def convert_bytes(fsize, units=(" bytes", " KiB", " MiB", " GiB", " TiB")):
     """convert bytes to k, m, g and t"""
 
@@ -52,12 +42,11 @@ def detect_network_adapter():
 
     for adapter_dir in glob.glob("/sys/class/net/*"):
         with en_open(adapter_dir + "/type") as device_type:
-            if int(device_type.read()) != 772:  # loopback device
+            if int(device_type.read()) != 772:  # if not loopback device
 
                 with en_open(adapter_dir + "/operstate") as status:
                     if status.read().replace("\n", "") == "up":
                         adp_directory = adapter_dir
-                        # adp_name = adapter_dir.split("/")[4]
 
     return adp_directory
 
@@ -70,7 +59,6 @@ def file_has(string, lines):
     for line in lines:
         if line.startswith(string):
             has_string = line.replace("\t", "").split(":")[1]
-            # .replace(" ", "").replace("\n", "")
 
     return has_string
 
@@ -137,7 +125,7 @@ def clean_cpu_model(model):
 
 def cpu_usage():
     """
-    /proc/stat - cpu uasge of the system
+    /proc/stat - cpu usage of the system
     """
     os.makedirs("/tmp/sysmon_save", exist_ok=True)
 
@@ -196,8 +184,6 @@ def cpuinfo():
 
             cpu_freq = file_has("cpu MHz", read_file).replace("\n", "").replace(" ", "")
 
-            # sys.exit(cpu_freq)
-
             model = clean_cpu_model(file_has("model name", read_file))
             cache_size = (
                 file_has("cache size", read_file)
@@ -209,7 +195,7 @@ def cpuinfo():
                 "uname -m", shell=True, text=True
             ).replace("\n", "")
 
-            try:  # prob not a good idea
+            try:
                 total_cores = (
                     file_has("cpu cores", read_file).replace(" ", "").replace("\n", "")
                 )
@@ -291,7 +277,7 @@ def loadavg():
         )
 
     except FileNotFoundError:
-        sys.exit("Couldnt find /proc/meminfo file")
+        sys.exit("Couldnt find /proc/loadavg file")
 
     except PermissionError:
         sys.exit(
