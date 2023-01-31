@@ -173,6 +173,22 @@ def cpu_usage():
         )
 
 
+def cpu_temp():
+    temperature = "Unknown"
+
+    for temp_dir in glob.glob("/sys/class/hwmon/*"):
+        with en_open(temp_dir + "/name") as temp_type:
+            if (temp_type.read() in "coretemp", "fam15h_power", "k10temp", "acpitz"):
+                try:
+                    with en_open(temp_dir + "/temp1_input") as temp_value:
+                        temperature = int(int(temp_value.read().strip()) / 1000)
+
+                except FileNotFoundError:
+                    pass
+
+    return temperature
+
+
 def cpuinfo():
     """
     /proc/cpuinfo - cpu information
@@ -216,11 +232,16 @@ def cpuinfo():
                 ).replace("\n", "")
 
             cpu_usage_num = cpu_usage()
+            cpu_temperature = str(cpu_temp())
+
+            if cpu_temperature != "Unknown":
+                cpu_temperature += " C"
 
         return (
             f"          Usage: {cpu_usage_num}% "
             + " " * (3 - len(str(cpu_usage_num)))
-            + f"| {architecture} {model}\n"
+            + f" ({cpu_temperature}) | {architecture} {model}\n"
+            # f"    Temperature: {cpu_temperature}\n"
             f"  Cores/Threads: {total_cores}/{total_threads} @ {cpu_freq} MHz"
             f" with {convert_bytes(to_bytes(int(cache_size)))} cache memory"
         )

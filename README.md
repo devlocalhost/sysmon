@@ -34,6 +34,7 @@ Usage: sysmon ARG which can be: cpuinfo, meminfo, loadavg, net, and statvfs
 
 Notes:
   - CPU frequency isnt always the same, this depends on the kernel config
+  - CPU temperature MIGHT NOT be accurate. not my problem (unless you know a better implementation...)
   - Cached memory is part of used memory (cached - used = "actual" used)
   - Was planning to add cpu temperature, but its kinda confusing (because
    of different methods possible, which dont work on every hardware)
