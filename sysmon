@@ -241,7 +241,6 @@ def cpuinfo():
             f"          Usage: {cpu_usage_num}% "
             + " " * (3 - len(str(cpu_usage_num)))
             + f" ({cpu_temperature}) | {architecture} {model}\n"
-            # f"    Temperature: {cpu_temperature}\n"
             f"  Cores/Threads: {total_cores}/{total_threads} @ {cpu_freq} MHz"
             f" with {convert_bytes(to_bytes(int(cache_size)))} cache memory"
         )
