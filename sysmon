@@ -178,7 +178,7 @@ def cpu_temp():
     getting the cpu temperature from /sys/class/hwmon
     """
 
-    temperature = "Unknown"
+    temperature = "!?"
 
     for temp_dir in glob.glob("/sys/class/hwmon/*"):
         with en_open(temp_dir + "/name") as temp_type:
@@ -238,13 +238,19 @@ def cpuinfo():
             cpu_usage_num = cpu_usage()
             cpu_temperature = str(cpu_temp())
 
-            if cpu_temperature != "Unknown":
+            arch_model_temp_line = f"| {architecture} {model}\n"
+
+            # yes very long name i know. i can make it shorter but
+            # ... no. it would be some randon chars like aml_line lol
+
+            if cpu_temperature != "!?":
                 cpu_temperature += " C"
+                arch_model_temp_line = f"({cpu_temperature}) " + arch_model_temp_line
 
         return (
             f"          Usage: {cpu_usage_num}% "
             + " " * (3 - len(str(cpu_usage_num)))
-            + f" ({cpu_temperature}) | {architecture} {model}\n"
+            + arch_model_temp_line +
             f"  Cores/Threads: {total_cores}/{total_threads} @ {cpu_freq} MHz"
             f" with {convert_bytes(to_bytes(int(cache_size)))} cache memory"
         )
