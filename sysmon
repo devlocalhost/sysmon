@@ -250,8 +250,8 @@ def cpuinfo():
         return (
             f"          Usage: {cpu_usage_num}% "
             + " " * (3 - len(str(cpu_usage_num)))
-            + arch_model_temp_line +
-            f"  Cores/Threads: {total_cores}/{total_threads} @ {cpu_freq} MHz"
+            + arch_model_temp_line
+            + f"  Cores/Threads: {total_cores}/{total_threads} @ {cpu_freq} MHz"
             f" with {convert_bytes(to_bytes(int(cache_size)))} cache memory"
         )
 
