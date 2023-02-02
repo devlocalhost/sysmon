@@ -244,7 +244,7 @@ def cpuinfo():
             # ... no. it would be some randon chars like aml_line lol
 
             if cpu_temperature != "!?":
-                cpu_temperature += " C"
+                cpu_temperature += " °C"
                 arch_model_temp_line = f"({cpu_temperature}) " + arch_model_temp_line
 
         return (
