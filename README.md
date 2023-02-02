@@ -12,7 +12,7 @@ old sysmon
 sysmon is *another* system monitor designed to be **ready to use** and easy to understand. it uses [**linux's /proc pseudo filesystem**](https://www.kernel.org/doc/html/latest/filesystems/proc.html) to read information and [**curses**](https://docs.python.org/3/howto/curses.html) to display them
 
 ## why 2 files?
-because i like the old layout too of sysmon. theres also the cpu temp feature which is not in new sysmon. i strongly suggest you to use the new sysmon, because of better code
+because i like the old layout of sysmon too (but I rarely use it). i strongly suggest you to use the new sysmon, because better code, improvements, and faster
 
 ## help and usage
 ```
@@ -44,8 +44,8 @@ please open a issue, including traceback and a screenshot if you found a bug
 
 if you want to suggest a new feature, or if you found something that is not correct (for example, incorrect cpu temperature or ram usage/something else) feel free to open an issue
 
-## notes (for old sysmon)
-You might **NOT** be able to view the temperature, or the temperature might **NOT** be accurate, because sysmon reads `/sys/class/thermal/thermal_zone0/temp` or `/sys/class/hwmon/hwmon1/temp1_input` to get the temperature, and your system might report it in a different file for example. If sysmon cannot read the temperature, it will display "??". **You will NOT see the temperature if you have an AMD cpu**. If you know how to fix this, or if you have an implementation to get the cpu temperature on either amd, intel or both, please make a pr or open an issue
+## more notes
+CPU temperature may not be correct/accurate. If you know a better way (**WITHOUT USING OTHER LIBRARIES!!**) make a PR
 
 ## credits
 many thanks to [skyblueborb](https://github.com/skyblueborb) for helping me test, fix and make the cpu temperature feature better
