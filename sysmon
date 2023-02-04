@@ -247,10 +247,10 @@ def cpuinfo():
                 arch_model_temp_line = f"({cpu_temperature}) " + arch_model_temp_line
 
         return (
-            f"          Usage: {cpu_usage_num}% "
+            f"           Usage: {cpu_usage_num}% "
             + " " * (3 - len(str(cpu_usage_num)))
             + arch_model_temp_line
-            + f"  Cores/Threads: {total_cores}/{total_threads} @ {cpu_freq} MHz"
+            + f"   Cores/Threads: {total_cores}/{total_threads} @ {cpu_freq} MHz"
             f" with {convert_bytes(to_bytes(int(cache_size)))} cache memory"
         )
 
@@ -300,9 +300,9 @@ def loadavg():
         ).strftime("%A %B %d %Y, %I:%M:%S %p")
 
         return (
-            f"  System load: {onemin}, {fivemin}, {fiveteenmin} (1, 5, 15 mins)\n"
-            f"      Threads: {threadactive} active, {threadtotal} total"
-            f"\n\n  System up for {uptime_fmt}\n   Since {up_since_fmt}"
+            f"   System load: {onemin}, {fivemin}, {fiveteenmin} (1, 5, 15 mins)\n"
+            f"       Threads: {threadactive} active, {threadtotal} total"
+            f"\n\n   System up for {uptime_fmt}\n    Since {up_since_fmt}"
         )
 
     except FileNotFoundError:
@@ -368,27 +368,27 @@ def meminfo():
                 )
 
                 return (
-                    "  RAM:                           Swap:\n"
-                    f"       Total: {convert_bytes(memory_total)}"
+                    "   RAM:                           Swap:\n"
+                    f"        Total: {convert_bytes(memory_total)}"
                     + " " * (25 - len(convert_bytes(swap_total)))
                     + f"Total: {convert_bytes(swap_total)}\n"
-                    f"        Used: {memory_used_format}"
+                    f"         Used: {memory_used_format}"
                     + " " * (26 - len(memory_used_format))
                     + f"Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
-                    f"   Available: {memory_avail_format}"
+                    f"    Available: {memory_avail_format}"
                     + " " * (21 - len(memory_avail_format))
                     + f"Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
-                    f"      Cached: {convert_bytes(memory_cached)}"
+                    f"       Cached: {convert_bytes(memory_cached)}"
                     + " " * (24 - len(convert_bytes(memory_cached)))
                     + f"Cached: {convert_bytes(swap_cached)}"
                 )
 
             return (
-                "  RAM:                           Swap: Disabled or not available\n"
-                f"       Total: {convert_bytes(memory_total)}\n"
-                f"        Used: {convert_bytes(memory_used)} ({memory_used_percent}%)\n"
-                f"   Available: {convert_bytes(memory_available)} ({memory_available_percent}%)\n"
-                f"      Cached: {convert_bytes(memory_cached)}"
+                "   RAM:                           Swap: Disabled or not available\n"
+                f"        Total: {convert_bytes(memory_total)}\n"
+                f"         Used: {convert_bytes(memory_used)} ({memory_used_percent}%)\n"
+                f"    Available: {convert_bytes(memory_available)} ({memory_available_percent}%)\n"
+                f"       Cached: {convert_bytes(memory_cached)}"
             )
 
     except FileNotFoundError:
@@ -447,14 +447,14 @@ def network_stats():
         human_transferred = convert_bytes(transferred)
 
         return (
-            f"       Device: {adapter_directory.split('/')[4]}\n"
-            f"     Received: {human_received}"
+            f"        Device: {adapter_directory.split('/')[4]}\n"
+            f"      Received: {human_received}"
             + " " * (14 - len(human_received))
             + f"({received} bytes)\n"
-            f"  Transferred: {human_transferred}"
+            f"   Transferred: {human_transferred}"
             + " " * (14 - len(human_transferred))
             + f"({transferred} bytes)\n"
-            f"        Speed: Down {convert_bytes(recv_speed)}"
+            f"         Speed: Down {convert_bytes(recv_speed)}"
             + " " * (14 - len(convert_bytes(recv_speed)))
             + f"| Up {convert_bytes(transf_speed)}"
         )
@@ -482,16 +482,16 @@ def main(print_out):
         if sys.argv[1] in plugins_functions:
             while True:
                 print_out.addstr(
-                    f"--- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
-                    + "-" * 41
+                    f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
+                    + "-" * 42
                     + "\n"
                 )
 
                 if sys.argv[1] in ("cpuinfo", "loadavg", "meminfo"):
-                    print_out.addstr(f" --- /proc/{sys.argv[1]} " + "-" * 47 + "\n")
+                    print_out.addstr(f"  --- /proc/{sys.argv[1]} " + "-" * 47 + "\n")
 
                 elif sys.argv[1] == "net":
-                    print_out.addstr(" --- /sys/class/net " + "-" * 46 + "\n")
+                    print_out.addstr("  --- /sys/class/net " + "-" * 46 + "\n")
 
                 print_out.addstr(plugins_functions[sys.argv[1]]())
 
@@ -540,22 +540,22 @@ def main(print_out):
 
                 while True:
                     print_out.addstr(
-                        f"--- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
-                        + "-" * 41
+                        f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
+                        + "-" * 42
                     )
 
                     for plugin in plugins_functions:
                         if plugin in ("cpuinfo", "loadavg", "meminfo"):
                             print_out.addstr(
-                                f"\n --- /proc/{plugin} " + "-" * 47 + "\n"
+                                f"\n  --- /proc/{plugin} " + "-" * 47 + "\n"
                             )
 
                         elif plugin == "net":
-                            print_out.addstr("\n --- /sys/class/net " + "-" * 46 + "\n")
+                            print_out.addstr("\n  --- /sys/class/net " + "-" * 46 + "\n")
 
                         print_out.addstr(plugins_functions[plugin]() + "\n")
 
-                    print_out.addstr("-" * 66)
+                    print_out.addstr(" -" + "-" * 66)
 
                     try:
                         print_out.refresh()
@@ -577,29 +577,29 @@ def main(print_out):
         while True:
             try:
                 print_out.addstr(
-                    f"--- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
-                    + "-" * 41
+                    f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
+                    + "-" * 42
                     + "\n"
                 )
 
                 print_out.addstr(
-                    " --- /proc/cpuinfo " + "-" * 47 + "\n" + cpuinfo() + "\n\n"
+                    "  --- /proc/cpuinfo " + "-" * 47 + "\n" + cpuinfo() + "\n\n"
                 )
 
                 print_out.addstr(
-                    " --- /proc/meminfo " + "-" * 47 + "\n" + meminfo() + "\n\n"
+                    "  --- /proc/meminfo " + "-" * 47 + "\n" + meminfo() + "\n\n"
                 )
 
                 print_out.addstr(
-                    " --- /proc/loadavg " + "-" * 47 + "\n" + loadavg() + "\n\n"
+                    "  --- /proc/loadavg " + "-" * 47 + "\n" + loadavg() + "\n\n"
                 )
 
                 print_out.addstr(
-                    " --- /sys/class/net "
+                    "  --- /sys/class/net "
                     + "-" * 46
                     + "\n"
                     + network_stats()
-                    + "\n"
+                    + "\n -"
                     + "-" * 66
                 )
 
