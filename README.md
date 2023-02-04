@@ -27,7 +27,6 @@ Usage: sysmon ARG which can be: cpuinfo, meminfo, loadavg, net, and statvfs
                 cached
      - loadavg: load times, uptime, and threads running
      -     net: network stats, including up/down speed
-     -  stavfs: mountpoint usage, like used, total and free
             To change which mountpoint to show, use "point MOUNTPOINT"
             for example: sysmon point /mnt/usb/
      -      bl: blacklist a plugin

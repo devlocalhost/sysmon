@@ -13,7 +13,6 @@ import sys
 import glob
 import time
 import curses
-import shutil
 import subprocess
 
 from datetime import datetime
@@ -465,34 +464,6 @@ def network_stats():
 
 # sysmon net
 
-# sysmon disk usage
-
-
-def statvfs(disk_name=None):
-    """
-    shutils disk usage (which uses os.statvfs) - get partition usage
-    """
-    if not disk_name:
-        disk_name = "/"
-
-    total, used, free = shutil.disk_usage(disk_name)
-
-    converted_total = convert_bytes(total)
-    converted_used = convert_bytes(used)
-    converted_free = convert_bytes(free)
-
-    used_percent = round((int(used) / int(total)) * 100, 1)
-    available_percent = round(100 - used_percent, 1)
-
-    return (
-        f"  Total: {converted_total}\n"
-        + f"   Used: {converted_used} ({used_percent}%)\n"
-        + f"   Free: {converted_free} ({available_percent}%)"
-    )
-
-
-# sysmon disk usage
-
 
 def main(print_out):
     """main printing method, what you see when you run sysmon"""
@@ -500,34 +471,15 @@ def main(print_out):
     curses.curs_set(0)
     curses.use_default_colors()
 
-    point_name = "/"
-
-    try:
-        if sys.argv[1] == "point":
-            point_name = sys.argv[2]
-
-            del sys.argv[1]
-            del sys.argv[1]
-
-    except IndexError:
-        pass
-
     plugins_functions = {
         "cpuinfo": cpuinfo,
         "meminfo": meminfo,
         "loadavg": loadavg,
         "net": network_stats,
-        "statvfs": lambda: statvfs(point_name),
     }
 
     try:
         if sys.argv[1] in plugins_functions:
-            try:
-                point_name = sys.argv[2]
-
-            except IndexError:
-                pass
-
             while True:
                 print_out.addstr(
                     f"--- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
@@ -540,13 +492,6 @@ def main(print_out):
 
                 elif sys.argv[1] == "net":
                     print_out.addstr(" --- /sys/class/net " + "-" * 46 + "\n")
-
-                else:
-                    print_out.addstr(
-                        f" --- mountpoint {point_name} "
-                        + "-" * (45 - len(point_name))
-                        + "----\n"
-                    )
 
                 print_out.addstr(plugins_functions[sys.argv[1]]())
 
@@ -575,7 +520,6 @@ def main(print_out):
                 "\n                cached\n"
                 "     - loadavg: load times, uptime, and threads running\n"
                 "     -     net: network stats, including up/down speed\n"
-                "     -  stavfs: mountpoint usage, like used, total and free\n"
                 '            To change which mountpoint to show, use "point MOUNTPOINT"\n'
                 "            for example: sysmon point /mnt/usb/\n"
                 "     -      bl: blacklist a plugin\n\n"
@@ -608,13 +552,6 @@ def main(print_out):
 
                         elif plugin == "net":
                             print_out.addstr("\n --- /sys/class/net " + "-" * 46 + "\n")
-
-                        else:
-                            print_out.addstr(
-                                f"\n --- mountpoint {point_name} "
-                                + "-" * (45 - len(point_name))
-                                + "----\n"
-                            )
 
                         print_out.addstr(plugins_functions[plugin]() + "\n")
 
@@ -658,14 +595,10 @@ def main(print_out):
                 )
 
                 print_out.addstr(
-                    " --- /sys/class/net " + "-" * 46 + "\n" + network_stats() + "\n\n"
-                )
-
-                print_out.addstr(
-                    f" --- mountpoint {point_name} "
-                    + "-" * (45 - len(point_name))
-                    + "----\n"
-                    + statvfs(point_name)
+                    " --- /sys/class/net "
+                    + "-" * 46
+                    + "\n"
+                    + network_stats()
                     + "\n"
                     + "-" * 66
                 )
