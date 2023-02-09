@@ -459,7 +459,7 @@ def network_stats():
             + f"| Up {convert_bytes(transf_speed)}"
         )
 
-    return "  No adapter available"
+    return "   No adapter available"
 
 
 # sysmon net
