@@ -8,6 +8,11 @@ rewrite sysmon
 old sysmon
 ![old sysmon screenshot](screens/sysmon-old.png)
 
+## Try before cloning
+```sh
+curl https://raw.githubusercontent.com/devlocalhost/sysmon/main/sysmon | python
+```
+
 ## what is sysmon
 sysmon is *another* system monitor designed to be **ready to use** and easy to understand. it uses [**linux's /proc pseudo filesystem**](https://www.kernel.org/doc/html/latest/filesystems/proc.html) to read information and [**curses**](https://docs.python.org/3/howto/curses.html) to display them
 
