@@ -20,11 +20,11 @@ from datetime import datetime
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--nocpu", action="store_true", help="Disables cpuinfo")
-parser.add_argument("--nomem", action="store_true", help="~~~~~~~~ meminfo")
-parser.add_argument("--noload", action="store_true", help="~~~~~~~~ loadavg")
-parser.add_argument("--nopid", action="store_true", help="~~~~~~~~ procpid")
-parser.add_argument("--nonet", action="store_true", help="~~~~~~~~ network_stats")
+parser.add_argument("--nocpu", action="store_true", help="Disables cpuinfo (cpu information, like usage, model, and more)")
+parser.add_argument("--nomem", action="store_true", help="~~~~~~~~ meminfo (memory information, like total, used and more)")
+parser.add_argument("--noload", action="store_true", help="~~~~~~~~ loadavg (load times information, including uptime)")
+parser.add_argument("--nopid", action="store_true", help="~~~~~~~~ procpid (most ram/vmrss consuming pids)")
+parser.add_argument("--nonet", action="store_true", help="~~~~~~~~ network_stats (network stats, like received/transfered bytes)")
 
 args = parser.parse_args()
 
