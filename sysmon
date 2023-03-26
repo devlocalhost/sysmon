@@ -13,9 +13,20 @@ import sys
 import glob
 import time
 import curses
+import argparse
 import subprocess
 
 from datetime import datetime
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--nocpu", action="store_true", help="Disables cpuinfo")
+parser.add_argument("--nomem", action="store_true", help="~~~~~~~~ meminfo")
+parser.add_argument("--noload", action="store_true", help="~~~~~~~~ loadavg")
+parser.add_argument("--nopid", action="store_true", help="~~~~~~~~ procpid")
+parser.add_argument("--nonet", action="store_true", help="~~~~~~~~ network_stats")
+
+args = parser.parse_args()
 
 # sysmon basic functions start
 
@@ -181,7 +192,7 @@ def cpu_temp():
 
     for temp_dir in glob.glob("/sys/class/hwmon/*"):
         with en_open(temp_dir + "/name") as temp_type:
-            if (temp_type.read() in "coretemp", "fam15h_power", "k10temp", "acpitz"):
+            if temp_type.read() in ("coretemp", "fam15h_power", "k10temp", "acpitz"):
                 try:
                     with en_open(temp_dir + "/temp1_input") as temp_value:
                         temperature = int(int(temp_value.read().strip()) / 1000)
@@ -247,11 +258,12 @@ def cpuinfo():
                 arch_model_temp_line = f"({cpu_temperature}) " + arch_model_temp_line
 
         return (
+            f"  --- /proc/cpuinfo {'-' * 47}\n"
             f"           Usage: {cpu_usage_num}% "
             + " " * (3 - len(str(cpu_usage_num)))
             + arch_model_temp_line
             + f"   Cores/Threads: {total_cores}/{total_threads} @ {cpu_freq} MHz"
-            f" with {convert_bytes(to_bytes(int(cache_size)))} cache memory"
+            f" with {convert_bytes(to_bytes(int(cache_size)))} cache memory\n"
         )
 
     except FileNotFoundError:
@@ -300,9 +312,10 @@ def loadavg():
         ).strftime("%A %B %d %Y, %I:%M:%S %p")
 
         return (
+            f"  --- /proc/loadavg {'-' * 47}\n"
             f"   System load: {onemin}, {fivemin}, {fiveteenmin} (1, 5, 15 mins)\n"
             f"       Threads: {threadactive} active, {threadtotal} total"
-            f"\n\n   System up for {uptime_fmt}\n    Since {up_since_fmt}"
+            f"\n\n   System up for {uptime_fmt}\n    Since {up_since_fmt}\n"
         )
 
     except FileNotFoundError:
@@ -315,6 +328,78 @@ def loadavg():
 
 
 # sysmon loadavg
+
+# sysmon procpid
+
+
+def procpid():
+    """
+    return the most ram (vmrss) consuming pids, with their state and name
+    """
+
+    processes = []
+
+    procs = glob.glob("/proc/*/status")
+
+    if not procs:
+        procs = ["sugoma"]
+
+    for proc_status in procs:
+        try:
+            with en_open(proc_status) as status_file:
+                s_readlines = status_file.readlines()
+
+                pid_name = clean_output(file_has("Name:", s_readlines))
+                pid_num = proc_status.split("/")[2]
+
+                try:
+                    rss = clean_output(file_has("VmRSS", s_readlines))
+
+                except AttributeError:
+                    rss = "!?"
+
+                try:
+                    state_field = file_has("State:", s_readlines)
+                    state = state_field[
+                        state_field.index("(") + 1 : state_field.index(")")
+                    ].title()
+
+                except AttributeError:
+                    state = "!?"
+
+                if rss != "!?":
+                    processes.append(
+                        f"{pid_name},{to_bytes(int(rss))},{state},{pid_num}"
+                    )
+
+        except FileNotFoundError:
+            processes.append("!?!?,76328097200209,!?!?!,64")
+
+    processes.sort(key=lambda a: float(a.split(",")[1]), reverse=True)
+
+    formatted_data = [
+        f"  --- /proc/pid/* {'-' * 49}\n   Name            PID   RSS            State"
+    ]
+
+    for proc_item in processes[:6]:
+        data = proc_item.split(",")
+
+        name, rss_usage, pstate, pid = (
+            data[0],
+            convert_bytes(int(data[1])),
+            data[2],
+            data[3][:5],
+        )
+
+        formatted_data.append(
+            f"   {name}{' ' * (15 - len(name))} {pid}{' ' * (5 - len(pid))} "
+            f"{rss_usage}{' ' * (14 - len(rss_usage))} {pstate}"
+        )
+
+    return "\n".join(formatted_data) + "\n"
+
+
+# sysmon procpid
 
 # sysmon meminfo
 
@@ -368,7 +453,8 @@ def meminfo():
                 )
 
                 return (
-                    "   RAM:                           Swap:\n"
+                    f"  --- /proc/meminfo {'-' * 47}\n"
+                    "   RAM:                           Swapi:\n"
                     f"        Total: {convert_bytes(memory_total)}"
                     + " " * (25 - len(convert_bytes(swap_total)))
                     + f"Total: {convert_bytes(swap_total)}\n"
@@ -380,15 +466,16 @@ def meminfo():
                     + f"Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
                     f"       Cached: {convert_bytes(memory_cached)}"
                     + " " * (24 - len(convert_bytes(memory_cached)))
-                    + f"Cached: {convert_bytes(swap_cached)}"
+                    + f"Cached: {convert_bytes(swap_cached)}\n"
                 )
 
             return (
+                f"  --- /proc/meminfo {'-' * 47}\n"
                 "   RAM:                           Swap: Disabled or not available\n"
                 f"        Total: {convert_bytes(memory_total)}\n"
                 f"         Used: {convert_bytes(memory_used)} ({memory_used_percent}%)\n"
                 f"    Available: {convert_bytes(memory_available)} ({memory_available_percent}%)\n"
-                f"       Cached: {convert_bytes(memory_cached)}"
+                f"       Cached: {convert_bytes(memory_cached)}\n"
             )
 
     except FileNotFoundError:
@@ -447,6 +534,7 @@ def network_stats():
         human_transferred = convert_bytes(transferred)
 
         return (
+            f"  --- /sys/class/net {'-' * 46}\n"
             f"        Device: {adapter_directory.split('/')[4]}\n"
             f"      Received: {human_received}"
             + " " * (14 - len(human_received))
@@ -456,13 +544,21 @@ def network_stats():
             + f"({transferred} bytes)\n"
             f"         Speed: Down {convert_bytes(recv_speed)}"
             + " " * (14 - len(convert_bytes(recv_speed)))
-            + f"| Up {convert_bytes(transf_speed)}"
+            + f"| Up {convert_bytes(transf_speed)}\n"
         )
 
     return "   No adapter available"
 
 
 # sysmon net
+
+func_dict = {
+    "cpu": cpuinfo,
+    "mem": meminfo,
+    "load": loadavg,
+    "pid": procpid,
+    "net": network_stats,
+}
 
 
 def main(print_out):
@@ -471,156 +567,20 @@ def main(print_out):
     curses.curs_set(0)
     curses.use_default_colors()
 
-    plugins_functions = {
-        "cpuinfo": cpuinfo,
-        "meminfo": meminfo,
-        "loadavg": loadavg,
-        "net": network_stats,
-    }
+    while True:
+        print_out.addstr(
+            f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} " + "-" * 42 + "\n"
+        )
 
-    try:
-        if sys.argv[1] in plugins_functions:
-            while True:
-                print_out.addstr(
-                    f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
-                    + "-" * 42
-                    + "\n"
-                )
+        for name, function in func_dict.items():
+            if not getattr(args, "no" + name, False):
+                print_out.addstr(function())
 
-                if sys.argv[1] in ("cpuinfo", "loadavg", "meminfo"):
-                    print_out.addstr(f"  --- /proc/{sys.argv[1]} " + "-" * 47 + "\n")
+        print_out.addstr(f" {'-' * 67}")
 
-                elif sys.argv[1] == "net":
-                    print_out.addstr("  --- /sys/class/net " + "-" * 46 + "\n")
-
-                print_out.addstr(plugins_functions[sys.argv[1]]())
-
-                print_out.addstr("\n" + "-" * 66)
-
-                try:
-                    print_out.refresh()
-                    time.sleep(1)
-                    print_out.clear()
-
-                except KeyboardInterrupt:
-                    curses.endwin()
-                    curses.curs_set(1)
-                    sys.exit()
-
-        elif sys.argv[1] == "help":
-            sys.exit(
-                "sysmon - a SYStem MONitor written in python, designed to be easy"
-                ' to understand\n         and "ready to use", with only ONE '
-                "dependecy: curses\n\n"
-                "Usage: sysmon ARG which can be: cpuinfo, meminfo, loadavg, net, and statvfs\n"
-                "                                or bl ARG1 ARGX\n"
-                " Explanation:\n"
-                "     - cpuinfo: cpu information such as model, cores & threads, and freq\n"
-                "     - meminfo: memory and swap information like used, total, available and"
-                "\n                cached\n"
-                "     - loadavg: load times, uptime, and threads running\n"
-                "     -     net: network stats, including up/down speed\n"
-                '            To change which mountpoint to show, use "point MOUNTPOINT"\n'
-                "            for example: sysmon point /mnt/usb/\n"
-                "     -      bl: blacklist a plugin\n\n"
-                "Notes:\n"
-                "  - CPU frequency isnt always the same, this depends on the kernel config\n"
-                '  - Cached memory is part of used memory (cached - used = "actual" used)\n'
-                "  - Was planning to add cpu temperature, but its kinda confusing (because\n"
-                "   of different methods possible, which dont work on every hardware)"
-            )
-
-        elif sys.argv[1] == "bl":
-            del sys.argv[0]
-            del sys.argv[0]
-
-            try:
-                for plugin_arg in sys.argv:
-                    del plugins_functions[plugin_arg]
-
-                while True:
-                    print_out.addstr(
-                        f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
-                        + "-" * 42
-                    )
-
-                    for plugin in plugins_functions:
-                        if plugin in ("cpuinfo", "loadavg", "meminfo"):
-                            print_out.addstr(
-                                f"\n  --- /proc/{plugin} " + "-" * 47 + "\n"
-                            )
-
-                        elif plugin == "net":
-                            print_out.addstr("\n  --- /sys/class/net " + "-" * 46 + "\n")
-
-                        print_out.addstr(plugins_functions[plugin]() + "\n")
-
-                    print_out.addstr(" -" + "-" * 66)
-
-                    try:
-                        print_out.refresh()
-                        time.sleep(1)
-                        print_out.clear()
-
-                    except KeyboardInterrupt:
-                        curses.endwin()
-                        curses.curs_set(1)
-                        sys.exit()
-
-            except IndexError:
-                sys.exit(f'"{sys.argv[1]}" is not a valid plugin')
-
-        else:
-            sys.exit(f'"{sys.argv[1]}" is not a valid plugin or argument')
-
-    except IndexError:
-        while True:
-            try:
-                print_out.addstr(
-                    f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
-                    + "-" * 42
-                    + "\n"
-                )
-
-                print_out.addstr(
-                    "  --- /proc/cpuinfo " + "-" * 47 + "\n" + cpuinfo() + "\n\n"
-                )
-
-                print_out.addstr(
-                    "  --- /proc/meminfo " + "-" * 47 + "\n" + meminfo() + "\n\n"
-                )
-
-                print_out.addstr(
-                    "  --- /proc/loadavg " + "-" * 47 + "\n" + loadavg() + "\n\n"
-                )
-
-                print_out.addstr(
-                    "  --- /sys/class/net "
-                    + "-" * 46
-                    + "\n"
-                    + network_stats()
-                    + "\n -"
-                    + "-" * 66
-                )
-
-            except curses.error:
-                print_out.refresh()
-                print_out.clear()
-
-                curses.endwin()
-                curses.curs_set(1)
-
-                sys.exit("Please resize your terminal (67x30)")
-
-            try:
-                print_out.refresh()
-                time.sleep(1)
-                print_out.clear()
-
-            except KeyboardInterrupt:
-                curses.endwin()
-                curses.curs_set(1)
-                sys.exit()
+        print_out.refresh()
+        print_out.clear()
+        time.sleep(1)
 
 
 curses.wrapper(main)
