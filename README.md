@@ -2,10 +2,10 @@
 
 using [**curses**](https://docs.python.org/3/howto/curses.html)
 
-rewrite sysmon
+# rewrite sysmon
 ![current sysmon screenshot](screens/sysmon.png)
 
-old sysmon
+# old sysmon
 ![old sysmon screenshot](screens/sysmon-old.png)
 
 ## try before cloning
