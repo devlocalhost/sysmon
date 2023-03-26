@@ -20,15 +20,43 @@ from datetime import datetime
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--nocpu", action="store_true", help="Disables cpuinfo (cpu information, like usage, model, and more)")
-parser.add_argument("--nomem", action="store_true", help="~~~~~~~~ meminfo (memory information, like total, used and more)")
-parser.add_argument("--noload", action="store_true", help="~~~~~~~~ loadavg (load times information, including uptime)")
-parser.add_argument("--nopid", action="store_true", help="~~~~~~~~ procpid (most ram/vmrss consuming pids)")
-parser.add_argument("--nonet", action="store_true", help="~~~~~~~~ network_stats (network stats, like received/transfered bytes)")
+parser.add_argument(
+    "--nocpu",
+    action="store_true",
+    help="Disables cpuinfo (cpu information, like usage, model, and more)",
+)
+parser.add_argument(
+    "--nomem",
+    action="store_true",
+    help="~~~~~~~~ meminfo (memory information, like total, used and more)",
+)
+parser.add_argument(
+    "--noload",
+    action="store_true",
+    help="~~~~~~~~ loadavg (load times information, including uptime)",
+)
+parser.add_argument(
+    "--nopid",
+    action="store_true",
+    help="~~~~~~~~ procpid (most ram/vmrss consuming pids)",
+)
+parser.add_argument(
+    "--nonet",
+    action="store_true",
+    help="~~~~~~~~ network_stats (network stats, like received/transfered bytes)",
+)
 
 args = parser.parse_args()
 
 # sysmon basic functions start
+
+
+def char_padding(char, value):
+    """
+    return char value times
+    """
+
+    return char * value
 
 
 def convert_bytes(fsize, units=(" bytes", " KiB", " MiB", " GiB", " TiB")):
@@ -258,8 +286,8 @@ def cpuinfo():
                 arch_model_temp_line = f"({cpu_temperature}) " + arch_model_temp_line
 
         return (
-            f"  --- /proc/cpuinfo {'-' * 47}\n"
-            f"           Usage: {cpu_usage_num}% "
+            f"  --- /proc/cpuinfo{char_padding('-', 48)}\n"
+            f"{char_padding(' ', 11)}Usage: {cpu_usage_num}% "
             + " " * (3 - len(str(cpu_usage_num)))
             + arch_model_temp_line
             + f"   Cores/Threads: {total_cores}/{total_threads} @ {cpu_freq} MHz"
@@ -312,7 +340,7 @@ def loadavg():
         ).strftime("%A %B %d %Y, %I:%M:%S %p")
 
         return (
-            f"  --- /proc/loadavg {'-' * 47}\n"
+            f"  --- /proc/loadavg {char_padding('-', 47)}\n"
             f"   System load: {onemin}, {fivemin}, {fiveteenmin} (1, 5, 15 mins)\n"
             f"       Threads: {threadactive} active, {threadtotal} total"
             f"\n\n   System up for {uptime_fmt}\n    Since {up_since_fmt}\n"
@@ -378,7 +406,7 @@ def procpid():
     processes.sort(key=lambda a: float(a.split(",")[1]), reverse=True)
 
     formatted_data = [
-        f"  --- /proc/pid/* {'-' * 49}\n   Name            PID   RSS            State"
+        f"  --- /proc/pid/* {char_padding('-', 49)}\n   Name            PID   RSS            State"
     ]
 
     for proc_item in processes[:6]:
@@ -392,8 +420,9 @@ def procpid():
         )
 
         formatted_data.append(
-            f"   {name}{' ' * (15 - len(name))} {pid}{' ' * (5 - len(pid))} "
-            f"{rss_usage}{' ' * (14 - len(rss_usage))} {pstate}"
+            f"   {name}{char_padding(' ', (15 - len(name)))} "
+            f"{pid}{char_padding(' ', (5 - len(pid)))} "
+            f"{rss_usage}{char_padding(' ', (14 - len(rss_usage)))} {pstate}"
         )
 
     return "\n".join(formatted_data) + "\n"
@@ -453,25 +482,25 @@ def meminfo():
                 )
 
                 return (
-                    f"  --- /proc/meminfo {'-' * 47}\n"
-                    "   RAM:                           Swapi:\n"
+                    f"  --- /proc/meminfo {char_padding('-', 47)}\n"
+                    f"   RAM: {char_padding(' ', 25)} Swap:\n"
                     f"        Total: {convert_bytes(memory_total)}"
-                    + " " * (25 - len(convert_bytes(swap_total)))
+                    + char_padding(" ", (25 - len(convert_bytes(swap_total))))
                     + f"Total: {convert_bytes(swap_total)}\n"
                     f"         Used: {memory_used_format}"
-                    + " " * (26 - len(memory_used_format))
+                    + char_padding(" ", (26 - len(memory_used_format)))
                     + f"Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
                     f"    Available: {memory_avail_format}"
-                    + " " * (21 - len(memory_avail_format))
+                    + char_padding(" ", (21 - len(memory_avail_format)))
                     + f"Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
                     f"       Cached: {convert_bytes(memory_cached)}"
-                    + " " * (24 - len(convert_bytes(memory_cached)))
+                    + char_padding(" ", (24 - len(convert_bytes(memory_cached))))
                     + f"Cached: {convert_bytes(swap_cached)}\n"
                 )
 
             return (
-                f"  --- /proc/meminfo {'-' * 47}\n"
-                "   RAM:                           Swap: Disabled or not available\n"
+                f"  --- /proc/meminfo {char_padding('-', 47)}\n"
+                "   RAM: {char_padding('-', 47)} Swap: Disabled or not available\n"
                 f"        Total: {convert_bytes(memory_total)}\n"
                 f"         Used: {convert_bytes(memory_used)} ({memory_used_percent}%)\n"
                 f"    Available: {convert_bytes(memory_available)} ({memory_available_percent}%)\n"
@@ -534,16 +563,16 @@ def network_stats():
         human_transferred = convert_bytes(transferred)
 
         return (
-            f"  --- /sys/class/net {'-' * 46}\n"
+            f"  --- /sys/class/net {char_padding('-', 46)}\n"
             f"        Device: {adapter_directory.split('/')[4]}\n"
             f"      Received: {human_received}"
-            + " " * (14 - len(human_received))
+            + char_padding(" ", (14 - len(human_received)))
             + f"({received} bytes)\n"
             f"   Transferred: {human_transferred}"
-            + " " * (14 - len(human_transferred))
+            + char_padding(" ", (14 - len(human_transferred)))
             + f"({transferred} bytes)\n"
             f"         Speed: Down {convert_bytes(recv_speed)}"
-            + " " * (14 - len(convert_bytes(recv_speed)))
+            + char_padding(" ", (14 - len(convert_bytes(recv_speed))))
             + f"| Up {convert_bytes(transf_speed)}\n"
         )
 
