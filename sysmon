@@ -220,7 +220,7 @@ def cpu_temp():
 
     for temp_dir in glob.glob("/sys/class/hwmon/*"):
         with en_open(temp_dir + "/name") as temp_type:
-            if temp_type.read() in ("coretemp", "fam15h_power", "k10temp", "acpitz"):
+            if (temp_type.read() in "coretemp", "fam15h_power", "k10temp", "acpitz"):
                 try:
                     with en_open(temp_dir + "/temp1_input") as temp_value:
                         temperature = int(int(temp_value.read().strip()) / 1000)
@@ -286,7 +286,7 @@ def cpuinfo():
                 arch_model_temp_line = f"({cpu_temperature}) " + arch_model_temp_line
 
         return (
-            f"  --- /proc/cpuinfo{char_padding('-', 48)}\n"
+            f"  --- /proc/cpuinfo {char_padding('-', 47)}\n"
             f"{char_padding(' ', 11)}Usage: {cpu_usage_num}% "
             + " " * (3 - len(str(cpu_usage_num)))
             + arch_model_temp_line
@@ -481,11 +481,22 @@ def meminfo():
                     f"({memory_available_percent}%)"
                 )
 
+                # spaghetti code incoming
+
+                spaces_swap = 24
+
+                if str(convert_bytes(swap_total)).split(" ")[1] == "GiB":
+                    spaces_swap = 23
+
+                elif str(convert_bytes(swap_total)).split(" ")[1] == "TiB":
+                    spaces_swap = 22
+
+
                 return (
                     f"  --- /proc/meminfo {char_padding('-', 47)}\n"
                     f"   RAM: {char_padding(' ', 25)} Swap:\n"
                     f"        Total: {convert_bytes(memory_total)}"
-                    + char_padding(" ", (25 - len(convert_bytes(swap_total))))
+                    + char_padding(" ", (spaces_swap - len(convert_bytes(swap_total))))
                     + f"Total: {convert_bytes(swap_total)}\n"
                     f"         Used: {memory_used_format}"
                     + char_padding(" ", (26 - len(memory_used_format)))
@@ -576,7 +587,7 @@ def network_stats():
             + f"| Up {convert_bytes(transf_speed)}\n"
         )
 
-    return "   No adapter available"
+    return f"  --- /sys/class/net/!?!? {char_padding('-', 41)}\n"
 
 
 # sysmon net
