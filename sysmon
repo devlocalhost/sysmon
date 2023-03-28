@@ -225,7 +225,7 @@ def cpu_temp():
                     with en_open(temp_dir + "/temp1_input") as temp_value:
                         temperature = int(int(temp_value.read().strip()) / 1000)
 
-                except FileNotFoundError, OSError:
+                except (FileNotFoundError, OSError):
                     pass
 
     return temperature
