@@ -225,7 +225,7 @@ def cpu_temp():
                     with en_open(temp_dir + "/temp1_input") as temp_value:
                         temperature = int(int(temp_value.read().strip()) / 1000)
 
-                except FileNotFoundError:
+                except FileNotFoundError, OSError:
                     pass
 
     return temperature
@@ -316,7 +316,7 @@ def loadavg():
     try:
         uptime_fmt = "Unknown"
 
-        with open("/proc/loadavg", encoding="utf-8") as load_times_file:
+        with en_open("/proc/loadavg") as load_times_file:
             load_times_data = load_times_file.read()
 
             onemin = load_times_data.split(" ")[0]
