@@ -45,6 +45,13 @@ parser.add_argument(
     action="store_true",
     help="~~~~~~~~ network_stats (network stats, like received/transfered bytes)",
 )
+parser.add_argument(
+    "--procs",
+    type=int,
+    default=6,
+    metavar="INT",
+    help="How many processes to show. Default: 6",
+)
 
 args = parser.parse_args()
 
@@ -305,6 +312,104 @@ def cpuinfo():
 
 # sysmon cpu
 
+# sysmon meminfo
+
+
+def meminfo():
+    """
+    /proc/meminfo - system memory (ram) and swap information
+    """
+
+    try:
+        with open("/proc/meminfo", encoding="utf-8") as meminfo_file:
+            meminfo_data = meminfo_file.readlines()
+
+            memory_total = to_bytes(
+                int(clean_output(file_has("MemTotal", meminfo_data)))
+            )
+            memory_available = to_bytes(
+                int(clean_output(file_has("MemAvailable", meminfo_data)))
+            )
+            memory_cached = to_bytes(
+                int(clean_output(file_has("Cached", meminfo_data)))
+            )
+
+            memory_used = round(memory_total - memory_available)
+
+            memory_used_percent = round((int(memory_used) / int(memory_total)) * 100, 1)
+            memory_available_percent = round(100 - memory_used_percent, 1)
+
+            if to_bytes(int(clean_output(file_has("SwapTotal", meminfo_data)))) != 0:
+                swap_total = to_bytes(
+                    int(clean_output(file_has("SwapTotal", meminfo_data)))
+                )
+                swap_available = to_bytes(
+                    int(clean_output(file_has("SwapFree", meminfo_data)))
+                )
+                swap_cached = to_bytes(
+                    int(clean_output(file_has("SwapCached", meminfo_data)))
+                )
+
+                swap_used = round(swap_total - swap_available)
+
+                swap_used_percent = round((int(swap_used) / int(swap_total)) * 100, 1)
+                swap_available_percent = round(100 - swap_used_percent, 1)
+
+                memory_used_format = (
+                    f"{convert_bytes(memory_used)} ({memory_used_percent}%)"
+                )
+                memory_avail_format = (
+                    f"{convert_bytes(memory_available)} "
+                    f"({memory_available_percent}%)"
+                )
+
+                # spaghetti code incoming
+
+                spaces_swap = 24
+
+                if str(convert_bytes(swap_total)).split(" ")[1] == "GiB":
+                    spaces_swap = 23
+
+                elif str(convert_bytes(swap_total)).split(" ")[1] == "TiB":
+                    spaces_swap = 22
+
+                return (
+                    f"  --- /proc/meminfo {char_padding('-', 47)}\n"
+                    f"   RAM: {char_padding(' ', 25)} Swap:\n"
+                    f"        Total: {convert_bytes(memory_total)}"
+                    + char_padding(" ", (spaces_swap - len(convert_bytes(swap_total))))
+                    + f"Total: {convert_bytes(swap_total)}\n"
+                    f"         Used: {memory_used_format}"
+                    + char_padding(" ", (26 - len(memory_used_format)))
+                    + f"Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
+                    f"    Available: {memory_avail_format}"
+                    + char_padding(" ", (21 - len(memory_avail_format)))
+                    + f"Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
+                    f"       Cached: {convert_bytes(memory_cached)}"
+                    + char_padding(" ", (24 - len(convert_bytes(memory_cached))))
+                    + f"Cached: {convert_bytes(swap_cached)}\n"
+                )
+
+            return (
+                f"  --- /proc/meminfo {char_padding('-', 47)}\n"
+                f"   RAM: {char_padding(' ', 25)} Swap: Disabled or not available\n"
+                f"        Total: {convert_bytes(memory_total)}\n"
+                f"         Used: {convert_bytes(memory_used)} ({memory_used_percent}%)\n"
+                f"    Available: {convert_bytes(memory_available)} ({memory_available_percent}%)\n"
+                f"       Cached: {convert_bytes(memory_cached)}\n"
+            )
+
+    except FileNotFoundError:
+        sys.exit("Couldnt find /proc/meminfo file")
+
+    except PermissionError:
+        sys.exit(
+            "Couldnt read the file. Do you have read permissions for /proc/meminfo file?"
+        )
+
+
+# sysmon meminfo
+
 # sysmon loadavg
 
 
@@ -409,15 +514,9 @@ def procpid():
         f"  --- /proc/pid/* {char_padding('-', 49)}\n   Name            PID   RSS            State"
     ]
 
-    for proc_item in processes[:6]:
-        data = proc_item.split(",")
-
-        name, rss_usage, pstate, pid = (
-            data[0],
-            convert_bytes(int(data[1])),
-            data[2],
-            data[3][:5],
-        )
+    for proc_item in processes[: args.procs]:
+        name, rss_usage, pstate, pid = proc_item.split(",")
+        rss_usage = convert_bytes(int(rss_usage))
 
         formatted_data.append(
             f"   {name}{char_padding(' ', (15 - len(name)))} "
@@ -429,105 +528,6 @@ def procpid():
 
 
 # sysmon procpid
-
-# sysmon meminfo
-
-
-def meminfo():
-    """
-    /proc/meminfo - system memory (ram) and swap information
-    """
-
-    try:
-        with open("/proc/meminfo", encoding="utf-8") as meminfo_file:
-            meminfo_data = meminfo_file.readlines()
-
-            memory_total = to_bytes(
-                int(clean_output(file_has("MemTotal", meminfo_data)))
-            )
-            memory_available = to_bytes(
-                int(clean_output(file_has("MemAvailable", meminfo_data)))
-            )
-            memory_cached = to_bytes(
-                int(clean_output(file_has("Cached", meminfo_data)))
-            )
-
-            memory_used = round(memory_total - memory_available)
-
-            memory_used_percent = round((int(memory_used) / int(memory_total)) * 100, 1)
-            memory_available_percent = round(100 - memory_used_percent, 1)
-
-            if to_bytes(int(clean_output(file_has("SwapTotal", meminfo_data)))) != 0:
-                swap_total = to_bytes(
-                    int(clean_output(file_has("SwapTotal", meminfo_data)))
-                )
-                swap_available = to_bytes(
-                    int(clean_output(file_has("SwapFree", meminfo_data)))
-                )
-                swap_cached = to_bytes(
-                    int(clean_output(file_has("SwapCached", meminfo_data)))
-                )
-
-                swap_used = round(swap_total - swap_available)
-
-                swap_used_percent = round((int(swap_used) / int(swap_total)) * 100, 1)
-                swap_available_percent = round(100 - swap_used_percent, 1)
-
-                memory_used_format = (
-                    f"{convert_bytes(memory_used)} ({memory_used_percent}%)"
-                )
-                memory_avail_format = (
-                    f"{convert_bytes(memory_available)} "
-                    f"({memory_available_percent}%)"
-                )
-
-                # spaghetti code incoming
-
-                spaces_swap = 24
-
-                if str(convert_bytes(swap_total)).split(" ")[1] == "GiB":
-                    spaces_swap = 23
-
-                elif str(convert_bytes(swap_total)).split(" ")[1] == "TiB":
-                    spaces_swap = 22
-
-
-                return (
-                    f"  --- /proc/meminfo {char_padding('-', 47)}\n"
-                    f"   RAM: {char_padding(' ', 25)} Swap:\n"
-                    f"        Total: {convert_bytes(memory_total)}"
-                    + char_padding(" ", (spaces_swap - len(convert_bytes(swap_total))))
-                    + f"Total: {convert_bytes(swap_total)}\n"
-                    f"         Used: {memory_used_format}"
-                    + char_padding(" ", (26 - len(memory_used_format)))
-                    + f"Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
-                    f"    Available: {memory_avail_format}"
-                    + char_padding(" ", (21 - len(memory_avail_format)))
-                    + f"Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
-                    f"       Cached: {convert_bytes(memory_cached)}"
-                    + char_padding(" ", (24 - len(convert_bytes(memory_cached))))
-                    + f"Cached: {convert_bytes(swap_cached)}\n"
-                )
-
-            return (
-                f"  --- /proc/meminfo {char_padding('-', 47)}\n"
-                f"   RAM: {char_padding(' ', 25)} Swap: Disabled or not available\n"
-                f"        Total: {convert_bytes(memory_total)}\n"
-                f"         Used: {convert_bytes(memory_used)} ({memory_used_percent}%)\n"
-                f"    Available: {convert_bytes(memory_available)} ({memory_available_percent}%)\n"
-                f"       Cached: {convert_bytes(memory_cached)}\n"
-            )
-
-    except FileNotFoundError:
-        sys.exit("Couldnt find /proc/meminfo file")
-
-    except PermissionError:
-        sys.exit(
-            "Couldnt read the file. Do you have read permissions for /proc/meminfo file?"
-        )
-
-
-# sysmon meminfo
 
 # sysmon net
 
@@ -604,23 +604,29 @@ func_dict = {
 def main(print_out):
     """main printing method, what you see when you run sysmon"""
 
-    curses.curs_set(0)
-    curses.use_default_colors()
+    try:
+        curses.curs_set(0)
+        curses.use_default_colors()
 
-    while True:
-        print_out.addstr(
-            f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} " + "-" * 42 + "\n"
-        )
+        while True:
+            print_out.addstr(
+                f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
+                + "-" * 42
+                + "\n"
+            )
 
-        for name, function in func_dict.items():
-            if not getattr(args, "no" + name, False):
-                print_out.addstr(function())
+            for name, function in func_dict.items():
+                if not getattr(args, "no" + name, False):
+                    print_out.addstr(function())
 
-        print_out.addstr(f" {'-' * 67}")
+            print_out.addstr(f" {'-' * 67}")
+            print_out.refresh()
+            print_out.clear()
 
-        print_out.refresh()
-        print_out.clear()
-        time.sleep(1)
+            time.sleep(1)
+
+    except KeyboardInterrupt:
+        curses.endwin()
 
 
 curses.wrapper(main)
