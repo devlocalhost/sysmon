@@ -520,7 +520,7 @@ def procpid():
 
         formatted_data.append(
             f"   {name}{char_padding(' ', (15 - len(name)))} "
-            f"{pid}{char_padding(' ', (5 - len(pid)))} "
+            f"{pid[:5]}{char_padding(' ', (5 - len(pid)))} "
             f"{rss_usage}{char_padding(' ', (14 - len(rss_usage)))} {pstate}"
         )
 
