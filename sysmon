@@ -633,6 +633,10 @@ def main(stdscr):
 
     stdscr.nodelay(True)
 
+    curses.noecho()
+    curses.cbreak()
+    stdscr.keypad(True)
+
     curses.curs_set(0)
     curses.use_default_colors()
 
