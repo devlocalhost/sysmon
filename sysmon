@@ -171,6 +171,7 @@ def clean_cpu_model(model):
         "Chip Revision",
         "Technologies, Inc",
         "CPU",
+        "with Radeon HD Graphics",
     ]
 
     for text in replace_stuff:
@@ -278,7 +279,7 @@ def cpuinfo():
             ).strip()
 
             try:
-                model = clean_cpu_model(file_has("model name", read_file))
+                model = clean_cpu_model(file_has("model name", read_file))[:23]
 
             except AttributeError:
                 if architecture in ("aarch64", "aarch", "arm", "arm64"):
@@ -292,7 +293,7 @@ def cpuinfo():
             except AttributeError:
                 cache_size = "0"
 
-            total_cores = len([dir_name for dir_name in os.listdir("/sys/devices/system/cpu/") if any(char.isdigit() for char in dir_name)])
+            total_cores = subprocess.check_output("nproc", shell=True, text=True).strip()
             total_threads = multiprocessing.cpu_count()
 
             cpu_usage_num = cpu_usage()
