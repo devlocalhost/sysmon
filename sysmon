@@ -25,7 +25,7 @@ try:
     os.makedirs("/tmp/sysmon_save", exist_ok=True)
     SAVE_DIR = "/tmp/sysmon_save"
 
-except OSError:  # in case /tmp is read only (android)
+except OSError:
     os.makedirs(".sysmon_save", exist_ok=True)
     SAVE_DIR = ".sysmon_save"
 
@@ -114,7 +114,7 @@ def file_has(string, lines):
 
     for line in lines:
         if line.startswith(string):
-            has_string = line.strip().split(":")[1]  # replace("\t", "")
+            has_string = line.strip().split(":")[1]
 
     return has_string
 
@@ -125,9 +125,7 @@ def clean_output(text):
     instead of MemTotal:        1005744 kB
     """
 
-    return (
-        text.split(":")[0].strip().replace("kB", "")
-    )  # replace(" ", "").replace("\n", "").replace("kB", "")
+    return text.split(":")[0].strip().replace("kB", "")
 
 
 def to_bytes(kilobytes):
@@ -206,12 +204,7 @@ def cpu_usage():
             )
 
         with en_open("/proc/stat") as new_stats:
-            new_stats = (
-                new_stats.readline()
-                .replace("cpu ", "cpu")
-                .strip()
-                .split(" ")  # replace("\n", "").split(" ")
-            )
+            new_stats = new_stats.readline().replace("cpu ", "cpu").strip().split(" ")
 
             current_data = (
                 int(new_stats[1])
@@ -267,9 +260,7 @@ def cpuinfo():
             read_file = cpuinfo_file.readlines()
 
             try:
-                cpu_freq = file_has(
-                    "cpu MHz", read_file
-                ).strip()  # replace("\n", "").replace(" ", "")
+                cpu_freq = file_has("cpu MHz", read_file).strip()
 
             except AttributeError:
                 cpu_freq = "Unknown"
@@ -378,8 +369,6 @@ def meminfo():
                     f"{convert_bytes(memory_available)} "
                     f"({memory_available_percent}%)"
                 )
-
-                # spaghetti code incoming
 
                 spaces_swap = 24
 
@@ -576,20 +565,16 @@ def network_stats():
                 tx_file.write("0")
 
         with en_open(adapter_directory + "/statistics/rx_bytes") as received:
-            received = int(received.read().strip())  # .replace("\n", ""))
+            received = int(received.read().strip())
 
         with en_open(adapter_directory + "/statistics/tx_bytes") as transferred:
-            transferred = int(transferred.read().strip())  # .replace("\n", ""))
+            transferred = int(transferred.read().strip())
 
         with en_open(f"{SAVE_DIR}/rx") as recv_speed:
-            recv_speed = abs(
-                int(recv_speed.read().strip()) - received
-            )  # replace here too
+            recv_speed = abs(int(recv_speed.read().strip()) - received)
 
         with en_open(f"{SAVE_DIR}/tx") as transf_speed:
-            transf_speed = abs(
-                int(transf_speed.read().strip()) - transferred
-            )  # and here
+            transf_speed = abs(int(transf_speed.read().strip()) - transferred)
 
         with en_open(f"{SAVE_DIR}/rx", "w") as rxsave:
             rxsave.write(str(received))
@@ -633,32 +618,36 @@ def main(stdscr):
 
     stdscr.nodelay(True)
 
-    curses.noecho()
-    curses.cbreak()
-    stdscr.keypad(True)
-
     curses.curs_set(0)
     curses.use_default_colors()
 
-    while True:
-        stdscr.addstr(
-            f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} " + "-" * 42 + "\n"
-        )
+    try:
+        while True:
+            stdscr.addstr(
+                f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
+                + "-" * 42
+                + "\n"
+            )
 
-        for name, function in func_dict.items():
-            if not getattr(args, "no" + name, False):
-                stdscr.addstr(function())
+            for name, function in func_dict.items():
+                if not getattr(args, "no" + name, False):
+                    stdscr.addstr(function())
 
-        stdscr.addstr(f" {'-' * 67}")
-        stdscr.refresh()
+            stdscr.addstr(f" {'-' * 67}")
+            stdscr.refresh()
 
-        kinput = stdscr.getch()
+            kinput = stdscr.getch()
 
-        if kinput == ord("q"):
-            break
+            if kinput == ord("q"):
+                curses.curs_set(1)
+                break
 
-        time.sleep(1)
-        stdscr.clear()
+            time.sleep(1)
+            stdscr.clear()
+
+    except KeyboardInterrupt:
+        curses.endwin()
+        curses.curs_set(1)
 
     curses.endwin()
 
