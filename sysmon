@@ -294,7 +294,9 @@ def cpuinfo():
             except AttributeError:
                 cache_size = "0"
 
-            total_cores = subprocess.check_output("nproc", shell=True, text=True).strip()
+            total_cores = subprocess.check_output(
+                "nproc", shell=True, text=True
+            ).strip()
             total_threads = multiprocessing.cpu_count()
 
             cpu_usage_num = cpu_usage()
@@ -626,32 +628,35 @@ func_dict = {
 }
 
 
-def main(print_out):
+def main(stdscr):
     """main printing method, what you see when you run sysmon"""
 
-    try:
-        curses.curs_set(0)
-        curses.use_default_colors()
+    stdscr.nodelay(True)
 
-        while True:
-            print_out.addstr(
-                f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
-                + "-" * 42
-                + "\n"
-            )
+    curses.curs_set(0)
+    curses.use_default_colors()
 
-            for name, function in func_dict.items():
-                if not getattr(args, "no" + name, False):
-                    print_out.addstr(function())
+    while True:
+        stdscr.addstr(
+            f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} " + "-" * 42 + "\n"
+        )
 
-            print_out.addstr(f" {'-' * 67}")
-            print_out.refresh()
-            print_out.clear()
+        for name, function in func_dict.items():
+            if not getattr(args, "no" + name, False):
+                stdscr.addstr(function())
 
-            time.sleep(1)
+        stdscr.addstr(f" {'-' * 67}")
+        stdscr.refresh()
 
-    except KeyboardInterrupt:
-        curses.endwin()
+        kinput = stdscr.getch()
+
+        if kinput == ord("q"):
+            break
+
+        time.sleep(1)
+        stdscr.clear()
+
+    curses.endwin()
 
 
 curses.wrapper(main)
