@@ -15,8 +15,7 @@ import time
 import curses
 import argparse
 import subprocess
-
-# import multiprocessing
+import multiprocessing
 
 from datetime import datetime
 
@@ -293,10 +292,8 @@ def cpuinfo():
             except AttributeError:
                 cache_size = "0"
 
-            total_cores = file_has(
-                "cpu cores", read_file
-            )  # multiprocessing.cpu_count()
-            total_threads = sum(1 for line in read_file if line.startswith("processor"))
+            total_cores = len([dir_name for dir_name in os.listdir("/sys/devices/system/cpu/") if any(char.isdigit() for char in dir_name)])
+            total_threads = multiprocessing.cpu_count()
 
             cpu_usage_num = cpu_usage()
             cpu_temperature = str(cpu_temp())
