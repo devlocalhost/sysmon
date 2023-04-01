@@ -16,8 +16,19 @@ import curses
 import argparse
 import subprocess
 
+# import multiprocessing
+
 from datetime import datetime
 
+SAVE_DIR = None
+
+try:
+    os.makedirs("/tmp/sysmon_save", exist_ok=True)
+    SAVE_DIR = "/tmp/sysmon_save"
+
+except OSError:  # in case /tmp is read only (android)
+    os.makedirs(".sysmon_save", exist_ok=True)
+    SAVE_DIR = ".sysmon_save"
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -83,17 +94,18 @@ def en_open(file, method="r"):
 
 def detect_network_adapter():
     """detect an active network adapter/card/whatever and return its directory"""
-    adp_directory = None
+    adapter_directory = None
 
     for adapter_dir in glob.glob("/sys/class/net/*"):
         with en_open(adapter_dir + "/type") as device_type:
             if int(device_type.read()) != 772:  # if not loopback device
 
                 with en_open(adapter_dir + "/operstate") as status:
-                    if status.read().replace("\n", "") == "up":
-                        adp_directory = adapter_dir
+                    if status.read().strip() == "up":
+                        adapter_directory = adapter_dir
+                        break
 
-    return adp_directory
+    return adapter_directory
 
 
 def file_has(string, lines):
@@ -103,7 +115,7 @@ def file_has(string, lines):
 
     for line in lines:
         if line.startswith(string):
-            has_string = line.replace("\t", "").split(":")[1]
+            has_string = line.strip().split(":")[1]  # replace("\t", "")
 
     return has_string
 
@@ -114,7 +126,9 @@ def clean_output(text):
     instead of MemTotal:        1005744 kB
     """
 
-    return text.split(":")[0].replace(" ", "").replace("\n", "").replace("kB", "")
+    return (
+        text.split(":")[0].strip().replace("kB", "")
+    )  # replace(" ", "").replace("\n", "").replace("kB", "")
 
 
 def to_bytes(kilobytes):
@@ -139,6 +153,9 @@ def uptime_format(seconds):
                 name = name.rstrip("s")
 
             result.append(f"{value} {name}")
+
+    if len(result) > 1:
+        result[-1] = "and " + result[-1]
 
     return ", ".join(result)
 
@@ -172,14 +189,13 @@ def cpu_usage():
     """
     /proc/stat - cpu usage of the system
     """
-    os.makedirs("/tmp/sysmon_save", exist_ok=True)
 
     try:
-        if not os.path.exists("/tmp/sysmon_save/cpu_old_data"):
-            with en_open("/tmp/sysmon_save/cpu_old_data", "a") as temp_file:
+        if not os.path.exists(f"{SAVE_DIR}/cpu_old_data"):
+            with en_open(f"{SAVE_DIR}/cpu_old_data", "a") as temp_file:
                 temp_file.write("cpu.758102.17.259220.2395399.122421.3.1284")
 
-        with en_open("/tmp/sysmon_save/cpu_old_data") as old_stats:
+        with en_open(f"{SAVE_DIR}/cpu_old_data") as old_stats:
             old_stats = old_stats.readline().split(".")
             previous_data = (
                 int(old_stats[1])
@@ -191,7 +207,10 @@ def cpu_usage():
 
         with en_open("/proc/stat") as new_stats:
             new_stats = (
-                new_stats.readline().replace("cpu ", "cpu").replace("\n", "").split(" ")
+                new_stats.readline()
+                .replace("cpu ", "cpu")
+                .strip()
+                .split(" ")  # replace("\n", "").split(" ")
             )
 
             current_data = (
@@ -204,7 +223,7 @@ def cpu_usage():
 
         total = sum(map(int, old_stats[1:])) - sum(map(int, new_stats[1:]))
 
-        with en_open("/tmp/sysmon_save/cpu_old_data", "w") as update_data:
+        with en_open(f"{SAVE_DIR}/cpu_old_data", "w") as update_data:
             update_data.write(".".join(new_stats))
 
         return round(100 * ((previous_data - current_data) / total))
@@ -247,46 +266,42 @@ def cpuinfo():
         with en_open("/proc/cpuinfo") as cpuinfo_file:
             read_file = cpuinfo_file.readlines()
 
-            cpu_freq = file_has("cpu MHz", read_file).replace("\n", "").replace(" ", "")
+            try:
+                cpu_freq = file_has(
+                    "cpu MHz", read_file
+                ).strip()  # replace("\n", "").replace(" ", "")
 
-            model = clean_cpu_model(file_has("model name", read_file))
-            cache_size = (
-                file_has("cache size", read_file)
-                .replace(" ", "")
-                .replace("\n", "")
-                .replace("KB", "")
-            )
+            except AttributeError:
+                cpu_freq = "Unknown"
+
             architecture = subprocess.check_output(
                 "uname -m", shell=True, text=True
-            ).replace("\n", "")
+            ).strip()
 
             try:
-                total_cores = (
-                    file_has("cpu cores", read_file).replace(" ", "").replace("\n", "")
-                )
+                model = clean_cpu_model(file_has("model name", read_file))
 
             except AttributeError:
-                total_cores = subprocess.check_output(
-                    "nproc", shell=True, text=True
-                ).replace("\n", "")
+                if architecture in ("aarch64", "aarch", "arm", "arm64"):
+                    model = str(
+                        clean_cpu_model(file_has("Hardware", read_file)).strip()
+                    )
 
             try:
-                total_threads = (
-                    file_has("siblings", read_file).replace(" ", "").replace("\n", "")
-                )
+                cache_size = file_has("cache size", read_file).strip().replace("KB", "")
 
             except AttributeError:
-                total_threads = subprocess.check_output(
-                    "nproc --all", shell=True, text=True
-                ).replace("\n", "")
+                cache_size = "0"
+
+            total_cores = file_has(
+                "cpu cores", read_file
+            )  # multiprocessing.cpu_count()
+            total_threads = sum(1 for line in read_file if line.startswith("processor"))
 
             cpu_usage_num = cpu_usage()
             cpu_temperature = str(cpu_temp())
 
             arch_model_temp_line = f"| {architecture} {model}\n"
-
-            # yes very long name i know. i can make it shorter but
-            # ... no. it would be some randon chars like aml_line lol
 
             if cpu_temperature != "!?":
                 cpu_temperature += " °C"
@@ -368,10 +383,18 @@ def meminfo():
                 spaces_swap = 24
 
                 if str(convert_bytes(swap_total)).split(" ")[1] == "GiB":
-                    spaces_swap = 23
+                    if str(convert_bytes(memory_total)).split(" ")[1] == "GiB":
+                        spaces_swap = 25
+
+                    else:
+                        spaces_swap = 23
 
                 elif str(convert_bytes(swap_total)).split(" ")[1] == "TiB":
-                    spaces_swap = 22
+                    if str(convert_bytes(memory_total)).split(" ")[1] == "TiB":
+                        spaces_swap = 24
+
+                    else:
+                        spaces_swap = 22
 
                 return (
                     f"  --- /proc/meminfo {char_padding('-', 47)}\n"
@@ -472,14 +495,18 @@ def procpid():
 
     processes = []
 
-    procs = glob.glob("/proc/*/status")
+    procs = [
+        d
+        for d in glob.glob("/proc/*")
+        if os.path.isdir(d) and os.path.basename(d).isdigit()
+    ]
 
     if not procs:
         procs = ["sugoma"]
 
     for proc_status in procs:
         try:
-            with en_open(proc_status) as status_file:
+            with en_open(proc_status + "/status") as status_file:
                 s_readlines = status_file.readlines()
 
                 pid_name = clean_output(file_has("Name:", s_readlines))
@@ -511,7 +538,7 @@ def procpid():
     processes.sort(key=lambda a: float(a.split(",")[1]), reverse=True)
 
     formatted_data = [
-        f"  --- /proc/pid/* {char_padding('-', 49)}\n   Name            PID   RSS            State"
+        f"  --- /proc/pid/* {char_padding('-', 49)}\n   Name            PID         RSS            State"
     ]
 
     for proc_item in processes[: args.procs]:
@@ -520,7 +547,7 @@ def procpid():
 
         formatted_data.append(
             f"   {name}{char_padding(' ', (15 - len(name)))} "
-            f"{pid[:5]}{char_padding(' ', (5 - len(pid)))} "
+            f"{pid}{char_padding(' ', (11 - len(pid)))} "
             f"{rss_usage}{char_padding(' ', (14 - len(rss_usage)))} {pstate}"
         )
 
@@ -540,34 +567,33 @@ def network_stats():
     adapter_directory = detect_network_adapter()
 
     if adapter_directory is not None:
-        os.makedirs("/tmp/sysmon_save", exist_ok=True)
-        save_directory = "/tmp/sysmon_save/"
-
-        if not os.path.isfile(f"{save_directory}rx") and not os.path.isfile(
-            f"{save_directory}tx"
-        ):
-            with en_open(f"{save_directory}rx", "w") as rx_file:
+        if not os.path.isfile(f"{SAVE_DIR}/rx") and not os.path.isfile(f"{SAVE_DIR}tx"):
+            with en_open(f"{SAVE_DIR}/rx", "w") as rx_file:
                 rx_file.write("0")
 
-            with en_open(f"{save_directory}tx", "w") as tx_file:
+            with en_open(f"{SAVE_DIR}/tx", "w") as tx_file:
                 tx_file.write("0")
 
         with en_open(adapter_directory + "/statistics/rx_bytes") as received:
-            received = int(received.read().replace("\n", ""))
+            received = int(received.read().strip())  # .replace("\n", ""))
 
         with en_open(adapter_directory + "/statistics/tx_bytes") as transferred:
-            transferred = int(transferred.read().replace("\n", ""))
+            transferred = int(transferred.read().strip())  # .replace("\n", ""))
 
-        with en_open(f"{save_directory}rx") as recv_speed:
-            recv_speed = abs(int(recv_speed.read().replace("\n", "")) - received)
+        with en_open(f"{SAVE_DIR}/rx") as recv_speed:
+            recv_speed = abs(
+                int(recv_speed.read().strip()) - received
+            )  # replace here too
 
-        with en_open(f"{save_directory}tx") as transf_speed:
-            transf_speed = abs(int(transf_speed.read().replace("\n", "")) - transferred)
+        with en_open(f"{SAVE_DIR}/tx") as transf_speed:
+            transf_speed = abs(
+                int(transf_speed.read().strip()) - transferred
+            )  # and here
 
-        with en_open(f"{save_directory}rx", "w") as rxsave:
+        with en_open(f"{SAVE_DIR}/rx", "w") as rxsave:
             rxsave.write(str(received))
 
-        with en_open(f"{save_directory}tx", "w") as txsave:
+        with en_open(f"{SAVE_DIR}/tx", "w") as txsave:
             txsave.write(str(transferred))
 
         human_received = convert_bytes(received)
