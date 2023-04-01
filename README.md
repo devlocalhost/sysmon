@@ -2,8 +2,10 @@
 
 using [**curses**](https://docs.python.org/3/howto/curses.html)
 
-# rewrite sysmon
-![current sysmon screenshot](screens/sysmon.png)
+# rewrite sysmon (pc)
+![current sysmon pc screenshot](screens/sysmon-pc.png)
+# same thung, but on a phone
+![current sysmon phone screenshot](screens/sysmon-phone.png)
 
 # old sysmon
 ![old sysmon screenshot](screens/sysmon-old.png)
