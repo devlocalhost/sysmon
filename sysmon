@@ -279,7 +279,7 @@ def cpuinfo():
             ).strip()
 
             try:
-                model = clean_cpu_model(file_has("model name", read_file))[:23]
+                model = clean_cpu_model(file_has("model name", read_file))[:20] + "..."
 
             except AttributeError:
                 if architecture in ("aarch64", "aarch", "arm", "arm64"):
