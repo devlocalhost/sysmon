@@ -4,7 +4,7 @@ using [**curses**](https://docs.python.org/3/howto/curses.html)
 
 # rewrite sysmon (pc)
 ![current sysmon pc screenshot](screens/sysmon-pc.png)
-# same thung, but on a phone
+# same thing, but on a phone
 ![current sysmon phone screenshot](screens/sysmon-phone.png)
 
 # old sysmon
