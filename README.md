@@ -39,9 +39,8 @@ because i like the old layout of sysmon too (but I rarely use it). i strongly su
 ## notes
   - CPU frequency isnt always the same, this depends on the kernel config
   - CPU temperature MIGHT NOT be accurate. not my problem (unless you know a better implementation, THAT DOES **NOT USE** external libraries or programs!)
-  - Cached memory is part of used memory (cached - used = "actual" used)
-  - Was planning to add cpu temperature, but its kinda confusing (because
-   of different methods possible, which dont work on every hardware)
+  - Cached memory is part of used memory (cached - used = will give "actual" used (?))
+
 
 ## bug/suggestion/correction
 please open a issue, including traceback and a screenshot if you found a bug
