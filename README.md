@@ -2,10 +2,11 @@
 
 using [**curses**](https://docs.python.org/3/howto/curses.html)
 
-# rewrite sysmon (pc)
-![current sysmon pc screenshot](screens/sysmon-pc.png)
-# same thing, but on a phone
-![current sysmon phone screenshot](screens/sysmon-phone.png)
+# preview
+## sysmon on a laptop
+![sysmon laptop screenshot](screens/sysmon-pc.png)
+## sysmon on a mobile phone (with root access, because some things won't work)
+![sysmon phone screenshot](screens/sysmon-phone.png)
 
 # old sysmon
 ![old sysmon screenshot](screens/sysmon-old.png)
