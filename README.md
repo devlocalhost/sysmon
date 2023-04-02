@@ -34,6 +34,7 @@ because i like the old layout of sysmon too (but I rarely use it). i strongly su
   --noload    ~~~~~~~~ loadavg (load times information, including uptime)
   --nopid     ~~~~~~~~ procpid (most ram/vmrss consuming pids)
   --nonet     ~~~~~~~~ network_stats (network stats, like received/transfered bytes)
+  --procs INT  How many processes to show. Default: 6
 ```
 ## notes
   - CPU frequency isnt always the same, this depends on the kernel config
