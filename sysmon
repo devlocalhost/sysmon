@@ -370,14 +370,10 @@ def meminfo():
                     f"({memory_available_percent}%)"
                 )
 
-                spaces_swap = 24
+                spaces_swap = 25
 
                 if str(convert_bytes(swap_total)).split(" ")[1] == "GiB":
-                    if str(convert_bytes(memory_total)).split(" ")[1] == "GiB":
-                        spaces_swap = 25
-
-                    else:
-                        spaces_swap = 23
+                    spaces_swap = 23
 
                 elif str(convert_bytes(swap_total)).split(" ")[1] == "TiB":
                     if str(convert_bytes(memory_total)).split(" ")[1] == "TiB":
