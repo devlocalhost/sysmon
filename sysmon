@@ -481,45 +481,37 @@ def procpid():
 
     processes = []
 
-    procs = [
-        d
-        for d in glob.glob("/proc/*")
-        if os.path.isdir(d) and os.path.basename(d).isdigit()
-    ]
+    for entry_dir in os.scandir("/proc"):
+        if entry_dir.is_dir() and entry_dir.name.isdigit():
+            try:
+                with en_open(os.path.join(entry_dir.path, "status")) as status_file:
+                    s_readlines = status_file.readlines()
 
-    if not procs:
-        procs = ["sugoma"]
+                    pid_name = clean_output(file_has("Name:", s_readlines))
+                    pid_num = entry_dir.name
 
-    for proc_status in procs:
-        try:
-            with en_open(proc_status + "/status") as status_file:
-                s_readlines = status_file.readlines()
+                    try:
+                        rss = clean_output(file_has("VmRSS", s_readlines))
 
-                pid_name = clean_output(file_has("Name:", s_readlines))
-                pid_num = proc_status.split("/")[2]
+                    except AttributeError:
+                        rss = "!?"
 
-                try:
-                    rss = clean_output(file_has("VmRSS", s_readlines))
+                    try:
+                        state_field = file_has("State:", s_readlines)
+                        state = state_field[
+                            state_field.index("(") + 1 : state_field.index(")")
+                        ].title()
 
-                except AttributeError:
-                    rss = "!?"
+                    except AttributeError:
+                        state = "!?"
 
-                try:
-                    state_field = file_has("State:", s_readlines)
-                    state = state_field[
-                        state_field.index("(") + 1 : state_field.index(")")
-                    ].title()
+                    if rss != "!?":
+                        processes.append(
+                            f"{pid_name},{to_bytes(int(rss))},{state},{pid_num}"
+                        )
 
-                except AttributeError:
-                    state = "!?"
-
-                if rss != "!?":
-                    processes.append(
-                        f"{pid_name},{to_bytes(int(rss))},{state},{pid_num}"
-                    )
-
-        except FileNotFoundError:
-            processes.append("!?!?,76328097200209,!?!?!,64")
+            except FileNotFoundError:
+                processes.append("!?!?,76328097200209,!?!?!,64")
 
     processes.sort(key=lambda a: float(a.split(",")[1]), reverse=True)
 
