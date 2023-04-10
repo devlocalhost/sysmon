@@ -13,6 +13,7 @@ import sys
 import glob
 import time
 import curses
+import platform
 import argparse
 import subprocess
 import multiprocessing
@@ -265,16 +266,14 @@ def cpuinfo():
             except AttributeError:
                 cpu_freq = "Unknown"
 
-            architecture = subprocess.check_output(
-                "uname -m", shell=True, text=True
-            ).strip()
+            architecture = platform.machine()
 
             try:
                 model = clean_cpu_model(file_has("model name", read_file))
                 model = model if len(model) < 25 else model[:25] + "..."
 
             except AttributeError:
-                if architecture in ("aarch64", "aarch", "arm", "arm64"):
+                if architecture in ("aarch64", "armv7l"):
                     model = str(
                         clean_cpu_model(file_has("Hardware", read_file)).strip()
                     )
