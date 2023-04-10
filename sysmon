@@ -63,6 +63,13 @@ parser.add_argument(
     metavar="INT",
     help="How many processes to show. Default: 6",
 )
+parser.add_argument(
+    "--timeout",
+    type=float,
+    default=1,
+    metavar="FLOAT",
+    help="Refresh time. Default: 1",
+)
 
 args = parser.parse_args()
 
@@ -629,7 +636,7 @@ def main(stdscr):
                 curses.curs_set(1)
                 break
 
-            time.sleep(1)
+            time.sleep(args.timeout)
             stdscr.clear()
 
     except KeyboardInterrupt:
