@@ -639,6 +639,9 @@ def main(stdscr):
             time.sleep(args.timeout)
             stdscr.clear()
 
+    except curses.error:
+        sys.exit("Not enough space. Please resize")
+
     except KeyboardInterrupt:
         curses.endwin()
         curses.curs_set(1)
