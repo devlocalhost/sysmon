@@ -29,13 +29,14 @@ because i like the old layout of sysmon too (but I rarely use it). i strongly su
 
 ## help and usage
 ```
-  --nocpu          Disables cpuinfo (cpu information, like usage, model, and more)
-  --nomem          ~~~~~~~~ meminfo (memory information, like total, used and more)
-  --noload         ~~~~~~~~ loadavg (load times information, including uptime)
-  --nopid          ~~~~~~~~ procpid (most ram/vmrss consuming pids)
-  --nonet          ~~~~~~~~ network_stats (network stats, like received/transfered bytes)
-  --procs INT      How many processes to show. Default: 6
-  --timeout FLOAT  Refresh time. Default: 1
+  -h, --help               show this help message and exit
+  --nocpu, -nc             Disables cpuinfo (cpu information, like usage, model, and more)
+  --nomem, -nm             Disables meminfo (memory information, like total, used and more)
+  --noload, -nl            Disables loadavg (load times information, including uptime, and more)
+  --nopid, -np             Disables procpid (shows the most vmrss consuming processes)
+  --nonet, -nn             Disables network_stats (network stats, like received/transfered bytes, and more)
+  --procs INT, -p INT      How many processes to show in procpid. Default: 6
+  --sleep FLOAT, -s FLOAT  Refresh time. Default: 1.0
 ```
 ## notes
   - CPU frequency isnt always the same, this depends on the kernel config

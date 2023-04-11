@@ -33,42 +33,49 @@ except OSError:
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--nocpu",
+    "-nc",
     action="store_true",
     help="Disables cpuinfo (cpu information, like usage, model, and more)",
 )
 parser.add_argument(
     "--nomem",
+    "-nm",
     action="store_true",
-    help="~~~~~~~~ meminfo (memory information, like total, used and more)",
+    help="Disables meminfo (memory information, like total, used and more)",
 )
 parser.add_argument(
     "--noload",
+    "-nl",
     action="store_true",
-    help="~~~~~~~~ loadavg (load times information, including uptime)",
+    help="Disables loadavg (load times information, including uptime, and more)",
 )
 parser.add_argument(
     "--nopid",
+    "-np",
     action="store_true",
-    help="~~~~~~~~ procpid (most ram/vmrss consuming pids)",
+    help="Disables procpid (shows the most vmrss consuming processes)",
 )
 parser.add_argument(
     "--nonet",
+    "-nn",
     action="store_true",
-    help="~~~~~~~~ network_stats (network stats, like received/transfered bytes)",
+    help="Disables network_stats (network stats, like received/transfered bytes, and more)",
 )
 parser.add_argument(
     "--procs",
+    "-p",
     type=int,
     default=6,
     metavar="INT",
-    help="How many processes to show. Default: 6",
+    help="How many processes to show in procpid. Default: 6",
 )
 parser.add_argument(
-    "--timeout",
+    "--sleep",
+    "-s",
     type=float,
     default=1,
     metavar="FLOAT",
-    help="Refresh time. Default: 1",
+    help="Refresh time. Default: 1.0",
 )
 
 args = parser.parse_args()
@@ -436,14 +443,14 @@ def loadavg():
     try:
         uptime_fmt = "Unknown"
 
-        with en_open("/proc/loadavg") as load_times_file:
-            load_times_data = load_times_file.read()
+        with en_open("/proc/loadavg") as loadavg_file:
+            loadavg_data = loadavg_file.read()
 
-            onemin = load_times_data.split(" ")[0]
-            fivemin = load_times_data.split(" ")[1]
-            fiveteenmin = load_times_data.split(" ")[2]
-            threadactive = load_times_data.split(" ")[3].split("/")[0]
-            threadtotal = load_times_data.split(" ")[3].split("/")[1]
+            onemin = loadavg_data.split(" ")[0]
+            fivemin = loadavg_data.split(" ")[1]
+            fiveteenmin = loadavg_data.split(" ")[2]
+            entities_active = loadavg_data.split(" ")[3].split("/")[0]
+            entities_total = loadavg_data.split(" ")[3].split("/")[1]
 
         with open("/proc/uptime", encoding="utf-8") as uptime_file:
             uptime_data = uptime_file.read()
@@ -462,7 +469,7 @@ def loadavg():
         return (
             f"  --- /proc/loadavg {char_padding('-', 47)}\n"
             f"   System load: {onemin}, {fivemin}, {fiveteenmin} (1, 5, 15 mins)\n"
-            f"       Threads: {threadactive} active, {threadtotal} total"
+            f"      Entities: {entities_active} executing, {entities_total} total"
             f"\n\n   System up for {uptime_fmt}\n    Since {up_since_fmt}\n"
         )
 
@@ -636,7 +643,7 @@ def main(stdscr):
                 curses.curs_set(1)
                 break
 
-            time.sleep(args.timeout)
+            time.sleep(args.sleep)
             stdscr.clear()
 
     except curses.error:
