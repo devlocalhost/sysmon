@@ -30,52 +30,53 @@ except OSError:
     os.makedirs(".sysmon_save", exist_ok=True)
     SAVE_DIR = ".sysmon_save"
 
-parser = argparse.ArgumentParser()
+formatter = lambda prog: argparse.HelpFormatter(prog, max_help_position=40)
+parser = argparse.ArgumentParser(formatter_class=formatter)
 parser.add_argument(
-    "--nocpu",
     "-nc",
+    "--nocpu",
     action="store_true",
-    help="Disables cpuinfo (cpu information, like usage, model, and more)",
+    help="disables cpuinfo (cpu information, like usage, model, and more)",
 )
 parser.add_argument(
-    "--nomem",
     "-nm",
+    "--nomem",
     action="store_true",
-    help="Disables meminfo (memory information, like total, used and more)",
+    help="disables meminfo (memory information, like total, used and more)",
 )
 parser.add_argument(
-    "--noload",
     "-nl",
+    "--noload",
     action="store_true",
-    help="Disables loadavg (load times information, including uptime, and more)",
+    help="disables loadavg (load times information, including uptime, and more)",
 )
 parser.add_argument(
-    "--nopid",
     "-np",
+    "--nopid",
     action="store_true",
-    help="Disables procpid (shows the most vmrss consuming processes)",
+    help="disables procpid (shows the most vmrss consuming processes)",
 )
 parser.add_argument(
-    "--nonet",
     "-nn",
+    "--nonet",
     action="store_true",
-    help="Disables network_stats (network stats, like received/transfered bytes, and more)",
+    help="disables network_stats (network stats, like received/transfered bytes, and more)",
 )
 parser.add_argument(
-    "--procs",
     "-p",
+    "--procs",
     type=int,
     default=6,
     metavar="INT",
-    help="How many processes to show in procpid. Default: 6",
+    help="how many processes to show in procpid. Default: 6",
 )
 parser.add_argument(
-    "--sleep",
     "-s",
+    "--sleep",
     type=float,
     default=1,
     metavar="FLOAT",
-    help="Refresh time. Default: 1.0",
+    help="refresh time. Default: 1.0",
 )
 
 args = parser.parse_args()
