@@ -627,7 +627,7 @@ def main(stdscr):
                     curses.curs_set(1)
                     break
 
-            stdscr.clear()
+            stdscr.erase()
 
     except curses.error:
         sys.exit("Not enough space. Please resize")
