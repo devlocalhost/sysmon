@@ -217,7 +217,11 @@ def cpu_usage():
         with en_open(SAVE_DIR + "/cpu_old_data", "w") as update_data:
             update_data.write(".".join(new_stats))
 
-        return round(100 * ((previous_data - current_data) / total))
+        try:
+            return round(100 * ((previous_data - current_data) / total))
+
+        except ZeroDivisionError:  # there should be a better way (or maybe thats the only way)
+            return 0
 
     except FileNotFoundError:
         sys.exit("Couldnt find /proc/stat file")
@@ -272,7 +276,10 @@ def cpuinfo():
                 elif line.startswith("cache size"):
                     cache_size = line.split(":")[1].strip().replace("KB", "")
 
-                elif line.startswith("Hardware") and architecture in ("aarch64", "armv7l"):
+                elif line.startswith("Hardware") and architecture in (
+                    "aarch64",
+                    "armv7l",
+                ):
                     model = clean_cpu_model(line.split(":")[1].strip())
 
             total_cores = os.cpu_count() or "Unknown"
