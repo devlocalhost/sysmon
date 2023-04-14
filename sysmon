@@ -13,14 +13,15 @@ import sys
 import glob
 import time
 import curses
+import select
 import platform
 import argparse
-import subprocess
 import multiprocessing
 
 from datetime import datetime
 
 SAVE_DIR = None
+hwmon_dirs_out = glob.glob("/sys/class/hwmon/*")
 
 try:
     os.makedirs("/tmp/sysmon_save", exist_ok=True)
@@ -88,51 +89,40 @@ def char_padding(char, value):
     """
     return char value times
     """
-
     return char * value
 
 
 def convert_bytes(fsize, units=(" bytes", " KiB", " MiB", " GiB", " TiB")):
     """convert bytes to k, m, g and t"""
-
-    return (
-        f"{float(fsize):.2f}{units[0]}"
-        if fsize < 1024
-        else convert_bytes(fsize / 1024, units[1:])
-    )
+    for unit in units:
+        if fsize < 1024:
+            return f"{fsize:.2f}{unit}"
+        fsize /= 1024
+    return f"{fsize:.2f} {units[-1]}"
 
 
 def en_open(file, method="r"):
     """modifying the default open method so i dont have to define encoding every time"""
-    return open(file, method, encoding="utf-8")
+    return open(file, mode=method, encoding="utf-8")
 
 
 def detect_network_adapter():
     """detect an active network adapter/card/whatever and return its directory"""
-    adapter_directory = None
-
     for adapter_dir in glob.glob("/sys/class/net/*"):
         with en_open(adapter_dir + "/type") as device_type:
             if int(device_type.read()) != 772:  # if not loopback device
-
                 with en_open(adapter_dir + "/operstate") as status:
                     if status.read().strip() == "up":
-                        adapter_directory = adapter_dir
-                        break
-
-    return adapter_directory
+                        return adapter_dir
+    return None
 
 
 def file_has(string, lines):
     """checking if file contains string. return string if contains else return None"""
-
-    has_string = None
-
     for line in lines:
         if line.startswith(string):
-            has_string = line.strip().split(":")[1]
-
-    return has_string
+            return line.strip().split(":")[1]
+    return None
 
 
 def clean_output(text):
@@ -140,20 +130,17 @@ def clean_output(text):
     cleans the output that sysmon reads, so it gets only 1005744
     instead of MemTotal:        1005744 kB
     """
-
     return text.split(":")[0].strip().replace("kB", "")
 
 
 def to_bytes(kilobytes):
     """convert kilobytes to bytes"""
-
     return kilobytes * 1024
 
 
 def uptime_format(seconds):
     """format the uptime from seconds to a human readable format"""
-
-    intervals = (("weeks", 604800), ("days", 86400), ("hours", 3600), ("minutes", 60))
+    intervals = (("week", 604800), ("day", 86400), ("hour", 3600), ("minute", 60))
     result = []
 
     for name, count in intervals:
@@ -161,11 +148,7 @@ def uptime_format(seconds):
 
         if value:
             seconds -= value * count
-
-            if value == 1:
-                name = name.rstrip("s")
-
-            result.append(f"{value} {name}")
+            result.append(f"{value} {name if value == 1 else name+'s'}")
 
     if len(result) > 1:
         result[-1] = "and " + result[-1]
@@ -187,7 +170,6 @@ def clean_cpu_model(model):
         "CPU",
         "with Radeon HD Graphics",
     ]
-
     for text in replace_stuff:
         model = model.replace(text, "")
 
@@ -205,11 +187,11 @@ def cpu_usage():
     """
 
     try:
-        if not os.path.exists(f"{SAVE_DIR}/cpu_old_data"):
-            with en_open(f"{SAVE_DIR}/cpu_old_data", "a") as temp_file:
+        if not os.path.exists(SAVE_DIR + "/cpu_old_data"):
+            with en_open(SAVE_DIR + "/cpu_old_data", "a") as temp_file:
                 temp_file.write("cpu.758102.17.259220.2395399.122421.3.1284")
 
-        with en_open(f"{SAVE_DIR}/cpu_old_data") as old_stats:
+        with en_open(SAVE_DIR + "/cpu_old_data") as old_stats:
             old_stats = old_stats.readline().split(".")
             previous_data = (
                 int(old_stats[1])
@@ -232,7 +214,7 @@ def cpu_usage():
 
         total = sum(map(int, old_stats[1:])) - sum(map(int, new_stats[1:]))
 
-        with en_open(f"{SAVE_DIR}/cpu_old_data", "w") as update_data:
+        with en_open(SAVE_DIR + "/cpu_old_data", "w") as update_data:
             update_data.write(".".join(new_stats))
 
         return round(100 * ((previous_data - current_data) / total))
@@ -246,19 +228,25 @@ def cpu_usage():
         )
 
 
-def cpu_temp():
+def cpu_temp(hwmon_dirs):
     """
     getting the cpu temperature from /sys/class/hwmon
     """
 
     temperature = "!?"
 
-    for temp_dir in glob.glob("/sys/class/hwmon/*"):
+    for temp_dir in hwmon_dirs:
         with en_open(temp_dir + "/name") as temp_type:
-            if (temp_type.read() in "coretemp", "fam15h_power", "k10temp", "acpitz"):
+            if temp_type.read().strip() in [
+                "coretemp",
+                "fam15h_power",
+                "k10temp",
+                "acpitz",
+            ]:
                 try:
                     with en_open(temp_dir + "/temp1_input") as temp_value:
-                        temperature = int(int(temp_value.read().strip()) / 1000)
+                        temperature = int(temp_value.readline().strip()) // 1000
+                        break
 
                 except (FileNotFoundError, OSError):
                     pass
@@ -273,53 +261,45 @@ def cpuinfo():
 
     try:
         with en_open("/proc/cpuinfo") as cpuinfo_file:
-            read_file = cpuinfo_file.readlines()
+            cpu_freq = "Unknown"
+            model = "Unknown"
+            cache_size = "0"
 
-            try:
-                cpu_freq = file_has("cpu MHz", read_file).strip()
+            for line in cpuinfo_file:
+                if line.startswith("cpu MHz"):
+                    cpu_freq = line.split(":")[1].strip()
 
-            except AttributeError:
-                cpu_freq = "Unknown"
+                elif line.startswith("model name"):
+                    model = clean_cpu_model(line.split(":")[1].strip())[:25]
+
+                elif line.startswith("cache size"):
+                    cache_size = line.split(":")[1].strip().replace("KB", "")
 
             architecture = platform.machine()
 
-            try:
-                model = clean_cpu_model(file_has("model name", read_file))
-                model = model if len(model) < 25 else model[:25] + "..."
-
-            except AttributeError:
-                if architecture in ("aarch64", "armv7l"):
-                    model = str(
-                        clean_cpu_model(file_has("Hardware", read_file)).strip()
-                    )
-
-            try:
-                cache_size = file_has("cache size", read_file).strip().replace("KB", "")
-
-            except AttributeError:
-                cache_size = "0"
-
-            total_cores = subprocess.check_output(
-                "nproc", shell=True, text=True
-            ).strip()
+            total_cores = os.cpu_count() or "Unknown"
             total_threads = multiprocessing.cpu_count()
 
             cpu_usage_num = cpu_usage()
-            cpu_temperature = str(cpu_temp())
-
-            arch_model_temp_line = f"| {architecture} {model}\n"
+            cpu_temperature = str(cpu_temp(hwmon_dirs_out))
 
             if cpu_temperature != "!?":
                 cpu_temperature += " °C"
-                arch_model_temp_line = f"({cpu_temperature}) " + arch_model_temp_line
+                arch_model_temp_line = f"({cpu_temperature}) | {architecture} {model}"
+
+            else:
+                arch_model_temp_line = f"| {architecture} {model}"
+
+            cache_memory = convert_bytes(to_bytes(int(cache_size))) + " cache memory"
 
         return (
             f"  --- /proc/cpuinfo {char_padding('-', 47)}\n"
             f"{char_padding(' ', 11)}Usage: {cpu_usage_num}% "
             + " " * (3 - len(str(cpu_usage_num)))
             + arch_model_temp_line
-            + f"   Cores/Threads: {total_cores}/{total_threads} @ {cpu_freq} MHz"
-            f" with {convert_bytes(to_bytes(int(cache_size)))} cache memory\n"
+            + "\n"
+            f"   Cores/Threads: {total_cores}/{total_threads} @ {cpu_freq} MHz"
+            f" with {cache_memory}\n"
         )
 
     except FileNotFoundError:
@@ -327,7 +307,7 @@ def cpuinfo():
 
     except PermissionError:
         sys.exit(
-            "Couldnt read the file. Do you have read permissions for /proc/cpuinfo file?"
+            "Couldnt read the file. Do you have read permissions for /proc/meminfo file?"
         )
 
 
@@ -342,7 +322,7 @@ def meminfo():
     """
 
     try:
-        with open("/proc/meminfo", encoding="utf-8") as meminfo_file:
+        with en_open("/proc/meminfo") as meminfo_file:
             meminfo_data = meminfo_file.readlines()
 
             memory_total = to_bytes(
@@ -384,17 +364,16 @@ def meminfo():
                     f"({memory_available_percent}%)"
                 )
 
-                spaces_swap = 25
-
-                if str(convert_bytes(swap_total)).split(" ")[1] == "GiB":
-                    spaces_swap = 23
-
-                elif str(convert_bytes(swap_total)).split(" ")[1] == "TiB":
-                    if str(convert_bytes(memory_total)).split(" ")[1] == "TiB":
-                        spaces_swap = 24
-
-                    else:
-                        spaces_swap = 22
+                spaces_swap = (
+                    25
+                    if str(convert_bytes(swap_total)).split(" ")[1] == "GiB"
+                    else 23
+                    if str(convert_bytes(swap_total)).split(" ")[1] == "TiB"
+                    and str(convert_bytes(memory_total)).split(" ")[1] == "TiB"
+                    else 22
+                    if str(convert_bytes(swap_total)).split(" ")[1] == "TiB"
+                    else 25
+                )
 
                 return (
                     f"  --- /proc/meminfo {char_padding('-', 47)}\n"
@@ -442,30 +421,20 @@ def loadavg():
     """
 
     try:
-        uptime_fmt = "Unknown"
+        with open("/proc/loadavg", encoding="utf-8") as loadavg_file, open(
+            "/proc/uptime", encoding="utf-8"
+        ) as uptime_file:
 
-        with en_open("/proc/loadavg") as loadavg_file:
-            loadavg_data = loadavg_file.read()
+            loadavg_data = loadavg_file.read().split()
+            onemin, fivemin, fiveteenmin = loadavg_data[:3]
+            entities_active, entities_total = loadavg_data[3].split("/")
 
-            onemin = loadavg_data.split(" ")[0]
-            fivemin = loadavg_data.split(" ")[1]
-            fiveteenmin = loadavg_data.split(" ")[2]
-            entities_active = loadavg_data.split(" ")[3].split("/")[0]
-            entities_total = loadavg_data.split(" ")[3].split("/")[1]
+            uptime_secs = int(float(uptime_file.read().split()[0]))
+            uptime_fmt = uptime_format(uptime_secs)
 
-        with open("/proc/uptime", encoding="utf-8") as uptime_file:
-            uptime_data = uptime_file.read()
-            uptime_secs = int(uptime_data.split(".", maxsplit=1)[0])
-
-        if uptime_secs < 60:
-            uptime_fmt = f"{uptime_secs} seconds"
-
-        else:
-            uptime_fmt = uptime_format(int(uptime_data.split(".", maxsplit=1)[0]))
-
-        up_since_fmt = datetime.fromtimestamp(
-            int(str(time.time()).split(".", maxsplit=1)[0]) - int(uptime_secs)
-        ).strftime("%A %B %d %Y, %I:%M:%S %p")
+            up_since_fmt = datetime.fromtimestamp(time.time() - uptime_secs).strftime(
+                "%A %B %d %Y, %I:%M:%S %p"
+            )
 
         return (
             f"  --- /proc/loadavg {char_padding('-', 47)}\n"
@@ -475,11 +444,11 @@ def loadavg():
         )
 
     except FileNotFoundError:
-        sys.exit("Couldnt find /proc/loadavg file")
+        sys.exit("Couldn't find /proc/loadavg file")
 
     except PermissionError:
         sys.exit(
-            "Couldnt read the file. Do you have read permissions for /proc/loadavg file?"
+            "Couldn't read the file. Do you have read permissions for /proc/loadavg file?"
         )
 
 
@@ -498,49 +467,55 @@ def procpid():
     for entry_dir in os.scandir("/proc"):
         if entry_dir.is_dir() and entry_dir.name.isdigit():
             try:
-                with en_open(os.path.join(entry_dir.path, "status")) as status_file:
+                with en_open(
+                    os.path.join(entry_dir.path, "status"), "r"
+                ) as status_file:
                     s_readlines = status_file.readlines()
 
-                    pid_name = clean_output(file_has("Name:", s_readlines))
+                    pid_name = None
                     pid_num = entry_dir.name
+                    rss = None
+                    state = None
 
-                    try:
-                        rss = clean_output(file_has("VmRSS", s_readlines))
+                    pid_name_line = next(
+                        (line for line in s_readlines if line.startswith("Name:")), None
+                    )
+                    if pid_name_line:
+                        pid_name = pid_name_line.partition(":")[2].strip()
 
-                    except AttributeError:
-                        rss = "!?"
+                    rss_line = next(
+                        (line for line in s_readlines if line.startswith("VmRSS:")),
+                        None,
+                    )
+                    if rss_line:
+                        rss = int(clean_output(rss_line.partition(":")[2].strip()))
 
-                    try:
-                        state_field = file_has("State:", s_readlines)
-                        state = state_field[
-                            state_field.index("(") + 1 : state_field.index(")")
-                        ].title()
+                    state_line = next(
+                        (line for line in s_readlines if line.startswith("State:")),
+                        None,
+                    )
+                    if state_line:
+                        state = state_line.partition("(")[2].partition(")")[0].title()
 
-                    except AttributeError:
-                        state = "!?"
-
-                    if rss != "!?":
-                        processes.append(
-                            f"{pid_name},{to_bytes(int(rss))},{state},{pid_num}"
-                        )
+                    if rss is not None:
+                        processes.append((pid_name, rss, state, pid_num))
 
             except FileNotFoundError:
-                processes.append("!?!?,76328097200209,!?!?!,64")
+                processes.append((None, 76328097200209, None, "64"))
 
-    processes.sort(key=lambda a: float(a.split(",")[1]), reverse=True)
+    processes.sort(key=lambda a: a[1], reverse=True)
 
     formatted_data = [
         f"  --- /proc/pid/* {char_padding('-', 49)}\n   Name            PID         RSS            State"
     ]
 
-    for proc_item in processes[: args.procs]:
-        name, rss_usage, pstate, pid = proc_item.split(",")
-        rss_usage = convert_bytes(int(rss_usage))
+    for name, rss, pstate, pid in processes[: args.procs]:
+        rss_usage = convert_bytes(rss) if rss is not None else "!?"
 
         formatted_data.append(
-            f"   {name}{char_padding(' ', (15 - len(name)))} "
-            f"{pid}{char_padding(' ', (11 - len(pid)))} "
-            f"{rss_usage}{char_padding(' ', (14 - len(rss_usage)))} {pstate}"
+            f"   {name or '!?!?'}{char_padding(' ', (15 - len(name or '!?!?')))}"
+            f" {pid}{char_padding(' ', (11 - len(pid)))}"
+            f" {rss_usage}{char_padding(' ', (14 - len(rss_usage)))} {pstate or '!?!?'}"
         )
 
     return "\n".join(formatted_data) + "\n"
@@ -638,13 +613,15 @@ def main(stdscr):
             stdscr.addstr(f" {'-' * 67}")
             stdscr.refresh()
 
-            kinput = stdscr.getch()
+            rlist = select.select([sys.stdin], [], [], args.sleep)
 
-            if kinput == ord("q"):
-                curses.curs_set(1)
-                break
+            if rlist:
+                kinput = stdscr.getch()
 
-            time.sleep(args.sleep)
+                if kinput == ord("q"):
+                    curses.curs_set(1)
+                    break
+
             stdscr.clear()
 
     except curses.error:
