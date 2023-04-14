@@ -237,12 +237,7 @@ def cpu_temp(hwmon_dirs):
 
     for temp_dir in hwmon_dirs:
         with en_open(temp_dir + "/name") as temp_type:
-            if temp_type.read().strip() in [
-                "coretemp",
-                "fam15h_power",
-                "k10temp",
-                "acpitz",
-            ]:
+            if (temp_type.read() in "coretemp", "fam15h_power", "k10temp", "acpitz"):
                 try:
                     with en_open(temp_dir + "/temp1_input") as temp_value:
                         temperature = int(temp_value.readline().strip()) // 1000
@@ -264,18 +259,21 @@ def cpuinfo():
             cpu_freq = "Unknown"
             model = "Unknown"
             cache_size = "0"
+            architecture = platform.machine()
 
             for line in cpuinfo_file:
                 if line.startswith("cpu MHz"):
                     cpu_freq = line.split(":")[1].strip()
 
                 elif line.startswith("model name"):
-                    model = clean_cpu_model(line.split(":")[1].strip())[:25]
+                    model = clean_cpu_model(line.split(":")[1].strip())
+                    model = model if len(model) < 25 else model[:25] + "..."
 
                 elif line.startswith("cache size"):
                     cache_size = line.split(":")[1].strip().replace("KB", "")
 
-            architecture = platform.machine()
+                elif line.startswith("Hardware") and architecture in ("aarch64", "armv7l"):
+                    model = clean_cpu_model(line.split(":")[1].strip())
 
             total_cores = os.cpu_count() or "Unknown"
             total_threads = multiprocessing.cpu_count()
@@ -498,7 +496,7 @@ def procpid():
                         state = state_line.partition("(")[2].partition(")")[0].title()
 
                     if rss is not None:
-                        processes.append((pid_name, rss, state, pid_num))
+                        processes.append((pid_name, to_bytes(rss), state, pid_num))
 
             except FileNotFoundError:
                 processes.append((None, 76328097200209, None, "64"))
