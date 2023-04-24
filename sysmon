@@ -143,12 +143,15 @@ def uptime_format(seconds):
     intervals = (("week", 604800), ("day", 86400), ("hour", 3600), ("minute", 60))
     result = []
 
+    if seconds < 60:
+        return f"{seconds} seconds"
+
     for name, count in intervals:
         value = seconds // count
 
         if value:
             seconds -= value * count
-            result.append(f"{value} {name if value == 1 else name+'s'}")
+            result.append(f"{value} {name if value == 1 else name + 's'}")
 
     if len(result) > 1:
         result[-1] = "and " + result[-1]
@@ -426,10 +429,7 @@ def loadavg():
     """
 
     try:
-        with open("/proc/loadavg", encoding="utf-8") as loadavg_file, open(
-            "/proc/uptime", encoding="utf-8"
-        ) as uptime_file:
-
+        with en_open("/proc/loadavg") as loadavg_file, en_open("/proc/uptime") as uptime_file:
             loadavg_data = loadavg_file.read().split()
             onemin, fivemin, fiveteenmin = loadavg_data[:3]
             entities_active, entities_total = loadavg_data[3].split("/")
