@@ -52,11 +52,6 @@ because i like the old layout of sysmon too (but I rarely use it). i strongly su
   -p INT, --procs INT      how many processes to show in procpid. Default: 6
   -s FLOAT, --sleep FLOAT  refresh time. Default: 1.0
 ```
-## notes
-  - CPU frequency isnt always the same, this depends on the kernel config
-  - CPU temperature MIGHT NOT be accurate. not my problem (unless you know a better implementation, THAT DOES **NOT USE** external libraries or programs!)
-  - Cached memory is part of used memory (cached - used = will give "actual" used (?))
-
 
 ## bug/suggestion/correction
 please open a issue, including traceback and a screenshot if you found a bug
