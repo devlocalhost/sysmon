@@ -64,6 +64,12 @@ parser.add_argument(
     help="disables network_stats (network stats, like received/transfered bytes, and more)",
 )
 parser.add_argument(
+    "-nt",
+    "--notemp",
+    action="store_true",
+    help="disables cpu temperature",
+)
+parser.add_argument(
     "-p",
     "--procs",
     type=int,
@@ -291,7 +297,7 @@ def cpuinfo():
             cpu_usage_num = cpu_usage()
             cpu_temperature = str(cpu_temp(hwmon_dirs_out))
 
-            if cpu_temperature != "!?":
+            if cpu_temperature != "!?" and not args.notemp:
                 cpu_temperature += " °C"
                 arch_model_temp_line = f"({cpu_temperature}) | {architecture} {model}"
 
