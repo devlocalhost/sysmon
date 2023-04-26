@@ -25,15 +25,17 @@ curl https://raw.githubusercontent.com/devlocalhost/sysmon/main/sysmon -O sysmon
 sysmon is *another* system monitor which is **ready to use** and easy to understand. it uses [**linux's /proc pseudo filesystem**](https://www.kernel.org/doc/html/latest/filesystems/proc.html) to read information and [**curses**](https://docs.python.org/3/howto/curses.html) to display them. the only thing you have to do is git clone this repo, and run the sysmon file
 
 ## what can sysmon do?
- - show cpu information, like model, temperature (!), frequency (!a), cores (!) and threads count, and cache memory size (!)
- - show memory information, like total, available, used (!b) and cached ram and swap information
+ - show cpu information, like model, temperature (1), frequency (2), cores (1) and threads count, and cache memory size (1)
+ - show memory information, like total, available, used (3) and cached ram and swap information
  - show system load, entities and uptime
  - show the proccesses (6 by default) that are consuming the most VmRSS, including the state and name
  - show network information, like device, transferred and received, and speed
 
-!: information reported **might** not be correct
-!a: ive heard this depends on the kernel, i am not sure. sysmon might not show the max frequency the manufacturer website reports
-!b: Used = MemTotal - MemAvailable. dont worry if htop shows less ram used. htop counts it differently (it also substracts MemCached [i think] which i dont do that)
+1. information reported **might** not be correct
+
+2. ive heard this depends on the kernel, i am not sure. sysmon might not show the max frequency the manufacturer website reports
+
+3. Used = MemTotal - MemAvailable. dont worry if htop shows less ram used. htop counts it differently (it also substracts MemCached [i think] which i dont do that)
 
 ## why 2 files?
 because i like the old layout of sysmon too (but I rarely use it). i strongly suggest you to use the new sysmon, because better code, improvements, and faster
