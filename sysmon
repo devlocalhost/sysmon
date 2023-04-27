@@ -346,10 +346,11 @@ def meminfo():
                 int(clean_output(file_has("MemAvailable", meminfo_data)))
             )
             memory_cached = to_bytes(
-                int(clean_output(file_has("Cached", meminfo_data)))
+                int(clean_output(file_has("Cached", meminfo_data))) + (int(clean_output(file_has("SReclaimable", meminfo_data))) + int(clean_output(file_has("Shmem", meminfo_data))))
             )
 
             memory_used = round(memory_total - memory_available)
+            memory_actual_used = round(memory_total - to_bytes(int(clean_output(file_has("MemFree", meminfo_data)))) - memory_cached - int(clean_output(file_has("Buffers", meminfo_data))))
 
             memory_used_percent = round((int(memory_used) / int(memory_total)) * 100, 1)
             memory_available_percent = round(100 - memory_used_percent, 1)
@@ -399,6 +400,7 @@ def meminfo():
                     + char_padding(" ", (26 - len(memory_used_format)))
                     + f"Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
                     f"    Available: {memory_avail_format}"
+                    + f"Actual: {convert_bytes(memory_actual_used)}"
                     + char_padding(" ", (21 - len(memory_avail_format)))
                     + f"Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
                     f"       Cached: {convert_bytes(memory_cached)}"
