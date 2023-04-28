@@ -549,15 +549,15 @@ def procpid():
     processes.sort(key=lambda a: a[1], reverse=True)
 
     formatted_data = [
-        f"  --- Name /proc/pid/* - PID ------- RSS ---------- State {char_padding('-', 9)}"
+        f"  --- /proc/pid/* {char_padding('-', 49)}\n   Name            PID         RSS            State"
     ]
 
     for name, rss, pstate, pid in processes[: args.procs]:
         rss_usage = convert_bytes(rss) if rss is not None else "!?"
 
         formatted_data.append(
-            f"      {name or '!?!?'}{char_padding(' ', (15 - len(name or '!?!?')))}"
-            f"    {pid}{char_padding(' ', (11 - len(pid)))}"
+            f"   {name or '!?!?'}{char_padding(' ', (15 - len(name or '!?!?')))}"
+            f" {pid}{char_padding(' ', (11 - len(pid)))}"
             f" {rss_usage}{char_padding(' ', (14 - len(rss_usage)))} {pstate or '!?!?'}"
         )
 
