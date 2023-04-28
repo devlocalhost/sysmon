@@ -347,7 +347,7 @@ def cpuinfo():
 
 def meminfo():
     """
-    /proc/meminfo - system memory (ram) and swap information
+    /proc/meminfo - system memory information
     """
 
     try:
@@ -360,21 +360,20 @@ def meminfo():
             memory_available = to_bytes(
                 int(clean_output(file_has("MemAvailable", meminfo_data)))
             )
-            memory_cached = to_bytes(
-                int(clean_output(file_has("Cached", meminfo_data)))
-                + int(clean_output(file_has("SReclaimable", meminfo_data)))
-                - int(clean_output(file_has("Shmem", meminfo_data)))
+            memory_cached = (
+                to_bytes(int(clean_output(file_has("Cached", meminfo_data))))
+                + to_bytes(int(clean_output(file_has("Buffers", meminfo_data))))
+                + to_bytes(int(clean_output(file_has("SReclaimable", meminfo_data))))
             )
 
             memory_free = to_bytes(int(clean_output(file_has("MemFree", meminfo_data))))
             memory_used = round(memory_total - memory_available)
-            memory_actual_used = (
-                round(
-                    memory_total
-                    - to_bytes(int(clean_output(file_has("MemFree", meminfo_data))))
-                    - to_bytes(int(clean_output(file_has("Buffers", meminfo_data))))
-                )
-                - memory_cached
+            memory_actual_used = round(
+                memory_total
+                - to_bytes(int(clean_output(file_has("MemFree", meminfo_data))))
+                - to_bytes(int(clean_output(file_has("Buffers", meminfo_data))))
+                - to_bytes(int(clean_output(file_has("Cached", meminfo_data))))
+                - to_bytes(int(clean_output(file_has("SReclaimable", meminfo_data))))
             )
 
             memory_used_percent = round((int(memory_used) / int(memory_total)) * 100, 1)
