@@ -420,32 +420,32 @@ def meminfo():
 
                 return (
                     f"  --- /proc/meminfo {char_padding('-', 47)}\n"
-                    f"   RAM: {char_padding(' ', 25)} Swap:\n"
-                    f"        Total: {convert_bytes(memory_total)}"
+                    f"    RAM: {char_padding(' ', 25)} Swap:\n"
+                    f"         Total: {convert_bytes(memory_total)}"
                     + char_padding(" ", (spaces_swap - len(convert_bytes(swap_total))))
-                    + f"Total: {convert_bytes(swap_total)}\n"
-                    f"         Used: {memory_used_format}"
+                    + f" Total: {convert_bytes(swap_total)}\n"
+                    f"          Used: {memory_used_format}"
                     + char_padding(" ", (26 - len(memory_used_format)))
-                    + f"Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
-                    f"  Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
-                    f"    Available: {memory_avail_format}"
+                    + f" Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
+                    f"   Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
+                    f"     Available: {memory_avail_format}"
                     + char_padding(" ", (21 - len(memory_avail_format)))
-                    + f"Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
-                    f"         Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
-                    f"       Cached: {convert_bytes(memory_cached)}"
+                    + f" Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
+                    f"          Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
+                    f"        Cached: {convert_bytes(memory_cached)}"
                     + char_padding(" ", (24 - len(convert_bytes(memory_cached))))
-                    + f"Cached: {convert_bytes(swap_cached)}\n"
+                    + f" Cached: {convert_bytes(swap_cached)}\n"
                 )
 
             return (
                 f"  --- /proc/meminfo {char_padding('-', 47)}\n"
-                f"   RAM: {char_padding(' ', 25)} Swap: Disabled or not available\n"
-                f"        Total: {convert_bytes(memory_total)}\n"
-                f"         Used: {convert_bytes(memory_used)} ({memory_used_percent}%)\n"
-                f"  Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
-                f"    Available: {convert_bytes(memory_available)} ({memory_available_percent}%)\n"
-                f"         Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
-                f"       Cached: {convert_bytes(memory_cached)}\n"
+                f"    RAM: {char_padding(' ', 25)} Swap: Disabled or not available\n"
+                f"         Total: {convert_bytes(memory_total)}\n"
+                f"          Used: {convert_bytes(memory_used)} ({memory_used_percent}%)\n"
+                f"   Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
+                f"     Available: {convert_bytes(memory_available)} ({memory_available_percent}%)\n"
+                f"          Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
+                f"        Cached: {convert_bytes(memory_cached)}\n"
             )
 
     except FileNotFoundError:
