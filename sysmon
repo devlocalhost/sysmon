@@ -420,8 +420,8 @@ def meminfo():
                 )
 
                 return (
-                    f"  --- RAM /proc/meminfo {char_padding('-', 12)} Swap {char_padding('-', 25)}\n"
-                    # f"   RAM: {char_padding(' ', 25)} Swap:\n"
+                    f"  --- /proc/meminfo {char_padding('-', 47)}\n"
+                    f"   RAM: {char_padding(' ', 25)} Swap:\n"
                     f"        Total: {convert_bytes(memory_total)}"
                     + char_padding(" ", (spaces_swap - len(convert_bytes(swap_total))))
                     + f"Total: {convert_bytes(swap_total)}\n"
