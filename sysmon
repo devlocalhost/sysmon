@@ -420,21 +420,23 @@ def meminfo():
 
                 return (
                     f"  --- /proc/meminfo {char_padding('-', 47)}\n"
-                    f"    RAM: {char_padding(' ', 25)} Swap:\n"
+                    f"     RAM: {char_padding(' ', 25)}Swap:\n"
                     f"         Total: {convert_bytes(memory_total)}"
-                    + char_padding(" ", (spaces_swap - len(convert_bytes(swap_total))))
-                    + f" Total: {convert_bytes(swap_total)}\n"
+                    + char_padding(
+                        " ", (spaces_swap - 1 - len(convert_bytes(swap_total)))
+                    )
+                    + f"Total: {convert_bytes(swap_total)}\n"
                     f"          Used: {memory_used_format}"
-                    + char_padding(" ", (26 - len(memory_used_format)))
-                    + f" Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
+                    + char_padding(" ", (25 - len(memory_used_format)))
+                    + f"Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
                     f"   Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
                     f"     Available: {memory_avail_format}"
-                    + char_padding(" ", (21 - len(memory_avail_format)))
-                    + f" Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
+                    + char_padding(" ", (20 - len(memory_avail_format)))
+                    + f"Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
                     f"          Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
                     f"        Cached: {convert_bytes(memory_cached)}"
-                    + char_padding(" ", (24 - len(convert_bytes(memory_cached))))
-                    + f" Cached: {convert_bytes(swap_cached)}\n"
+                    + char_padding(" ", (23 - len(convert_bytes(memory_cached))))
+                    + f"Cached: {convert_bytes(swap_cached)}\n"
                 )
 
             return (
