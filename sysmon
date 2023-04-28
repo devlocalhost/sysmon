@@ -20,6 +20,8 @@ import multiprocessing
 
 from datetime import datetime
 
+# savedir and hwmons setup
+
 SAVE_DIR = None
 hwmon_dirs_out = glob.glob("/sys/class/hwmon/*")
 
@@ -30,6 +32,10 @@ try:
 except OSError:
     os.makedirs(".sysmon_save", exist_ok=True)
     SAVE_DIR = ".sysmon_save"
+
+# savedir and hwmons setup
+
+# formatting and arguments
 
 formatter = lambda prog: argparse.HelpFormatter(prog, max_help_position=40)
 parser = argparse.ArgumentParser(formatter_class=formatter)
@@ -88,6 +94,8 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+# formatting and arguments
+
 # sysmon basic functions start
 
 
@@ -144,10 +152,15 @@ def to_bytes(kilobytes):
     return kilobytes * 1024
 
 
-def uptime_format(seconds):
+def uptime_format():
     """format the uptime from seconds to a human readable format"""
     intervals = (("week", 604800), ("day", 86400), ("hour", 3600), ("minute", 60))
     result = []
+
+    with en_open("/proc/uptime") as uptime_file:
+        seconds = int(float(uptime_file.readline().split()[0]))
+
+    original_seconds = seconds
 
     if seconds < 60:
         return f"{seconds} seconds"
@@ -162,7 +175,7 @@ def uptime_format(seconds):
     if len(result) > 1:
         result[-1] = "and " + result[-1]
 
-    return ", ".join(result)
+    return (", ".join(result), original_seconds)
 
 
 def clean_cpu_model(model):
@@ -229,7 +242,9 @@ def cpu_usage():
         try:
             return round(100 * ((previous_data - current_data) / total))
 
-        except ZeroDivisionError:  # there should be a better way (or maybe thats the only way)
+        except (
+            ZeroDivisionError
+        ):  # there should be a better way (or maybe thats the only way)
             return 0
 
     except FileNotFoundError:
@@ -351,6 +366,7 @@ def meminfo():
                 - int(clean_output(file_has("Shmem", meminfo_data)))
             )
 
+            memory_free = to_bytes(int(clean_output(file_has("MemFree", meminfo_data))))
             memory_used = round(memory_total - memory_available)
             memory_actual_used = (
                 round(
@@ -366,6 +382,7 @@ def meminfo():
                 (int(memory_actual_used) / int(memory_total)) * 100, 1
             )
             memory_available_percent = round(100 - memory_used_percent, 1)
+            memory_free_percent = round((int(memory_free) / int(memory_total)) * 100, 1)
 
             if to_bytes(int(clean_output(file_has("SwapTotal", meminfo_data)))) != 0:
                 swap_total = to_bytes(
@@ -415,6 +432,7 @@ def meminfo():
                     f"    Available: {memory_avail_format}"
                     + char_padding(" ", (21 - len(memory_avail_format)))
                     + f"Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
+                    f"         Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
                     f"       Cached: {convert_bytes(memory_cached)}"
                     + char_padding(" ", (24 - len(convert_bytes(memory_cached))))
                     + f"Cached: {convert_bytes(swap_cached)}\n"
@@ -450,25 +468,22 @@ def loadavg():
     """
 
     try:
-        with en_open("/proc/loadavg") as loadavg_file, en_open(
-            "/proc/uptime"
-        ) as uptime_file:
+        with en_open("/proc/loadavg") as loadavg_file:
             loadavg_data = loadavg_file.read().split()
             onemin, fivemin, fiveteenmin = loadavg_data[:3]
             entities_active, entities_total = loadavg_data[3].split("/")
 
-            uptime_secs = int(float(uptime_file.read().split()[0]))
-            uptime_fmt = uptime_format(uptime_secs)
+            uptime_func_out = uptime_format()
 
-            up_since_fmt = datetime.fromtimestamp(time.time() - uptime_secs).strftime(
-                "%A %B %d %Y, %I:%M:%S %p"
-            )
+            up_since_fmt = datetime.fromtimestamp(
+                time.time() - uptime_func_out[1]
+            ).strftime("%A %B %d %Y, %I:%M:%S %p")
 
         return (
             f"  --- /proc/loadavg {char_padding('-', 47)}\n"
             f"   System load: {onemin}, {fivemin}, {fiveteenmin} (1, 5, 15 mins)\n"
             f"      Entities: {entities_active} executing, {entities_total} total"
-            f"\n\n   System up for {uptime_fmt}\n    Since {up_since_fmt}\n"
+            f"\n\n   System up for {uptime_func_out[0]}\n    Since {up_since_fmt}\n"
         )
 
     except FileNotFoundError:
@@ -609,6 +624,8 @@ def network_stats():
 
 # sysmon net
 
+# sysmon printing part
+
 func_dict = {
     "cpu": cpuinfo,
     "mem": meminfo,
@@ -663,3 +680,5 @@ def main(stdscr):
 
 
 curses.wrapper(main)
+
+# sysmon printing part
