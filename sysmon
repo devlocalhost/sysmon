@@ -546,7 +546,7 @@ def procpid():
                         processes.append((pid_name, to_bytes(rss), state, pid_num))
 
             except FileNotFoundError:
-                processes.append((None, 76328097200209, None, "64"))
+                pass # processes.append((None, 76328097200209, None, "64"))
 
     processes.sort(key=lambda a: a[1], reverse=True)
 
