@@ -49,8 +49,10 @@ because i like the old layout of sysmon too (but I rarely use it). i strongly su
   -np, --nopid             disables procpid (shows the most vmrss consuming processes)
   -nn, --nonet             disables network_stats (network stats, like received/transfered bytes, and more)
   -nt, --notemp            disables cpu temperature
+  -ns, --noswap            disables swap information in meminfo
   -p INT, --procs INT      how many processes to show in procpid. Default: 6
   -s FLOAT, --sleep FLOAT  refresh time. Default: 1.0
+  --func FUNC [FUNC ...]   executes only the mentioned functions
 ```
 
 ## bug/suggestion/correction

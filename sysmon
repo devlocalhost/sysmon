@@ -22,6 +22,7 @@ from datetime import datetime
 
 # savedir and hwmons setup
 
+SHOW_SWAP = None
 SAVE_DIR = None
 hwmon_dirs_out = glob.glob("/sys/class/hwmon/*")
 
@@ -76,6 +77,12 @@ parser.add_argument(
     help="disables cpu temperature",
 )
 parser.add_argument(
+    "-ns",
+    "--noswap",
+    action="store_true",
+    help="disables swap information in meminfo",
+)
+parser.add_argument(
     "-p",
     "--procs",
     type=int,
@@ -91,8 +98,12 @@ parser.add_argument(
     metavar="FLOAT",
     help="refresh time. Default: 1.0",
 )
+parser.add_argument("--func", nargs="+", help="executes only the mentioned functions")
 
 args = parser.parse_args()
+
+if args.noswap:
+    SHOW_SWAP = False
 
 # formatting and arguments
 
@@ -165,12 +176,12 @@ def uptime_format():
     if seconds < 60:
         return f"{seconds} seconds"
 
-    for name, count in intervals:
+    for time_type, count in intervals:
         value = seconds // count
 
         if value:
             seconds -= value * count
-            result.append(f"{value} {name if value == 1 else name + 's'}")
+            result.append(f"{value} {time_type if value == 1 else time_type + 's'}")
 
     if len(result) > 1:
         result[-1] = "and " + result[-1]
@@ -345,7 +356,7 @@ def cpuinfo():
 # sysmon meminfo
 
 
-def meminfo():
+def meminfo(SHOW_SWAP):
     """
     /proc/meminfo - system memory information
     """
@@ -383,7 +394,13 @@ def meminfo():
             memory_available_percent = round(100 - memory_used_percent, 1)
             memory_free_percent = round((int(memory_free) / int(memory_total)) * 100, 1)
 
-            if to_bytes(int(clean_output(file_has("SwapTotal", meminfo_data)))) != 0:
+            if (
+                to_bytes(int(clean_output(file_has("SwapTotal", meminfo_data)))) != 0
+                and SHOW_SWAP is not False
+            ):
+                SHOW_SWAP = True
+
+            if SHOW_SWAP:
                 swap_total = to_bytes(
                     int(clean_output(file_has("SwapTotal", meminfo_data)))
                 )
@@ -446,14 +463,11 @@ def meminfo():
                 + char_padding(" ", (24 - len(str(memory_cached))))
                 + f"Cached: {convert_bytes(memory_cached)}\n"
                 f"         Used: {convert_bytes(memory_used)} ({memory_used_percent}%)"
-                + char_padding(" ", (11 - len(str(memory_free))))
+                + char_padding(" ", (10 - len(str(memory_free))))
                 + f"Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
                 f"    Available: {convert_bytes(memory_available)} ({memory_available_percent}%)"
                 + char_padding(" ", (18 - len(str(memory_cached))))
                 + f"Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
-                # f"     Available: {convert_bytes(memory_available)} ({memory_available_percent}%)\n"
-                # f"          Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
-                # f"        Cached: {convert_bytes(memory_cached)}\n"
             )
 
     except FileNotFoundError:
@@ -524,7 +538,7 @@ def procpid():
                     s_readlines = status_file.readlines()
 
                     pid_name = None
-                    pid_num = entry_dir.name
+                    # pid_num = entry_dir.name
                     rss = None
                     state = None
 
@@ -549,7 +563,7 @@ def procpid():
                         state = state_line.partition("(")[2].partition(")")[0].title()
 
                     if rss is not None:
-                        processes.append((pid_name, to_bytes(rss), state, pid_num))
+                        processes.append((pid_name, to_bytes(rss), state, entry_dir.name))
 
             except FileNotFoundError:
                 pass  # processes.append((None, 76328097200209, None, "64"))
@@ -560,11 +574,11 @@ def procpid():
         f"  --- /proc/pid/* {char_padding('-', 49)}\n   Name            PID         RSS            State"
     ]
 
-    for name, rss, pstate, pid in processes[: args.procs]:
+    for process_name, rss, pstate, pid in processes[: args.procs]:
         rss_usage = convert_bytes(rss) if rss is not None else "!?"
 
         formatted_data.append(
-            f"   {name or '!?!?'}{char_padding(' ', (15 - len(name or '!?!?')))}"
+            f"   {process_name or '!?!?'}{char_padding(' ', (15 - len(process_name or '!?!?')))}"
             f" {pid}{char_padding(' ', (11 - len(pid)))}"
             f" {rss_usage}{char_padding(' ', (14 - len(rss_usage)))} {pstate or '!?!?'}"
         )
@@ -636,11 +650,16 @@ def network_stats():
 
 func_dict = {
     "cpu": cpuinfo,
-    "mem": meminfo,
+    "mem": lambda: meminfo(SHOW_SWAP),
     "load": loadavg,
     "pid": procpid,
     "net": network_stats,
 }
+
+if args.func:
+    for name, func in func_dict.items():
+        if name not in args.func:
+            setattr(args, "no" + name, True)
 
 
 def main(stdscr):
@@ -659,8 +678,8 @@ def main(stdscr):
                 + "\n"
             )
 
-            for name, function in func_dict.items():
-                if not getattr(args, "no" + name, False):
+            for func_name, function in func_dict.items():
+                if not getattr(args, "no" + func_name, False):
                     stdscr.addstr(function())
 
             stdscr.addstr(f" {'-' * 67}")
