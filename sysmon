@@ -38,12 +38,14 @@ except OSError:
 
 # formatting and arguments
 
+
 def custom_help_formatter(prog):
+    """fixing the ugly looking help menu"""
     return argparse.HelpFormatter(prog, max_help_position=40)
+
 
 parser = argparse.ArgumentParser(formatter_class=custom_help_formatter)
 
-parser = argparse.ArgumentParser(formatter_class=formatter)
 parser.add_argument(
     "-nc",
     "--nocpu",
@@ -277,10 +279,11 @@ def cpu_temp(hwmon_dirs):
     """
 
     temperature = "!?"
+    allowed_types = ("coretemp", "fam15h_power", "k10temp", "acpitz")
 
     for temp_dir in hwmon_dirs:
         with en_open(temp_dir + "/name") as temp_type:
-            if (temp_type.read() in "coretemp", "fam15h_power", "k10temp", "acpitz"):
+            if temp_type.read().strip() in allowed_types:
                 try:
                     with en_open(temp_dir + "/temp1_input") as temp_value:
                         temperature = int(temp_value.readline().strip()) // 1000
