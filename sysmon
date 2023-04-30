@@ -441,7 +441,7 @@ def meminfo():
 
             return (
                 f"  --- /proc/meminfo {char_padding('-', 47)}\n"
-                f"    RAM: {char_padding(' ', 25)} Swap: Disabled or not available\n"
+                f"     RAM: {char_padding(' ', 25)} Swap: Disabled or not available\n"
                 f"         Total: {convert_bytes(memory_total)}\n"
                 f"          Used: {convert_bytes(memory_used)} ({memory_used_percent}%)\n"
                 f"   Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
