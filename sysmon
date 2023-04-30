@@ -20,7 +20,7 @@ import multiprocessing
 
 from datetime import datetime
 
-# savedir and hwmons setup
+# savedir, hwmons, swap setup
 
 SHOW_SWAP = None
 SAVE_DIR = None
@@ -38,7 +38,11 @@ except OSError:
 
 # formatting and arguments
 
-formatter = lambda prog: argparse.HelpFormatter(prog, max_help_position=40)
+def custom_help_formatter(prog):
+    return argparse.HelpFormatter(prog, max_help_position=40)
+
+parser = argparse.ArgumentParser(formatter_class=custom_help_formatter)
+
 parser = argparse.ArgumentParser(formatter_class=formatter)
 parser.add_argument(
     "-nc",
@@ -356,7 +360,7 @@ def cpuinfo():
 # sysmon meminfo
 
 
-def meminfo(SHOW_SWAP):
+def meminfo(show_swap):
     """
     /proc/meminfo - system memory information
     """
@@ -398,9 +402,9 @@ def meminfo(SHOW_SWAP):
                 to_bytes(int(clean_output(file_has("SwapTotal", meminfo_data)))) != 0
                 and SHOW_SWAP is not False
             ):
-                SHOW_SWAP = True
+                show_swap = True
 
-            if SHOW_SWAP:
+            if show_swap:
                 swap_total = to_bytes(
                     int(clean_output(file_has("SwapTotal", meminfo_data)))
                 )
@@ -538,7 +542,6 @@ def procpid():
                     s_readlines = status_file.readlines()
 
                     pid_name = None
-                    # pid_num = entry_dir.name
                     rss = None
                     state = None
 
@@ -563,7 +566,9 @@ def procpid():
                         state = state_line.partition("(")[2].partition(")")[0].title()
 
                     if rss is not None:
-                        processes.append((pid_name, to_bytes(rss), state, entry_dir.name))
+                        processes.append(
+                            (pid_name, to_bytes(rss), state, entry_dir.name)
+                        )
 
             except FileNotFoundError:
                 pass  # processes.append((None, 76328097200209, None, "64"))
