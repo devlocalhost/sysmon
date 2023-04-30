@@ -441,13 +441,15 @@ def meminfo():
 
             return (
                 f"  --- /proc/meminfo {char_padding('-', 47)}\n"
-                f"     RAM: {char_padding(' ', 25)}\n" # Swap: Disabled or no swap\n"
-                f"         Total: {convert_bytes(memory_total)}\n"
-                f"          Used: {convert_bytes(memory_used)} ({memory_used_percent}%)\n"
-                f"   Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
-                f"     Available: {convert_bytes(memory_available)} ({memory_available_percent}%)\n"
-                f"          Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
-                f"        Cached: {convert_bytes(memory_cached)}\n"
+                f"     RAM: {char_padding(' ', 25)}\n"
+                f"         Total: {convert_bytes(memory_total)}" + char_padding(" ", (19 - len(str(memory_available)))) + f"Available: {convert_bytes(memory_available)} ({memory_available_percent}%)\n"
+                f"          Used: {convert_bytes(memory_used)} ({memory_used_percent}%)" + char_padding(" ", (16 - len(str(memory_free)))) + f"Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
+
+                f"   Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)" + char_padding(" ", (14 - len(str(memory_cached)))) + f"Cached: {convert_bytes(memory_cached)}\n"
+
+                # f"     Available: {convert_bytes(memory_available)} ({memory_available_percent}%)\n"
+                # f"          Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
+                # f"        Cached: {convert_bytes(memory_cached)}\n"
             )
 
     except FileNotFoundError:
