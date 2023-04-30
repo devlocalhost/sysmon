@@ -682,7 +682,7 @@ def main(stdscr):
         while True:
             stdscr.addstr(
                 f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
-                + "-" * 34
+                + "-" * 42
                 + "\n"
             )
 
