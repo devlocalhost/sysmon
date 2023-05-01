@@ -8,7 +8,7 @@ using [**curses**](https://docs.python.org/3/howto/curses.html)
 ## sysmon on a mobile phone (with root access, because some things won't work)
 ![sysmon phone screenshot](screens/sysmon-phone.png)
 
-# old sysmon
+## old sysmon
 ![old sysmon screenshot](screens/sysmon-old.png)
 
 ## try before cloning
