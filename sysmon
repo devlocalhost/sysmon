@@ -41,7 +41,7 @@ except OSError:
 
 def custom_help_formatter(prog):
     """fixing the ugly looking help menu"""
-    return argparse.HelpFormatter(prog, max_help_position=40)
+    return argparse.HelpFormatter(prog, max_help_position=46)
 
 
 parser = argparse.ArgumentParser(formatter_class=custom_help_formatter)
@@ -104,7 +104,13 @@ parser.add_argument(
     metavar="FLOAT",
     help="refresh time. Default: 1.0",
 )
-parser.add_argument("--func", nargs="+", help="executes only the mentioned functions")
+parser.add_argument(
+    "-f",
+    "--func",
+    type=str,
+    nargs="+",
+    help="executes only the mentioned functions",
+)
 
 args = parser.parse_args()
 
