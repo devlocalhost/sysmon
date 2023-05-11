@@ -407,6 +407,15 @@ def meminfo(show_swap):
             memory_available_percent = round(100 - memory_used_percent, 1)
             memory_free_percent = round((int(memory_free) / int(memory_total)) * 100, 1)
 
+            memory_used_format = (
+                f"{convert_bytes(memory_used)} ({memory_used_percent}%)"
+            )
+            memory_avail_format = (
+                f"{convert_bytes(memory_available)} "
+                f"({memory_available_percent}%)"
+            )
+
+
             if (
                 to_bytes(int(clean_output(file_has("SwapTotal", meminfo_data)))) != 0
                 and SHOW_SWAP is not False
@@ -428,14 +437,6 @@ def meminfo(show_swap):
 
                 swap_used_percent = round((int(swap_used) / int(swap_total)) * 100, 1)
                 swap_available_percent = round(100 - swap_used_percent, 1)
-
-                memory_used_format = (
-                    f"{convert_bytes(memory_used)} ({memory_used_percent}%)"
-                )
-                memory_avail_format = (
-                    f"{convert_bytes(memory_available)} "
-                    f"({memory_available_percent}%)"
-                )
 
                 spaces_swap = (
                     25
@@ -476,7 +477,7 @@ def meminfo(show_swap):
                 + char_padding(" ", (24 - len(str(memory_cached))))
                 + f"Cached: {convert_bytes(memory_cached)}\n"
                 f"         Used: {convert_bytes(memory_used)} ({memory_used_percent}%)"
-                + char_padding(" ", (10 - len(str(memory_free))))
+                + char_padding(" ", (20 - len(str(memory_used_format))))
                 + f"Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
                 f"    Available: {convert_bytes(memory_available)} ({memory_available_percent}%)"
                 + char_padding(" ", (18 - len(str(memory_cached))))
