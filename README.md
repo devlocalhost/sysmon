@@ -1,8 +1,8 @@
-# sysmon, a system monitor ready to use
+## sysmon, a system monitor ready to use
 
 using [**curses**](https://docs.python.org/3/howto/curses.html)
 
-# preview
+## preview
 ## sysmon on a laptop
 ![sysmon laptop screenshot](screens/sysmon-pc.png)
 ## sysmon on a mobile phone (with root access, because some things won't work)
