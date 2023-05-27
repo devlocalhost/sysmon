@@ -43,135 +43,91 @@ def custom_help_formatter(prog):
     """fixing the ugly looking help menu"""
     return argparse.HelpFormatter(prog, max_help_position=46)
 
-
-parser_arguments = [
-    {
-        "short": "-nc",
-        "long": "--nocpu",
-        "action": "store_true",
-        "help": "disables cpuinfo (cpu information, like usage, model, and more)",
-        "type": None,
-        "nargs": None,
-        "default": None,
-        "metavar": None,
-    },
-    {
-        "short": "-nm",
-        "long": "--nomem",
-        "action": "store_true",
-        "help": "disables meminfo (memory information, like total, used and more)",
-        "type": None,
-        "nargs": None,
-        "default": None,
-        "metavar": None,
-    },
-    {
-        "short": "-nl",
-        "long": "--noload",
-        "action": "store_true",
-        "help": "disables loadavg (load times information, including uptime, and more)",
-        "type": None,
-        "nargs": None,
-        "default": None,
-        "metavar": None,
-    },
-    {
-        "short": "-np",
-        "long": "--nopid",
-        "action": "store_true",
-        "help": "disables procpid (shows the most vmrss consuming processes)",
-        "type": None,
-        "nargs": None,
-        "default": None,
-        "metavar": None,
-    },
-    {
-        "short": "-nn",
-        "long": "--nonet",
-        "action": "store_true",
-        "help": "disables network_stats (network stats, like received/transfered bytes, and more)",
-        "type": None,
-        "nargs": None,
-        "default": None,
-        "metavar": None,
-    },
-    {
-        "short": "-nt",
-        "long": "--notemp",
-        "action": "store_true",
-        "help": "disables cpu temperature",
-        "type": None,
-        "nargs": None,
-        "default": None,
-        "metavar": None,
-    },
-    {
-        "short": "-ns",
-        "long": "--noswap",
-        "action": "store_true",
-        "help": "disables swap information in meminfo",
-        "type": None,
-        "nargs": None,
-        "default": None,
-        "metavar": None,
-    },
-    {
-        "short": "-p",
-        "long": "--procs",
-        "action": None,
-        "help": "how many processes to show in procpid. Default: 6",
-        "type": int,
-        "nargs": None,
-        "default": 6,
-        "metavar": "INT",
-    },
-    {
-        "short": "-s",
-        "long": "--sleep",
-        "action": None,
-        "help": "refresh time. Default: 1.0",
-        "type": float,
-        "nargs": None,
-        "default": 1.0,
-        "metavar": "FLOAT",
-    },
-    {
-        "short": "-f",
-        "long": "--func",
-        "action": None,
-        "help": "executes only the mentioned functions",
-        "type": str,
-        "nargs": "+",
-        "default": None,
-        "metavar": None,
-    },
-]
-
 parser = argparse.ArgumentParser(formatter_class=custom_help_formatter)
 
-for argument in parser_arguments:
-    print(f"{argument['long']} added")
-    
-    try:
-        parser.add_argument(
-            argument["short"],
-            argument["long"],
-            action=argument["action"],
-            help=argument["help"],
-            # type=argument["type"],
-            # nargs=argument["nargs"],
-            default=argument["default"],
-            # metavar=argument["metavar"],
-        )
+arguments = [
+    {
+        "options": ["-nc", "--nocpu"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disables cpuinfo (cpu information, like usage, model, and more)"
+        }
+    },
+    {
+        "options": ["-nm", "--nomem"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disables meminfo (memory information, like total, used and more)"
+        }
+    },
+    {
+        "options": ["-nl", "--noload"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disables loadavg (load times information, including uptime, and more)"
+        }
+    },
+    {
+        "options": ["-np", "--nopid"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disables procpid (shows the most vmrss consuming processes)"
+        }
+    },
+    {
+        "options": ["-nn", "--nonet"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disables network_stats (network stats, like received/transfered bytes, and more)"
+        }
+    },
+    {
+        "options": ["-nt", "--notemp"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disables cpu temperature"
+        }
+    },
+    {
+        "options": ["-ns", "--noswap"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disables swap information in meminfo"
+        }
+    },
+    {
+        "options": ["-p", "--procs"],
+        "kwargs": {
+            "type": int,
+            "default": 6,
+            "metavar": "INT",
+            "help": "how many processes to show in procpid. Default: 6"
+        }
+    },
+    {
+        "options": ["-s", "--sleep"],
+        "kwargs": {
+            "type": float,
+            "default": 1,
+            "metavar": "FLOAT",
+            "help": "refresh time. Default: 1.0"
+        }
+    },
+    {
+        "options": ["-f", "--func"],
+        "kwargs": {
+            "type": str,
+            "nargs": "+",
+            "help": "executes only the mentioned functions"
+        }
+    }
+]
 
-    except:
-        pass
+for arg in arguments:
+    parser.add_argument(*arg["options"], **arg["kwargs"])
+
 
 args = parser.parse_args()
-
-print(args)
-print(f"{args.sleep}: {type(args.sleep)}")
-print(f"{args.procs}: {type(args.procs)}")
 
 if args.noswap:
     SHOW_SWAP = False
