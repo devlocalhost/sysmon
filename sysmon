@@ -411,10 +411,8 @@ def meminfo(show_swap):
                 f"{convert_bytes(memory_used)} ({memory_used_percent}%)"
             )
             memory_avail_format = (
-                f"{convert_bytes(memory_available)} "
-                f"({memory_available_percent}%)"
+                f"{convert_bytes(memory_available)} " f"({memory_available_percent}%)"
             )
-
 
             if (
                 to_bytes(int(clean_output(file_has("SwapTotal", meminfo_data)))) != 0
@@ -687,6 +685,8 @@ def main(stdscr):
 
     try:
         while True:
+            stdscr.erase()
+
             stdscr.addstr(
                 f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
                 + "-" * 42
@@ -708,8 +708,6 @@ def main(stdscr):
                 if kinput == ord("q"):
                     curses.curs_set(1)
                     break
-
-            stdscr.erase()
 
     except curses.error:
         sys.exit("Not enough space. Please resize")
