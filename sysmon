@@ -44,7 +44,7 @@ def custom_help_formatter(prog):
     return argparse.HelpFormatter(prog, max_help_position=46)
 
 
-parser = argparse.ArgumentParser(formatter_class=custom_help_formatter)
+parser = argparse.ArgumentParser(formatter_class=custom_help_formatter, description="sysmon, a system monitor made in python | github.com/devlocalhost/sysmon")
 
 arguments = [
     {
@@ -116,7 +116,7 @@ arguments = [
         "kwargs": {
             "type": str,
             "nargs": "+",
-            "help": "executes only the mentioned functions",
+            "help": "executes only the mentioned functions. can be: cpu, mem, load, pid, and/or net",
         },
     },
 ]
