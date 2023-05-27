@@ -42,17 +42,17 @@ because i like the old layout of sysmon too (but I rarely use it). i strongly su
 
 ## help and usage
 ```
-  -h, --help                  show this help message and exit
-  -nc, --nocpu                disables cpuinfo (cpu information, like usage, model, and more)
-  -nm, --nomem                disables meminfo (memory information, like total, used and more)
-  -nl, --noload               disables loadavg (load times information, including uptime, and more)
-  -np, --nopid                disables procpid (shows the most vmrss consuming processes)
-  -nn, --nonet                disables network_stats (network stats, like received/transfered bytes, and more)
-  -nt, --notemp               disables cpu temperature
-  -ns, --noswap               disables swap information in meminfo
-  -p INT, --procs INT         how many processes to show in procpid. Default: 6
-  -s FLOAT, --sleep FLOAT     refresh time. Default: 1.0
-  -f FUNC [FUNC ...], --func  FUNC [FUNC ...]  executes only the mentioned functions
+-h, --help                                  show this help message and exit
+  -nc, --nocpu                                disables cpuinfo (cpu information, like usage, model, and more)
+  -nm, --nomem                                disables meminfo (memory information, like total, used and more)
+  -nl, --noload                               disables loadavg (load times information, including uptime, and more)
+  -np, --nopid                                disables procpid (shows the most vmrss consuming processes)
+  -nn, --nonet                                disables network_stats (network stats, like received/transfered bytes, and more)
+  -nt, --notemp                               disables cpu temperature
+  -ns, --noswap                               disables swap information in meminfo
+  -p INT, --procs INT                         how many processes to show in procpid. Default: 6
+  -s FLOAT, --sleep FLOAT                     refresh time. Default: 1.0
+  -f FUNC [FUNC ...], --func FUNC [FUNC ...]  executes only the mentioned functions. can be: cpu, mem, load, pid, and/or net
 ```
 
 ## bug/suggestion/correction
