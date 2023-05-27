@@ -43,6 +43,7 @@ def custom_help_formatter(prog):
     """fixing the ugly looking help menu"""
     return argparse.HelpFormatter(prog, max_help_position=46)
 
+
 parser = argparse.ArgumentParser(formatter_class=custom_help_formatter)
 
 arguments = [
@@ -50,50 +51,47 @@ arguments = [
         "options": ["-nc", "--nocpu"],
         "kwargs": {
             "action": "store_true",
-            "help": "disables cpuinfo (cpu information, like usage, model, and more)"
-        }
+            "help": "disables cpuinfo (cpu information, like usage, model, and more)",
+        },
     },
     {
         "options": ["-nm", "--nomem"],
         "kwargs": {
             "action": "store_true",
-            "help": "disables meminfo (memory information, like total, used and more)"
-        }
+            "help": "disables meminfo (memory information, like total, used and more)",
+        },
     },
     {
         "options": ["-nl", "--noload"],
         "kwargs": {
             "action": "store_true",
-            "help": "disables loadavg (load times information, including uptime, and more)"
-        }
+            "help": "disables loadavg (load times information, including uptime, and more)",
+        },
     },
     {
         "options": ["-np", "--nopid"],
         "kwargs": {
             "action": "store_true",
-            "help": "disables procpid (shows the most vmrss consuming processes)"
-        }
+            "help": "disables procpid (shows the most vmrss consuming processes)",
+        },
     },
     {
         "options": ["-nn", "--nonet"],
         "kwargs": {
             "action": "store_true",
-            "help": "disables network_stats (network stats, like received/transfered bytes, and more)"
-        }
+            "help": "disables network_stats (network stats, like received/transfered bytes, and more)",
+        },
     },
     {
         "options": ["-nt", "--notemp"],
-        "kwargs": {
-            "action": "store_true",
-            "help": "disables cpu temperature"
-        }
+        "kwargs": {"action": "store_true", "help": "disables cpu temperature"},
     },
     {
         "options": ["-ns", "--noswap"],
         "kwargs": {
             "action": "store_true",
-            "help": "disables swap information in meminfo"
-        }
+            "help": "disables swap information in meminfo",
+        },
     },
     {
         "options": ["-p", "--procs"],
@@ -101,8 +99,8 @@ arguments = [
             "type": int,
             "default": 6,
             "metavar": "INT",
-            "help": "how many processes to show in procpid. Default: 6"
-        }
+            "help": "how many processes to show in procpid. Default: 6",
+        },
     },
     {
         "options": ["-s", "--sleep"],
@@ -110,17 +108,17 @@ arguments = [
             "type": float,
             "default": 1,
             "metavar": "FLOAT",
-            "help": "refresh time. Default: 1.0"
-        }
+            "help": "refresh time. Default: 1.0",
+        },
     },
     {
         "options": ["-f", "--func"],
         "kwargs": {
             "type": str,
             "nargs": "+",
-            "help": "executes only the mentioned functions"
-        }
-    }
+            "help": "executes only the mentioned functions",
+        },
+    },
 ]
 
 for arg in arguments:
