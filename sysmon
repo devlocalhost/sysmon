@@ -44,73 +44,81 @@ def custom_help_formatter(prog):
     return argparse.HelpFormatter(prog, max_help_position=46)
 
 
+parser_arguments = [
+    {
+        "short": "-nc",
+        "long": "--nocpu",
+        "action": "store_true",
+        "help": "disables cpuinfo (cpu information, like usage, model, and more)",
+    },
+    {
+        "short": "-nm",
+        "long": "--nomem",
+        "action": "store_true",
+        "help": "disables meminfo (memory information, like total, used and more)",
+    },
+    {
+        "short": "-nl",
+        "long": "--noload",
+        "action": "store_true",
+        "help": "disables loadavg (load times information, including uptime, and more)",
+    },
+    {
+        "short": "-np",
+        "long": "--nopid",
+        "action": "store_true",
+        "help": "disables procpid (shows the most vmrss consuming processes)",
+    },
+    {
+        "short": "-nn",
+        "long": "--nonet",
+        "action": "store_true",
+        "help": "disables network_stats (network stats, like received/transfered bytes, and more)",
+    },
+    {
+        "short": "-nt",
+        "long": "--notemp",
+        "action": "store_true",
+        "help": "disables cpu temperature",
+    },
+    {
+        "short": "-ns",
+        "long": "--noswap",
+        "action": "store_true",
+        "help": "disables swap information in meminfo",
+    },
+    {
+        "short": "-p",
+        "long": "--procs",
+        "action": None,
+        "type": int,
+        "default": 6,
+        "metavar": "INT",
+        "help": "how many processes to show in procpid. Default: 6",
+    },
+    {
+        "short": "-s",
+        "long": "--sleep",
+        "action": None,
+        "type": float,
+        "default": 1.0,
+        "metavar": "FLOAT",
+        "help": "refresh time. Default: 1.0",
+    },
+    {
+        "short": "-f",
+        "long": "--func",
+        "action": None,
+        "type": "str",
+        "nargs": "+",
+        "help": "executes only the mentioned functions",
+    },
+]
+
 parser = argparse.ArgumentParser(formatter_class=custom_help_formatter)
 
-parser.add_argument(
-    "-nc",
-    "--nocpu",
-    action="store_true",
-    help="disables cpuinfo (cpu information, like usage, model, and more)",
-)
-parser.add_argument(
-    "-nm",
-    "--nomem",
-    action="store_true",
-    help="disables meminfo (memory information, like total, used and more)",
-)
-parser.add_argument(
-    "-nl",
-    "--noload",
-    action="store_true",
-    help="disables loadavg (load times information, including uptime, and more)",
-)
-parser.add_argument(
-    "-np",
-    "--nopid",
-    action="store_true",
-    help="disables procpid (shows the most vmrss consuming processes)",
-)
-parser.add_argument(
-    "-nn",
-    "--nonet",
-    action="store_true",
-    help="disables network_stats (network stats, like received/transfered bytes, and more)",
-)
-parser.add_argument(
-    "-nt",
-    "--notemp",
-    action="store_true",
-    help="disables cpu temperature",
-)
-parser.add_argument(
-    "-ns",
-    "--noswap",
-    action="store_true",
-    help="disables swap information in meminfo",
-)
-parser.add_argument(
-    "-p",
-    "--procs",
-    type=int,
-    default=6,
-    metavar="INT",
-    help="how many processes to show in procpid. Default: 6",
-)
-parser.add_argument(
-    "-s",
-    "--sleep",
-    type=float,
-    default=1,
-    metavar="FLOAT",
-    help="refresh time. Default: 1.0",
-)
-parser.add_argument(
-    "-f",
-    "--func",
-    type=str,
-    nargs="+",
-    help="executes only the mentioned functions",
-)
+for argument in parser_arguments:
+    parser.add_argument(argument["short"], argument["long"], action=argument["action"], help=argument["help"])
 
 args = parser.parse_args()
 
