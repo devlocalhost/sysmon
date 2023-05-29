@@ -44,7 +44,10 @@ def custom_help_formatter(prog):
     return argparse.HelpFormatter(prog, max_help_position=46)
 
 
-parser = argparse.ArgumentParser(formatter_class=custom_help_formatter, description="sysmon, a system monitor made in python | github.com/devlocalhost/sysmon")
+parser = argparse.ArgumentParser(
+    formatter_class=custom_help_formatter,
+    description="sysmon, a system monitor made in python | github.com/devlocalhost/sysmon",
+)
 
 arguments = [
     {
@@ -94,6 +97,13 @@ arguments = [
         },
     },
     {
+        "options": ["-m", "--metric"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "use metric (1000) instead of IEC (1024) unit for data convertion",
+        },
+    },
+    {
         "options": ["-p", "--procs"],
         "kwargs": {
             "type": int,
@@ -116,7 +126,7 @@ arguments = [
         "kwargs": {
             "type": str,
             "nargs": "+",
-            "help": "executes only the mentioned functions. can be: cpu, mem, load, pid, and/or net",
+            "help": "executes only the mentioned functions. can be: cpu, mem, load, pid, and/or net (usage: --func mem load)",
         },
     },
 ]
@@ -129,6 +139,12 @@ args = parser.parse_args()
 
 if args.noswap:
     SHOW_SWAP = False
+
+CONVERSION_TYPE = 1024
+
+if args.metric:
+    CONVERSION_TYPE = 1000
+
 
 # formatting and arguments
 
@@ -145,9 +161,11 @@ def char_padding(char, value):
 def convert_bytes(fsize, units=(" bytes", " KiB", " MiB", " GiB", " TiB")):
     """convert bytes to k, m, g and t"""
     for unit in units:
-        if fsize < 1024:
-            return f"{fsize:.2f}{unit}"
-        fsize /= 1024
+        if fsize < CONVERSION_TYPE:
+            return f"{fsize:.2f}{unit if CONVERSION_TYPE == 1024 else unit.replace('i', '')}"
+
+        fsize /= CONVERSION_TYPE
+
     return f"{fsize:.2f} {units[-1]}"
 
 
@@ -634,25 +652,25 @@ def network_stats():
                 tx_file.write("0")
 
         with en_open(adapter_directory + "/statistics/rx_bytes") as received:
-            received = int(received.read().strip())
+            received = received.read().strip()
 
         with en_open(adapter_directory + "/statistics/tx_bytes") as transferred:
-            transferred = int(transferred.read().strip())
+            transferred = transferred.read().strip()
 
         with en_open(f"{SAVE_DIR}/rx") as recv_speed:
-            recv_speed = abs(int(recv_speed.read().strip()) - received)
+            recv_speed = abs(int(recv_speed.read().strip()) - int(received))
 
         with en_open(f"{SAVE_DIR}/tx") as transf_speed:
-            transf_speed = abs(int(transf_speed.read().strip()) - transferred)
+            transf_speed = abs(int(transf_speed.read().strip()) - int(transferred))
 
         with en_open(f"{SAVE_DIR}/rx", "w") as rxsave:
-            rxsave.write(str(received))
+            rxsave.write(received if len(received) != 0 else "0")
 
         with en_open(f"{SAVE_DIR}/tx", "w") as txsave:
-            txsave.write(str(transferred))
+            txsave.write(transferred if len(transferred) != 0 else "0")
 
-        human_received = convert_bytes(received)
-        human_transferred = convert_bytes(transferred)
+        human_received = convert_bytes(int(received))
+        human_transferred = convert_bytes(int(transferred))
 
         return (
             f"  --- /sys/class/net/{device_name} {char_padding('-', (45 - len(device_name)))}\n"

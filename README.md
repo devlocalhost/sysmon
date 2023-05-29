@@ -42,7 +42,7 @@ because i like the old layout of sysmon too (but I rarely use it). i strongly su
 
 ## help and usage
 ```
--h, --help                                  show this help message and exit
+  -h, --help                                  show this help message and exit
   -nc, --nocpu                                disables cpuinfo (cpu information, like usage, model, and more)
   -nm, --nomem                                disables meminfo (memory information, like total, used and more)
   -nl, --noload                               disables loadavg (load times information, including uptime, and more)
@@ -50,9 +50,11 @@ because i like the old layout of sysmon too (but I rarely use it). i strongly su
   -nn, --nonet                                disables network_stats (network stats, like received/transfered bytes, and more)
   -nt, --notemp                               disables cpu temperature
   -ns, --noswap                               disables swap information in meminfo
+  -m, --metric                                use metric (1000) instead of IEC (1024) unit for data convertion
   -p INT, --procs INT                         how many processes to show in procpid. Default: 6
   -s FLOAT, --sleep FLOAT                     refresh time. Default: 1.0
-  -f FUNC [FUNC ...], --func FUNC [FUNC ...]  executes only the mentioned functions. can be: cpu, mem, load, pid, and/or net
+  -f FUNC [FUNC ...], --func FUNC [FUNC ...]  executes only the mentioned functions. can be: cpu, mem, load, pid, and/or net (usage: --func mem load)
+
 ```
 
 ## bug/suggestion/correction
