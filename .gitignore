@@ -1,3 +1,4 @@
 rewrite/
 tests/
-TODO
+TODO.md
+plugins/__pycache__
