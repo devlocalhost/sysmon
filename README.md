@@ -5,11 +5,9 @@ using [**curses**](https://docs.python.org/3/howto/curses.html)
 ## preview
 ## sysmon on a laptop
 ![sysmon laptop screenshot](screens/sysmon-pc.png)
-## sysmon on a mobile phone (with root access, because some things won't work)
+## sysmon on a mobile phone
+(with root access, because some things won't work)
 ![sysmon phone screenshot](screens/sysmon-phone.png)
-
-## old sysmon
-![old sysmon screenshot](screens/sysmon-old.png)
 
 ## try before cloning
 ```sh
@@ -36,9 +34,6 @@ sysmon is *another* system monitor which is **ready to use** and easy to underst
 2. ive heard this depends on the kernel, i am not sure. sysmon might not show the max frequency the manufacturer website reports
 
 3. ~~Used = MemTotal - MemAvailable. dont worry if htop shows less ram used. htop counts it differently (it also substracts MemCached [i think] which i dont do that) i am using 2 implementations/calculations for this: the [htop way](https://stackoverflow.com/a/41251290) (but a bit modified), and "my way". the htop way is: Used = MemTotal - MemFree - Buffers - (Cached + SReclaimable - Shmem). my way is: Used = MemTotal - MemAvailable. now, my way is accurate, but a friend told me htop way is more accurate, so ill keep both unless i get annoyed by it. also, you may notice that actual used percent + available percent might not equal to 100 ("my way" used percent + available does). why? im not sure. you may also notice that it wont be that accurate to htop. for me, the difference is 4mb (htop shows 4mb less)~~. there are 2 used columns, one is the accurate way (matching `htop` and `free`), the other is MemTotal - MemAvailable.
-
-## why 2 files?
-because i like the old layout of sysmon too (but I rarely use it). i strongly suggest you to use the new sysmon, because better code, improvements, and faster
 
 ## help and usage
 ```
