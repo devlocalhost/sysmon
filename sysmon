@@ -118,7 +118,7 @@ def parse_arguments():
 
 # sysmon printing part
 
-def start_sysmon(stdscr, plugins):
+def start_sysmon(stdscr, plugins, sleep):
     """main printing method, what you see when you run sysmon"""
 
     stdscr.nodelay(True)
@@ -142,7 +142,7 @@ def start_sysmon(stdscr, plugins):
             stdscr.addstr(f" {'-' * 67}")
             stdscr.refresh()
 
-            rlist = select.select([sys.stdin], [], [], args.sleep)
+            rlist = select.select([sys.stdin], [], [], sleep)
 
             if rlist:
                 kinput = stdscr.getch()
@@ -180,7 +180,7 @@ def main():
         if getattr(args, "no" + plugin_name):
             plugins_array.pop(plugins_array.index("plugins." + plugin_name))
 
-    curses.wrapper(start_sysmon, plugins_array)
+    curses.wrapper(start_sysmon, plugins_array, args.sleep)
 
 
 if __name__ == '__main__':
