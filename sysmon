@@ -15,49 +15,37 @@ import select
 import argparse
 import importlib
 
-# formatting and arguments
-
-def custom_help_formatter(prog):
-    """fixing the ugly looking help menu"""
-    return argparse.HelpFormatter(prog, max_help_position=46)
-
-
-parser = argparse.ArgumentParser(
-    formatter_class=custom_help_formatter,
-    description="sysmon, a system monitor made in python | github.com/devlocalhost/sysmon",
-)
-
 arguments = [
     {
-        "options": ["-nc", "--nocpu"],
+        "options": ["-nc", "--nocpuinfo"],
         "kwargs": {
             "action": "store_true",
             "help": "disables cpuinfo (cpu information, like usage, model, and more)",
         },
     },
     {
-        "options": ["-nm", "--nomem"],
+        "options": ["-nm", "--nomeminfo"],
         "kwargs": {
             "action": "store_true",
             "help": "disables meminfo (memory information, like total, used and more)",
         },
     },
     {
-        "options": ["-nl", "--noload"],
+        "options": ["-nl", "--noloadavg"],
         "kwargs": {
             "action": "store_true",
             "help": "disables loadavg (load times information, including uptime, and more)",
         },
     },
     {
-        "options": ["-np", "--nopid"],
+        "options": ["-np", "--noprocpid"],
         "kwargs": {
             "action": "store_true",
             "help": "disables procpid (shows the most vmrss consuming processes)",
         },
     },
     {
-        "options": ["-nn", "--nonet"],
+        "options": ["-nn", "--nonetstats"],
         "kwargs": {
             "action": "store_true",
             "help": "disables network_stats (network stats, like received/transfered bytes, and more)",
@@ -109,18 +97,36 @@ arguments = [
     },
 ]
 
-for arg in arguments:
-    parser.add_argument(*arg["options"], **arg["kwargs"])
 
-args = parser.parse_args()
+def custom_help_formatter(prog):
+    """fixing the ugly looking help menu"""
+    return argparse.HelpFormatter(prog, max_help_position=46)
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        formatter_class=custom_help_formatter,
+        description="sysmon, a system monitor made in python | github.com/devlocalhost/sysmon",
+    )
+
+    for arg in arguments:
+        parser.add_argument(*arg["options"], **arg["kwargs"])
+
+    return parser.parse_args()
 
 # formatting and arguments
 
 # sysmon printing part
 
-funcs_array = ['plugins.cpuinfo', 'plugins.meminfo', 'plugins.loadavg', 'plugins.procpid', 'plugins.netstats']
+funcs_array = [
+    'plugins.cpuinfo',
+    'plugins.meminfo',
+    'plugins.loadavg',
+    'plugins.procpid',
+    'plugins.netstats'
+]
 
-def main(stdscr):
+def start_sysmon(stdscr):
     """main printing method, what you see when you run sysmon"""
 
     stdscr.nodelay(True)
@@ -163,6 +169,27 @@ def main(stdscr):
     curses.endwin()
 
 
-curses.wrapper(main)
+def main():
+    plugins_array = [
+        'plugins.cpuinfo',
+        'plugins.meminfo',
+        'plugins.loadavg',
+        'plugins.procpid',
+        'plugins.netstats'
+    ]
 
-# sysmon printing part
+    args = parse_arguments()
+
+    for plugin in plugins_array:
+        plugin_name = plugin.split(".")[1]
+
+        if getattr(args, "no" + plugin_name):
+            plugins_array.pop(plugins_array.index("plugins." + plugin_name))
+
+    # sys.exit(args)
+
+    curses.wrapper(start_sysmon)
+
+
+if __name__ == '__main__':
+    main()
