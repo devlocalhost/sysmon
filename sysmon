@@ -118,15 +118,7 @@ def parse_arguments():
 
 # sysmon printing part
 
-funcs_array = [
-    'plugins.cpuinfo',
-    'plugins.meminfo',
-    'plugins.loadavg',
-    'plugins.procpid',
-    'plugins.netstats'
-]
-
-def start_sysmon(stdscr):
+def start_sysmon(stdscr, plugins):
     """main printing method, what you see when you run sysmon"""
 
     stdscr.nodelay(True)
@@ -144,7 +136,7 @@ def start_sysmon(stdscr):
                 + "\n"
             )
 
-            for func in funcs_array:
+            for func in plugins:
                 stdscr.addstr(importlib.import_module(func).main())
 
             stdscr.addstr(f" {'-' * 67}")
@@ -180,15 +172,15 @@ def main():
 
     args = parse_arguments()
 
+    print(args)
+
     for plugin in plugins_array:
         plugin_name = plugin.split(".")[1]
 
         if getattr(args, "no" + plugin_name):
             plugins_array.pop(plugins_array.index("plugins." + plugin_name))
 
-    # sys.exit(args)
-
-    curses.wrapper(start_sysmon)
+    curses.wrapper(start_sysmon, plugins_array)
 
 
 if __name__ == '__main__':
