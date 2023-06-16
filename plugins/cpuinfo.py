@@ -15,6 +15,7 @@ from .extra import (
     SAVE_DIR,
     clean_cpu_model,
     convert_bytes,
+    to_bytes,
     char_padding,
     SHOW_TEMPERATURE,
 )
@@ -39,33 +40,29 @@ def get_info():
     """
 
     data_dict["cpu_arch"] = platform.machine()
+    data_dict["cpu_cache"] = convert_bytes(int(subprocess.run(["getconf", "LEVEL2_CACHE_SIZE"],capture_output=True,text=True,check=False).stdout.strip()))
 
     try:
         with en_open("/proc/cpuinfo") as cpuinfo_file:
             for line in cpuinfo_file:
+                if len(data_dict["cpu_cache"]) == 0:
+                    if line.startswith("cache size"):
+                        data_dict["cpu_cache"] = convert_bytes(to_bytes(int(line.split(":")[1].strip().replace("kB", ""))))
+
                 if line.startswith("cpu MHz"):
                     data_dict["cpu_freq"] = line.split(":")[1].strip()
 
-                elif line.startswith("model name"):
+                if line.startswith("model name"):
                     model = clean_cpu_model(line.split(":")[1].strip())
                     data_dict["cpu_model"] = (
                         model if len(model) < 25 else model[:25] + "..."
                     )
 
-                elif line.startswith("Hardware") and data_dict["cpu_arch"] in (
+                if line.startswith("Hardware") and data_dict["cpu_arch"] in (
                     "aarch64",
                     "armv7l",
                 ):
                     data_dict["cpu_model"] = clean_cpu_model(line.split(":")[1].strip())
-
-            data_dict["cpu_cache"] = int(
-                subprocess.run(
-                    ["getconf", "LEVEL2_CACHE_SIZE"],
-                    capture_output=True,
-                    text=True,
-                    check=False,
-                ).stdout.strip()
-            )
 
             # why using getconf and os.sysconf, instead of os.sysconf only?
             # because os.sysconf LEVEL2_CACHE_SIZE wont return anything on my system
@@ -183,5 +180,5 @@ def main():
         + " " * (3 - len(str(cpu_usage_num)))
         + arch_model_temp_line
         + "\n"
-        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {data_dict['cpu_freq']} MHz | L2 Cache: {convert_bytes(data_dict['cpu_cache'])}\n"
+        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {data_dict['cpu_freq']} MHz | L2 Cache: {data_dict['cpu_cache']}\n"
     )
