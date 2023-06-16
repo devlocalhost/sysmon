@@ -97,7 +97,7 @@ def main():
                     f"     RAM: {char_padding(' ', 25)}Swap:\n"
                     f"         Total: {convert_bytes(memory_total)}"
                     + char_padding(
-                        " ", (spaces_swap - 1 - len(convert_bytes(swap_total)))
+                        " ", (spaces_swap - len(convert_bytes(swap_total)))
                     )
                     + f"Total: {convert_bytes(swap_total)}\n"
                     f"          Used: {memory_used_format}"
