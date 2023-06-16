@@ -23,11 +23,11 @@ from .extra import (
 hwmon_dirs_out = glob.glob("/sys/class/hwmon/*")
 
 data_dict = {
-    "cpu_freq": 0,
-    "cpu_cache": 0,
+    "cpu_freq": "Unknown",
+    "cpu_cache": "Unknown",
     "cpu_cores_all": 0,
-    "cpu_model": "",
-    "cpu_arch": "",
+    "cpu_model": "Unknown",
+    "cpu_arch": "Unknown",
 }
 
 
@@ -59,7 +59,7 @@ def get_info():
     try:
         with en_open("/proc/cpuinfo") as cpuinfo_file:
             for line in cpuinfo_file:
-                if data_dict["cpu_cache"] == 0:
+                if data_dict["cpu_cache"] == "Unknown":
                     if line.startswith("cache size"):
                         data_dict["cpu_cache"] = convert_bytes(
                             to_bytes(int(line.split(":")[1].strip().replace("kB", "")))
