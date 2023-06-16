@@ -40,14 +40,25 @@ def get_info():
     """
 
     data_dict["cpu_arch"] = platform.machine()
-    data_dict["cpu_cache"] = convert_bytes(int(subprocess.run(["getconf", "LEVEL2_CACHE_SIZE"],capture_output=True,text=True,check=False).stdout.strip()))
+    data_dict["cpu_cache"] = convert_bytes(
+        int(
+            subprocess.run(
+                ["getconf", "LEVEL2_CACHE_SIZE"],
+                capture_output=True,
+                text=True,
+                check=False,
+            ).stdout.strip()
+        )
+    )
 
     try:
         with en_open("/proc/cpuinfo") as cpuinfo_file:
             for line in cpuinfo_file:
                 if len(data_dict["cpu_cache"]) == 0:
                     if line.startswith("cache size"):
-                        data_dict["cpu_cache"] = convert_bytes(to_bytes(int(line.split(":")[1].strip().replace("kB", ""))))
+                        data_dict["cpu_cache"] = convert_bytes(
+                            to_bytes(int(line.split(":")[1].strip().replace("kB", "")))
+                        )
 
                 if line.startswith("cpu MHz"):
                     data_dict["cpu_freq"] = line.split(":")[1].strip()
@@ -155,7 +166,9 @@ def cpu_temp(hwmon_dirs):
 
     return temperature
 
+
 get_info()
+
 
 def main():
     """
