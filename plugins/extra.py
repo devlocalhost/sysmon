@@ -8,8 +8,19 @@ needed for sysmon to function
 import os
 import glob
 
+
+# general vars
 SAVE_DIR = None
 CONVERSION_TYPE = 1024
+
+# cpuinfo.py vars
+SHOW_TEMPERATURE = True
+
+# meminfo.py vars
+SHOW_SWAP = True
+
+# procpid.py vars
+PROCS = 6
 
 try:
     os.makedirs("/tmp/sysmon_save", exist_ok=True)

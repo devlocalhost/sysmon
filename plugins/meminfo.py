@@ -13,9 +13,8 @@ from .extra import (
     char_padding,
     clean_output,
     file_has,
+    SHOW_SWAP,
 )
-
-SHOW_SWAP = True
 
 
 def main():

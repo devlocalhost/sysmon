@@ -8,19 +8,80 @@ import os
 import sys
 import glob
 import platform
-import multiprocessing
+import subprocess
 
 from .extra import (
     en_open,
     SAVE_DIR,
     clean_cpu_model,
     convert_bytes,
-    to_bytes,
     char_padding,
+    SHOW_TEMPERATURE,
 )
 
 hwmon_dirs_out = glob.glob("/sys/class/hwmon/*")
-SHOW_TEMPERATURE = True
+
+data_dict = {
+    "cpu_freq": 0,
+    "cpu_cache": 0,
+    "cpu_cores_all": 0,
+    "cpu_model": "",
+    "cpu_arch": "",
+}
+
+
+def get_info():
+    """
+    instead of repeatedly getting the information that usually doesnt change
+    a lot (or even rarely changes), why not get them once?
+
+    get 'static' information, like cpu cache, cores count, and cpu freq
+    """
+
+    data_dict["cpu_arch"] = platform.machine()
+
+    try:
+        with en_open("/proc/cpuinfo") as cpuinfo_file:
+            for line in cpuinfo_file:
+                if line.startswith("cpu MHz"):
+                    data_dict["cpu_freq"] = line.split(":")[1].strip()
+
+                elif line.startswith("model name"):
+                    model = clean_cpu_model(line.split(":")[1].strip())
+                    data_dict["cpu_model"] = (
+                        model if len(model) < 25 else model[:25] + "..."
+                    )
+
+                elif line.startswith("Hardware") and data_dict["cpu_arch"] in (
+                    "aarch64",
+                    "armv7l",
+                ):
+                    data_dict["cpu_model"] = clean_cpu_model(line.split(":")[1].strip())
+
+            data_dict["cpu_cache"] = int(
+                subprocess.run(
+                    ["getconf", "LEVEL2_CACHE_SIZE"],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                ).stdout.strip()
+            )
+
+            # why using getconf and os.sysconf, instead of os.sysconf only?
+            # because os.sysconf LEVEL2_CACHE_SIZE wont return anything on my system
+            # there are better ways to handle this yeah, but for now, it is what it is
+
+            data_dict["cpu_cores_all"] = os.sysconf(
+                os.sysconf_names["SC_NPROCESSORS_CONF"]
+            )
+
+    except FileNotFoundError:
+        sys.exit("Couldnt find /proc/stat file")
+
+    except PermissionError:
+        sys.exit(
+            "Couldnt read the file. Do you have read permissions for /proc/stat file?"
+        )
 
 
 def cpu_usage():
@@ -97,65 +158,30 @@ def cpu_temp(hwmon_dirs):
 
     return temperature
 
+get_info()
 
 def main():
     """
     /proc/cpuinfo - cpu information
     """
 
-    try:
-        with en_open("/proc/cpuinfo") as cpuinfo_file:
-            cpu_freq = "Unknown"
-            model = "Unknown"
-            cache_size = "0"
-            architecture = platform.machine()
+    cpu_usage_num = cpu_usage()
+    cpu_temperature = str(cpu_temp(hwmon_dirs_out))
 
-            for line in cpuinfo_file:
-                if line.startswith("cpu MHz"):
-                    cpu_freq = line.split(":")[1].strip()
+    if cpu_temperature != "!?" and SHOW_TEMPERATURE:
+        cpu_temperature += " °C"
+        arch_model_temp_line = f"({cpu_temperature}) | CPU: {data_dict['cpu_arch']} {data_dict['cpu_model']}"
 
-                elif line.startswith("model name"):
-                    model = clean_cpu_model(line.split(":")[1].strip())
-                    model = model if len(model) < 25 else model[:25] + "..."
-
-                elif line.startswith("cache size"):
-                    cache_size = line.split(":")[1].strip().replace("KB", "")
-
-                elif line.startswith("Hardware") and architecture in (
-                    "aarch64",
-                    "armv7l",
-                ):
-                    model = clean_cpu_model(line.split(":")[1].strip())
-
-            total_cores = os.cpu_count() or "Unknown"
-            total_threads = multiprocessing.cpu_count()
-
-            cpu_usage_num = cpu_usage()
-            cpu_temperature = str(cpu_temp(hwmon_dirs_out))
-
-            if cpu_temperature != "!?" and SHOW_TEMPERATURE:
-                cpu_temperature += " °C"
-                arch_model_temp_line = f"({cpu_temperature}) | {architecture} {model}"
-
-            else:
-                arch_model_temp_line = f"| {architecture} {model}"
-
-            cache_memory = convert_bytes(to_bytes(int(cache_size))) + " cache memory"
-
-        return (
-            f"  --- /proc/cpuinfo {char_padding('-', 47)}\n"
-            f"{char_padding(' ', 11)}Usage: {cpu_usage_num}% "
-            + " " * (3 - len(str(cpu_usage_num)))
-            + arch_model_temp_line
-            + "\n"
-            f"   Cores/Threads: {total_cores}/{total_threads} @ {cpu_freq} MHz"
-            f" with {cache_memory}\n"
+    else:
+        arch_model_temp_line = (
+            f"| CPU: {data_dict['cpu_arch']} {data_dict['cpu_model']}"
         )
 
-    except FileNotFoundError:
-        sys.exit("Couldnt find /proc/cpuinfo file")
-
-    except PermissionError:
-        sys.exit(
-            "Couldnt read the file. Do you have read permissions for /proc/meminfo file?"
-        )
+    return (
+        f"  --- /proc/cpuinfo {char_padding('-', 47)}\n"
+        f"{char_padding(' ', 9)}Usage: {cpu_usage_num}% "
+        + " " * (3 - len(str(cpu_usage_num)))
+        + arch_model_temp_line
+        + "\n"
+        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {data_dict['cpu_freq']} MHz | L2 Cache: {convert_bytes(data_dict['cpu_cache'])}\n"
+    )

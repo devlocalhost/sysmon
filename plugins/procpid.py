@@ -12,9 +12,8 @@ from .extra import (
     convert_bytes,
     clean_output,
     to_bytes,
+    PROCS,
 )
-
-PROCS = 6
 
 
 def main():

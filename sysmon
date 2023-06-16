@@ -8,6 +8,7 @@ made by dev64 (also known as .dev, devlocalhost)
 """
 
 from datetime import datetime
+from plugins import extra
 
 import sys
 import curses
@@ -170,10 +171,6 @@ def main():
         'plugins.netstats'
     ]
 
-    args = parse_arguments()
-
-    print(args)
-
     for plugin in plugins_array:
         plugin_name = plugin.split(".")[1]
 
@@ -184,4 +181,18 @@ def main():
 
 
 if __name__ == '__main__':
+    args = parse_arguments()
+
+    if args.notemp:
+        extra.SHOW_TEMPERATURE = False
+
+    if args.noswap:
+        extra.SHOW_SWAP = False
+
+    if args.procs:
+        extra.PROCS = args.procs
+
+    if args.metric:
+        extra.CONVERSION_TYPE = 1000
+
     main()
