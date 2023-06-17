@@ -88,14 +88,6 @@ arguments = [
             "help": "refresh time. Default: 1.0",
         },
     },
-    {
-        "options": ["-f", "--func"],
-        "kwargs": {
-            "type": str,
-            "nargs": "+",
-            "help": "executes only the mentioned functions. can be: cpu, mem, load, pid, and/or net (usage: --func mem load)",
-        },
-    },
 ]
 
 
