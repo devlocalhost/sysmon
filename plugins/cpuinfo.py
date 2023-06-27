@@ -194,7 +194,7 @@ def main():
 
     return (
         f"  --- /proc/cpuinfo {char_padding('-', 47)}\n"
-        f"{char_padding(' ', 9)}Usage: {cpu_usage_num}%"
+        f"{char_padding(' ', 9)}Usage: {cpu_usage_num}% "
         + " " * (3 - len(str(cpu_usage_num)))
         + arch_model_temp_line
         + "\n"
