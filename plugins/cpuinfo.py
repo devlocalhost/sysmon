@@ -156,7 +156,7 @@ def cpu_temp(hwmon_dirs):
     """
 
     temperature = "!?"
-    allowed_types = ("coretemp", "fam15h_power", "k10temp", "acpitz")
+    allowed_types = ("coretemp", "fam15h_power", "k10temp", "acpitz", "cpu_1_0_usr")
 
     for temp_dir in hwmon_dirs:
         with en_open(temp_dir + "/name") as temp_type:
@@ -194,7 +194,7 @@ def main():
 
     return (
         f"  --- /proc/cpuinfo {char_padding('-', 47)}\n"
-        f"{char_padding(' ', 9)}Usage: {cpu_usage_num}% "
+        f"{char_padding(' ', 9)}Usage: {cpu_usage_num}%"
         + " " * (3 - len(str(cpu_usage_num)))
         + arch_model_temp_line
         + "\n"
