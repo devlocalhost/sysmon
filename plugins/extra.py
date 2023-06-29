@@ -22,6 +22,9 @@ SHOW_SWAP = True
 # procpid.py vars
 PROCS = 6
 
+# netstats vars
+INTERFACE = None
+
 try:
     os.makedirs("/tmp/sysmon_save", exist_ok=True)
     SAVE_DIR = "/tmp/sysmon_save"
@@ -56,13 +59,18 @@ def en_open(file, method="r"):
 
 def detect_network_adapter():
     """detect an active network adapter/card/whatever and return its directory"""
-    for adapter_dir in glob.glob("/sys/class/net/*"):
-        with en_open(adapter_dir + "/type") as device_type:
-            if int(device_type.read()) != 772:  # if not loopback device
-                with en_open(adapter_dir + "/operstate") as status:
-                    if status.read().strip() == "up":
-                        return adapter_dir
-    return None
+
+    if INTERFACE is None:
+        for adapter_dir in glob.glob("/sys/class/net/*"):
+            with en_open(adapter_dir + "/type") as device_type:
+                if int(device_type.read()) != 772:  # if not loopback device
+                    with en_open(adapter_dir + "/operstate") as status:
+                        if status.read().strip() == "up":
+                            return adapter_dir
+        return None
+
+    else:
+        return "/sys/class/net/" + INTERFACE
 
 
 def file_has(string, lines):

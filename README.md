@@ -37,18 +37,19 @@ sysmon is *another* system monitor which is **ready to use** and easy to underst
 
 ## help and usage
 ```
-  -h, --help                                  show this help message and exit
-  -nc, --nocpu                                disables cpuinfo (cpu information, like usage, model, and more)
-  -nm, --nomem                                disables meminfo (memory information, like total, used and more)
-  -nl, --noload                               disables loadavg (load times information, including uptime, and more)
-  -np, --nopid                                disables procpid (shows the most vmrss consuming processes)
-  -nn, --nonet                                disables network_stats (network stats, like received/transfered bytes, and more)
-  -nt, --notemp                               disables cpu temperature
-  -ns, --noswap                               disables swap information in meminfo
-  -m, --metric                                use metric (1000) instead of IEC (1024) unit for data convertion
-  -p INT, --procs INT                         how many processes to show in procpid. Default: 6
-  -s FLOAT, --sleep FLOAT                     refresh time. Default: 1.0
-  -f FUNC [FUNC ...], --func FUNC [FUNC ...]  executes only the mentioned functions. can be: cpu, mem, load, pid, and/or net (usage: --func mem load)
+  -h, --help                           show this help message and exit
+  -nc, --nocpuinfo                     disables cpuinfo (cpu information, like usage, model, and more)
+  -nm, --nomeminfo                     disables meminfo (memory information, like total, used and more)
+  -nl, --noloadavg                     disables loadavg (load times information, including uptime, and more)
+  -np, --noprocpid                     disables procpid (shows the most vmrss consuming processes)
+  -nn, --nonetstats                    disables network_stats (network stats, like received/transfered bytes, and
+                                       more)
+  -nt, --notemp                        disables cpu temperature
+  -ns, --noswap                        disables swap information in meminfo
+  -m, --metric                         use metric (1000) instead of IEC (1024) unit for data convertion
+  -p INT, --procs INT                  how many processes to show in procpid. Default: 6
+  -s FLOAT, --sleep FLOAT              refresh time. Default: 1.0
+  -i INTERFACE, --interface INTERFACE  select which interface to use for netstats
 ```
 
 ## bug/suggestion/correction

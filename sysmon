@@ -88,6 +88,13 @@ arguments = [
             "help": "refresh time. Default: 1.0",
         },
     },
+    {
+        "options": ["-i", "--interface"],
+        "kwargs": {
+            "type": str,
+            "help": "select which interface to use for netstats",
+        },
+    },
 ]
 
 
@@ -188,5 +195,8 @@ if __name__ == '__main__':
 
     if args.metric:
         extra.CONVERSION_TYPE = 1000
+
+    if args.interface:
+        extra.INTERFACE = args.interface
 
     main()
