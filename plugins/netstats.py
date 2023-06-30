@@ -4,6 +4,7 @@
 netstats plugin for sysmon
 """
 import os
+import sys
 
 from .extra import (
     en_open,
@@ -30,14 +31,18 @@ def main():
             with en_open(f"{SAVE_DIR}/tx", "w") as tx_file:
                 tx_file.write("0")
 
-        with en_open(adapter_directory + "/statistics/rx_bytes") as received:
-            received = received.read().strip()
+        try:
+            with en_open(adapter_directory + "/statistics/rx_bytes") as received:
+                received = received.read().strip()
 
-        with en_open(adapter_directory + "/statistics/tx_bytes") as transferred:
-            transferred = transferred.read().strip()
+            with en_open(adapter_directory + "/statistics/tx_bytes") as transferred:
+                transferred = transferred.read().strip()
 
-        with en_open(f"{SAVE_DIR}/rx") as recv_speed:
-            recv_speed = abs(int(recv_speed.read().strip()) - int(received))
+            with en_open(f"{SAVE_DIR}/rx") as recv_speed:
+                recv_speed = abs(int(recv_speed.read().strip()) - int(received))
+
+        except FileNotFoundError:
+            sys.exit(f"Network interface \"{device_name}\" not found")
 
         with en_open(f"{SAVE_DIR}/tx") as transf_speed:
             transf_speed = abs(int(transf_speed.read().strip()) - int(transferred))
