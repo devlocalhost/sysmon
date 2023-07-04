@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-extra plugin for sysmon - basic functions 
+extra plugin for sysmon - basic functions
 needed for sysmon to function
 """
 
@@ -133,7 +133,9 @@ def clean_cpu_model(model):
         "Technologies, Inc",
         "CPU",
         "with Radeon HD Graphics",
+        "with Radeon Graphics",
     ]
+
     for text in replace_stuff:
         model = model.replace(text, "")
 
