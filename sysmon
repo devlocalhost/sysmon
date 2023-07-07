@@ -176,8 +176,6 @@ def main():
         if getattr(args, "no" + plugin_name):
             plugins_array.pop(plugins_array.index("plugins." + plugin_name))
 
-    # sys.exit(plugins_array)
-
     curses.wrapper(start_sysmon, plugins_array, args.sleep)
 
 
