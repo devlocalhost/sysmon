@@ -71,7 +71,7 @@ def get_info():
                 if line.startswith("model name"):
                     model = clean_cpu_model(line.split(":")[1].strip())
                     data_dict["cpu_model"] = (
-                        model if len(model) < 22 else model[:22] + "..."
+                        model if len(model) < 25 else model[:22] + "..."
                     )
 
                 if line.startswith("Hardware") and data_dict["cpu_arch"] in (
