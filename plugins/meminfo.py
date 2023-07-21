@@ -39,6 +39,9 @@ def main():
             )
 
             memory_free = to_bytes(int(clean_output(file_has("MemFree", meminfo_data))))
+
+            memory_buffers = to_bytes(int(clean_output(file_has("Buffers", meminfo_data))))
+
             memory_used = round(memory_total - memory_available)
             memory_actual_used = round(
                 memory_total
@@ -111,6 +114,7 @@ def main():
                     f"        Cached: {convert_bytes(memory_cached)}"
                     + char_padding(" ", (23 - len(convert_bytes(memory_cached))))
                     + f"Cached: {convert_bytes(swap_cached)}\n"
+                    + f"       Buffers: {convert_bytes(memory_buffers)}\n"
                 )
 
             return (
@@ -125,6 +129,7 @@ def main():
                 f"    Available: {convert_bytes(memory_available)} ({memory_available_percent}%)"
                 + char_padding(" ", (18 - len(str(memory_cached))))
                 + f"Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
+                + f"      Buffers: {convert_bytes(memory_buffers)}\n"
             )
 
     except FileNotFoundError:
