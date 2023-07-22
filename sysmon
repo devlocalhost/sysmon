@@ -152,7 +152,7 @@ def start_sysmon(stdscr, plugins, sleep):
                     break
 
     except curses.error:
-        sys.exit("Not enough space. Please resize")
+        sys.exit("Not enough terminal space. Please resize your terminal")
 
     except KeyboardInterrupt:
         curses.endwin()
