@@ -33,7 +33,7 @@ sysmon is *another* system monitor which is **ready to use** and easy to underst
 
 2. ive heard this depends on the kernel, i am not sure. sysmon might not show the max frequency the manufacturer website reports
 
-3. ~~Used = MemTotal - MemAvailable. dont worry if htop shows less ram used. htop counts it differently (it also substracts MemCached [i think] which i dont do that) i am using 2 implementations/calculations for this: the [htop way](https://stackoverflow.com/a/41251290) (but a bit modified), and "my way". the htop way is: Used = MemTotal - MemFree - Buffers - (Cached + SReclaimable - Shmem). my way is: Used = MemTotal - MemAvailable. now, my way is accurate, but a friend told me htop way is more accurate, so ill keep both unless i get annoyed by it. also, you may notice that actual used percent + available percent might not equal to 100 ("my way" used percent + available does). why? im not sure. you may also notice that it wont be that accurate to htop. for me, the difference is 4mb (htop shows 4mb less)~~. there are 2 used columns, one is the accurate way (matching `htop` and `free`), the other is MemTotal - MemAvailable.
+3. there are 2 used columns, because the calculations are different. "actual used" == htop-like report, "used" = MemTotal - MemAvailable
 
 ## help and usage
 ```
@@ -51,6 +51,30 @@ sysmon is *another* system monitor which is **ready to use** and easy to underst
   -s FLOAT, --sleep FLOAT              refresh time. Default: 1.0
   -i INTERFACE, --interface INTERFACE  select which interface to use for netstats
 ```
+
+## usage in other scripts
+# why
+so whoever wants can use it on other scripts
+
+# how
+first, you need to copy the `plugins` directory into the root directory of your script. you do not need all those plugins, but you DO need the `extra.py` file. then, all you have to do is import the plugin you want in your script. for example:
+```python
+from plugins import meminfo
+print(meminfo.main())
+```
+
+another example, but modifying the output (by disabling swap stats):
+```python
+from plugins import meminfo, extra
+
+extra.SHOW_SWAP = False
+
+print(meminfo.main())
+```
+
+you can `cat extra.py` and see what "flags" the plugins have, and modify whatever you want (check for "START" and "READ")
+
+now, this is a bit ugly. you might not want to get everything, or maybe you want to modify how the output looks. dont worry, i will implement an feature/flag, which will return the output as a JSON dictionary
 
 ## bug/suggestion/correction
 please open a issue, including traceback and a screenshot if you found a bug
