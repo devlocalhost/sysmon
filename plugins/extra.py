@@ -9,21 +9,32 @@ import os
 import glob
 
 
+# START OF IMPORTANT PART FOR THE PLUGINS
+
 # general vars
+# general vars, save data directory and IEC or metric conversion (size)
 SAVE_DIR = None
 CONVERSION_TYPE = 1024
 
 # cpuinfo.py vars
+# cpuinfo.py vars - control whenever to show cpu temperature
 SHOW_TEMPERATURE = True
 
 # meminfo.py vars
+# meminfo.py vars - show swap statsor no
 SHOW_SWAP = True
 
 # procpid.py vars
+# procpid.py vars - how many processes to display
 PROCS = 6
 
 # netstats vars
+# netstats vars - custom interface, from /sys/class/net/
+# check /sys/class/net/ for more
 INTERFACE = None
+
+# END OF IMPORTANT PART FOR THE PLUGINS
+
 
 try:
     os.makedirs("/tmp/sysmon_save", exist_ok=True)
