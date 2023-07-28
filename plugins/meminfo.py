@@ -122,14 +122,14 @@ def main():
                 f"   RAM: {char_padding(' ', 25)}\n"
                 f"        Total: {convert_bytes(memory_total)}"
                 + char_padding(" ", (24 - len(str(memory_cached))))
-                + f"Cached: {convert_bytes(memory_cached)}\n"
+                + f"Buffers: {convert_bytes(memory_buffers)}\n"
                 f"         Used: {convert_bytes(memory_used)} ({memory_used_percent}%)"
                 + char_padding(" ", (20 - len(str(memory_used_format))))
                 + f"Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
                 f"    Available: {convert_bytes(memory_available)} ({memory_available_percent}%)"
                 + char_padding(" ", (18 - len(str(memory_cached))))
                 + f"Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
-                + f"      Buffers: {convert_bytes(memory_buffers)}\n"
+                + f"       Cached: {convert_bytes(memory_cached)}\n"
             )
 
     except FileNotFoundError:
