@@ -121,7 +121,7 @@ def main():
                 f"  --- /proc/meminfo {char_padding('-', 47)}\n"
                 f"   RAM: {char_padding(' ', 25)}\n"
                 f"        Total: {convert_bytes(memory_total)}"
-                + char_padding(" ", (24 - len(str(memory_cached))))
+                + char_padding(" ", (23 - len(str(memory_cached))))
                 + f"Buffers: {convert_bytes(memory_buffers)}\n"
                 f"         Used: {convert_bytes(memory_used)} ({memory_used_percent}%)"
                 + char_padding(" ", (20 - len(str(memory_used_format))))
