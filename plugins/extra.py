@@ -116,7 +116,7 @@ def uptime_format():
     original_seconds = seconds
 
     if seconds < 60:
-        return f"{seconds} seconds"
+        return f"{seconds} seconds", original_seconds
 
     for time_type, count in intervals:
         value = seconds // count
