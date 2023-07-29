@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
-"""
-netstats plugin for sysmon
-"""
+"""netstats plugin for sysmon"""
+
 import os
 import sys
 
@@ -16,9 +15,7 @@ from .extra import (
 
 
 def main():
-    """
-    /sys/class/net/ - network stats, and speed
-    """
+    """/sys/class/net/ - network stats, and speed"""
 
     adapter_directory = detect_network_adapter()
 

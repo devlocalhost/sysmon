@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-meminfo plugin for sysmon
-"""
+"""meminfo plugin for sysmon"""
 
 import sys
 
@@ -18,9 +16,7 @@ from .extra import (
 
 
 def main():
-    """
-    /proc/meminfo - system memory information
-    """
+    """/proc/meminfo - system memory information"""
 
     try:
         with en_open("/proc/meminfo") as meminfo_file:
@@ -32,29 +28,34 @@ def main():
             memory_available = to_bytes(
                 int(clean_output(file_has("MemAvailable", meminfo_data)))
             )
+
+            raw_memory_cached = to_bytes(int(clean_output(file_has("Cached", meminfo_data))))
+            sreclaimable_memory = to_bytes(int(clean_output(file_has("SReclaimable", meminfo_data))))
+            memory_buffers = to_bytes(int(clean_output(file_has("Buffers", meminfo_data))))
+
             memory_cached = (
-                to_bytes(int(clean_output(file_has("Cached", meminfo_data))))
-                + to_bytes(int(clean_output(file_has("Buffers", meminfo_data))))
-                + to_bytes(int(clean_output(file_has("SReclaimable", meminfo_data))))
+                raw_memory_cached
+                + memory_buffers
+                + sreclaimable_memory
             )
 
             memory_free = to_bytes(int(clean_output(file_has("MemFree", meminfo_data))))
-
-            memory_buffers = to_bytes(int(clean_output(file_has("Buffers", meminfo_data))))
-
             memory_used = round(memory_total - memory_available)
+
             memory_actual_used = round(
                 memory_total
-                - to_bytes(int(clean_output(file_has("MemFree", meminfo_data))))
-                - to_bytes(int(clean_output(file_has("Buffers", meminfo_data))))
-                - to_bytes(int(clean_output(file_has("Cached", meminfo_data))))
-                - to_bytes(int(clean_output(file_has("SReclaimable", meminfo_data))))
+                - memory_free
+                - memory_buffers
+                - raw_memory_cached
+                - sreclaimable_memory
             )
 
             memory_used_percent = round((int(memory_used) / int(memory_total)) * 100, 1)
+
             memory_actual_used_percent = round(
                 (int(memory_actual_used) / int(memory_total)) * 100, 1
             )
+
             memory_available_percent = round(100 - memory_used_percent, 1)
             memory_free_percent = round((int(memory_free) / int(memory_total)) * 100, 1)
 
@@ -80,7 +81,6 @@ def main():
                 )
 
                 swap_used = round(swap_total - swap_available)
-
                 swap_used_percent = round((int(swap_used) / int(swap_total)) * 100, 1)
                 swap_available_percent = round(100 - swap_used_percent, 1)
 

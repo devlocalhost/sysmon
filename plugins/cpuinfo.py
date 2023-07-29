@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-cpuinfo plugin for sysmon
-"""
+"""cpuinfo plugin for sysmon"""
 
 import os
 import sys
@@ -98,9 +96,7 @@ def get_info():
 
 
 def cpu_usage():
-    """
-    /proc/stat - cpu usage of the system
-    """
+    """/proc/stat - cpu usage of the system"""
 
     try:
         if not os.path.exists(SAVE_DIR + "/cpu_old_data"):
@@ -151,9 +147,7 @@ def cpu_usage():
 
 
 def cpu_temp(hwmon_dirs):
-    """
-    getting the cpu temperature from /sys/class/hwmon
-    """
+    """getting the cpu temperature from /sys/class/hwmon"""
 
     temperature = "!?"
     allowed_types = ("coretemp", "fam15h_power", "k10temp", "acpitz", "cpu_1_0_usr")
@@ -176,9 +170,7 @@ get_info()
 
 
 def main():
-    """
-    /proc/cpuinfo - cpu information
-    """
+    """/proc/cpuinfo - cpu information"""
 
     cpu_usage_num = cpu_usage()
     cpu_temperature = str(cpu_temp(hwmon_dirs_out))

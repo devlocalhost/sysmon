@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-loadavg plugin for sysmon
-"""
+"""loadavg plugin for sysmon"""
 
 import time
 import sys
@@ -12,9 +10,7 @@ from .extra import en_open, char_padding, uptime_format
 
 
 def main():
-    """
-    /proc/loadavg - system load times and uptime
-    """
+    """/proc/loadavg - system load times and uptime"""
 
     try:
         with en_open("/proc/loadavg") as loadavg_file:

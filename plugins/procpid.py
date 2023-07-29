@@ -1,8 +1,6 @@
 #!?usr/bin/env python3
 
-"""
-procpid plugin for sysmon
-"""
+"""procpid plugin for sysmon"""
 
 import os
 
@@ -17,9 +15,7 @@ from .extra import (
 
 
 def main():
-    """
-    return the most ram (vmrss) consuming pids, with their state and name
-    """
+    """return the most ram (vmrss) consuming pids, with their state and name"""
 
     processes = []
 
