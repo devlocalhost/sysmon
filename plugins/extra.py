@@ -81,8 +81,7 @@ def detect_network_adapter():
                             return adapter_dir
         return None
 
-    else:
-        return "/sys/class/net/" + INTERFACE
+    return "/sys/class/net/" + INTERFACE
 
 
 def file_has(string, lines):

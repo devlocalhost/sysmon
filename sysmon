@@ -7,14 +7,14 @@ to understand, and "ready to use", without installing dependecies (except curses
 made by dev64 (also known as .dev, devlocalhost)
 """
 
-from datetime import datetime
-from plugins import extra
-
 import sys
 import curses
 import select
 import argparse
 import importlib
+
+from datetime import datetime
+from plugins import extra
 
 arguments = [
     {
@@ -49,7 +49,8 @@ arguments = [
         "options": ["-nn", "--nonetstats"],
         "kwargs": {
             "action": "store_true",
-            "help": "disables network_stats (network stats, like received/transfered bytes, and more)",
+            "help": "disables network_stats (network stats, like received/transfered "\
+                    "bytes, and more)",
         },
     },
     {
@@ -104,6 +105,7 @@ def custom_help_formatter(prog):
 
 
 def parse_arguments():
+    """create arguments"""
     parser = argparse.ArgumentParser(
         formatter_class=custom_help_formatter,
         description="sysmon, a system monitor made in python | github.com/devlocalhost/sysmon",
@@ -114,9 +116,11 @@ def parse_arguments():
 
     return parser.parse_args()
 
+
 # formatting and arguments
 
 # sysmon printing part
+
 
 def start_sysmon(stdscr, plugins, sleep):
     """main printing method, what you see when you run sysmon"""
@@ -162,12 +166,13 @@ def start_sysmon(stdscr, plugins, sleep):
 
 
 def main():
+    """execute sysmon"""
     plugins_array = [
-        'plugins.cpuinfo',
-        'plugins.meminfo',
-        'plugins.loadavg',
-        'plugins.procpid',
-        'plugins.netstats'
+        "plugins.cpuinfo",
+        "plugins.meminfo",
+        "plugins.loadavg",
+        "plugins.procpid",
+        "plugins.netstats",
     ]
 
     for plugin in plugins_array:
@@ -179,7 +184,7 @@ def main():
     curses.wrapper(start_sysmon, plugins_array, args.sleep)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = parse_arguments()
 
     if args.notemp:

@@ -29,15 +29,17 @@ def main():
                 int(clean_output(file_has("MemAvailable", meminfo_data)))
             )
 
-            raw_memory_cached = to_bytes(int(clean_output(file_has("Cached", meminfo_data))))
-            sreclaimable_memory = to_bytes(int(clean_output(file_has("SReclaimable", meminfo_data))))
-            memory_buffers = to_bytes(int(clean_output(file_has("Buffers", meminfo_data))))
-
-            memory_cached = (
-                raw_memory_cached
-                + memory_buffers
-                + sreclaimable_memory
+            raw_memory_cached = to_bytes(
+                int(clean_output(file_has("Cached", meminfo_data)))
             )
+            sreclaimable_memory = to_bytes(
+                int(clean_output(file_has("SReclaimable", meminfo_data)))
+            )
+            memory_buffers = to_bytes(
+                int(clean_output(file_has("Buffers", meminfo_data)))
+            )
+
+            memory_cached = raw_memory_cached + memory_buffers + sreclaimable_memory
 
             memory_free = to_bytes(int(clean_output(file_has("MemFree", meminfo_data))))
             memory_used = round(memory_total - memory_available)
@@ -99,9 +101,7 @@ def main():
                     f"  --- /proc/meminfo {char_padding('-', 47)}\n"
                     f"     RAM: {char_padding(' ', 25)}Swap:\n"
                     f"         Total: {convert_bytes(memory_total)}"
-                    + char_padding(
-                        " ", (spaces_swap - len(convert_bytes(swap_total)))
-                    )
+                    + char_padding(" ", (spaces_swap - len(convert_bytes(swap_total))))
                     + f"Total: {convert_bytes(swap_total)}\n"
                     f"          Used: {memory_used_format}"
                     + char_padding(" ", (25 - len(memory_used_format)))

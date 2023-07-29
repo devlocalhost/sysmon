@@ -39,7 +39,7 @@ def main():
                 recv_speed = abs(int(recv_speed.read().strip()) - int(received))
 
         except FileNotFoundError:
-            sys.exit(f"Network interface \"{device_name}\" not found")
+            sys.exit(f'Network interface "{device_name}" not found')
 
         with en_open(f"{SAVE_DIR}/tx") as transf_speed:
             transf_speed = abs(int(transf_speed.read().strip()) - int(transferred))
