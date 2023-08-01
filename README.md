@@ -28,7 +28,7 @@ sysmon is a system monitor which is **ready to use** and easy to understand. it 
 # trying sysmon
 ## without cloning
 ```sh
-curl https://raw.githubusercontent.com/devlocalhost/sysmon/main/sysmon | python && ./sysmon
+curl https://raw.githubusercontent.com/devlocalhost/sysmon/main/sysmon | python3
 ```
 
 or 
