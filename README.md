@@ -25,19 +25,7 @@ sysmon is a system monitor which is **ready to use** and easy to understand. it 
 
 3. there are 2 used columns, because the calculations are different. "actual used" == htop-like report, "used" = MemTotal - MemAvailable
 
-# trying sysmon
-## without cloning
-```sh
-curl https://raw.githubusercontent.com/devlocalhost/sysmon/main/sysmon | python3
-```
-
-or 
-
-```sh
-curl https://raw.githubusercontent.com/devlocalhost/sysmon/main/sysmon -O sysmon && ./sysmon
-```
-
-## cloning
+# using sysmon
 ```sh
 git clone https://github.com/devlocalhost/sysmon && cd sysmon && ./sysmon
 ```
