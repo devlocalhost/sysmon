@@ -26,9 +26,15 @@ sysmon is a system monitor which is **ready to use** and easy to understand. it 
 3. there are 2 used columns, because the calculations are different. "actual used" == htop-like report, "used" = MemTotal - MemAvailable
 
 # using sysmon
+on the terminal, run
 ```sh
 git clone https://github.com/devlocalhost/sysmon && cd sysmon && ./sysmon
 ```
+you only need to run this command once. to run it again, you could make an "alias" (make sure you're in `sysmon` directory)
+```sh
+echo $(pwd)/sysmon | sudo tee /usr/local/bin/sysmon && sudo chmod +x /usr/local/bin/sysmon
+```
+this will `echo` the current working dir + `/sysmon`, create a new file in `/usr/local/bin` as `sysmon`, with executable permissions. if `/usr/local/bin` is in your PATH, then typing `sysmon` anywhere will execute sysmon
 
 # help and usage
 ```
