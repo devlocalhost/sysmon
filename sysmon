@@ -175,11 +175,13 @@ def main():
         "plugins.netstats",
     ]
 
-    for plugin in plugins_array:
-        plugin_name = plugin.split(".")[1]
+    for argument in args.__dict__:
+        if argument.startswith("no"):
+            if getattr(args, argument):
+                argument = f"plugins.{argument.replace('no', '')}"
+                plugins_array.pop(plugins_array.index(argument))
 
-        if getattr(args, "no" + plugin_name):
-            plugins_array.pop(plugins_array.index("plugins." + plugin_name))
+                # print(f"{argument} disabled")
 
     curses.wrapper(start_sysmon, plugins_array, args.sleep)
 
