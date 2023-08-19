@@ -7,6 +7,8 @@ needed for sysmon to function
 
 import os
 import glob
+import socket
+import subprocess
 
 
 # START OF IMPORTANT PART FOR THE PLUGINS
@@ -32,6 +34,10 @@ PROCS = 6
 # netstats vars - custom interface, from /sys/class/net/
 # check /sys/class/net/ for more
 INTERFACE = None
+
+# local ip and hostname of the computer
+LOCAL_IP = subprocess.check_output(['ip', 'route', 'get', '1'], text=True).split(" ")[6]
+HOSTNAME = socket.getfqdn()
 
 # END OF IMPORTANT PART FOR THE PLUGINS
 
