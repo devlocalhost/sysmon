@@ -4,6 +4,9 @@
 
 import os
 import sys
+import fcntl
+import socket
+import struct
 
 from .extra import (
     en_open,
@@ -18,6 +21,7 @@ def main():
     """/sys/class/net/ - network stats, and speed"""
 
     adapter_directory = detect_network_adapter()
+
 
     if adapter_directory is not None:
         device_name = adapter_directory.split("/")[4]
@@ -53,8 +57,16 @@ def main():
         human_received = convert_bytes(int(received))
         human_transferred = convert_bytes(int(transferred))
 
+        # https://stackoverflow.com/a/27494105
+
+        # bad name...?
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        local_ip = socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack("256s", device_name[:15].encode("UTF-8")))[20:24])
+
+
         return (
             f"  --- /sys/class/net/{device_name} {char_padding('-', (45 - len(device_name)))}\n"
+            f"      Local IP: {local_ip}\n"
             f"      Received: {human_received}"
             + char_padding(" ", (14 - len(human_received)))
             + f"({received} bytes)\n"
