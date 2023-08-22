@@ -11,8 +11,6 @@ from .extra import (
     convert_bytes,
     detect_network_adapter,
     SAVE_DIR,
-    HOSTNAME,
-    LOCAL_IP,
 )
 
 
@@ -57,7 +55,6 @@ def main():
 
         return (
             f"  --- /sys/class/net/{device_name} {char_padding('-', (45 - len(device_name)))}\n"
-            + f"      Local IP: {LOCAL_IP} | Hostname: {HOSTNAME}\n"
             f"      Received: {human_received}"
             + char_padding(" ", (14 - len(human_received)))
             + f"({received} bytes)\n"
