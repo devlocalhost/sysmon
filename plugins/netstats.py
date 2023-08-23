@@ -22,7 +22,6 @@ def main():
 
     adapter_directory = detect_network_adapter()
 
-
     if adapter_directory is not None:
         device_name = adapter_directory.split("/")[4]
         if not os.path.isfile(f"{SAVE_DIR}/rx") and not os.path.isfile(f"{SAVE_DIR}tx"):
@@ -61,8 +60,13 @@ def main():
 
         # bad name...?
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        local_ip = socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack("256s", device_name[:15].encode("UTF-8")))[20:24])
-
+        local_ip = socket.inet_ntoa(
+            fcntl.ioctl(
+                s.fileno(),
+                0x8915,
+                struct.pack("256s", device_name[:15].encode("UTF-8")),
+            )[20:24]
+        )
 
         return (
             f"  --- /sys/class/net/{device_name} {char_padding('-', (45 - len(device_name)))}\n"
