@@ -49,8 +49,8 @@ arguments = [
         "options": ["-nn", "--nonetstats"],
         "kwargs": {
             "action": "store_true",
-            "help": "disables network_stats (network stats, like received/transfered "\
-                    "bytes, and more)",
+            "help": "disables network_stats (network stats, like received/transfered "
+            "bytes, and more)",
         },
     },
     {
