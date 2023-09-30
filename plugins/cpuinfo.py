@@ -56,6 +56,12 @@ def get_info():
     try:
         with en_open("/proc/cpuinfo") as cpuinfo_file:
             for line in cpuinfo_file:
+                if data_dict["cpu_cache"] == "Unknown":
+                    if line.startswith("cache size"):
+                        data_dict["cpu_cache"] = convert_bytes(
+                            to_bytes(int(line.split(":")[1].strip().replace("kB", "")))
+                        )
+
                 if line.startswith("cpu MHz"):
                     data_dict["cpu_freq"] = line.split(":")[1].strip()
 
@@ -147,17 +153,6 @@ def cpu_temp(hwmon_dirs):
 
     for temp_dir in hwmon_dirs:
         with en_open(temp_dir + "/name") as temp_type:
-            if temp_type.read().strip() == "coretemp":
-                try:
-                    with en_open(temp_dir + "/temp1_input") as temp_value:
-                        return int(temp_value.readline().strip()) // 1000
-                
-                except (FileNotFoundError, OSError):
-                    pass
-
-            # spaghetti code i know, but its 5:51 AM and ik too lazy to do it properly.
-
-
             if temp_type.read().strip() in allowed_types:
                 try:
                     with en_open(temp_dir + "/temp1_input") as temp_value:
