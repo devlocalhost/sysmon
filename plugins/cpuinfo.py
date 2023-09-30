@@ -66,7 +66,7 @@ def get_info():
                         )
 
                 if line.startswith("cpu MHz"):
-                    data_dict["cpu_freq"] = line.split(":")[1].strip()
+                    data_dict["cpu_freq"] = round(float(line.split(":")[1].strip()) / 1000, 2)
 
                 if line.startswith("model name"):
                     model = clean_cpu_model(line.split(":")[1].strip())
@@ -192,7 +192,7 @@ def main():
         + " " * (3 - len(str(cpu_usage_num)))
         + arch_model_temp_line
         + "\n"
-        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {data_dict['cpu_freq']} MHz | Cache: {data_dict['cpu_cache']}"
+        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {data_dict['cpu_freq']} GHz | Cache: {data_dict['cpu_cache']}"
     )
 
     if data_dict["cpu_cache_type"] != 0:
