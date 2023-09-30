@@ -14,7 +14,7 @@ import argparse
 import importlib
 
 from datetime import datetime
-from plugins import extra
+from util import util
 
 arguments = [
     {
@@ -167,6 +167,7 @@ def start_sysmon(stdscr, plugins, sleep):
 
 def main():
     """execute sysmon"""
+
     plugins_array = [
         "plugins.cpuinfo",
         "plugins.meminfo",
@@ -190,18 +191,18 @@ if __name__ == "__main__":
     args = parse_arguments()
 
     if args.notemp:
-        extra.SHOW_TEMPERATURE = False
+        util.SHOW_TEMPERATURE = False
 
     if args.noswap:
-        extra.SHOW_SWAP = False
+        util.SHOW_SWAP = False
 
     if args.procs:
-        extra.PROCS = args.procs
+        util.PROCS = args.procs
 
     if args.metric:
-        extra.CONVERSION_TYPE = 1000
+        util.CONVERSION_TYPE = 1000
 
     if args.interface:
-        extra.INTERFACE = args.interface
+        util.INTERFACE = args.interface
 
     main()

@@ -6,7 +6,7 @@ import time
 import sys
 
 from datetime import datetime
-from .extra import en_open, char_padding, uptime_format
+from util.util import en_open, char_padding, uptime_format
 
 
 def main():

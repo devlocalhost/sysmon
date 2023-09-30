@@ -8,7 +8,7 @@ import glob
 import ctypes
 import platform
 
-from .extra import (
+from util.util import (
     en_open,
     SAVE_DIR,
     clean_cpu_model,

@@ -4,7 +4,7 @@
 
 import sys
 
-from .extra import (
+from util.util import (
     en_open,
     convert_bytes,
     to_bytes,

@@ -8,7 +8,7 @@ import fcntl
 import socket
 import struct
 
-from .extra import (
+from util.util import (
     en_open,
     char_padding,
     convert_bytes,
