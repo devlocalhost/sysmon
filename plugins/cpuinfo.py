@@ -7,7 +7,6 @@ import sys
 import glob
 import ctypes
 import platform
-import subprocess
 
 from .extra import (
     en_open,
@@ -59,7 +58,11 @@ def get_info():
                 if data_dict["cpu_cache"] == "Unknown":
                     if line.startswith("cache size"):
                         data_dict["cpu_cache"] = convert_bytes(
-                            to_bytes(int(line.split(":")[1].strip().lower().replace("kb", "")))
+                            to_bytes(
+                                int(
+                                    line.split(":")[1].strip().lower().replace("kb", "")
+                                )
+                            )
                         )
 
                 if line.startswith("cpu MHz"):
@@ -197,6 +200,5 @@ def main():
 
     else:
         output_text += "\n"
-
 
     return output_text
