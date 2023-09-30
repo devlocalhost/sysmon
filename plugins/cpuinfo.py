@@ -44,7 +44,7 @@ def get_info():
     try:
         buffer = ctypes.create_string_buffer(64)
 
-        ctypes.CDLL("./util/cache.so").get_cache_size(buffer)
+        ctypes.CDLL("sysmon_cpu_cache.so").get_cache_size(buffer)
         output = buffer.value.decode().split(".")
 
         data_dict["cpu_cache"] = convert_bytes(int(output[0]))
