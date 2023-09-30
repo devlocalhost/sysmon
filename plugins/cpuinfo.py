@@ -50,8 +50,8 @@ def get_info():
         data_dict["cpu_cache"] = convert_bytes(int(output[0]))
         data_dict["cpu_cache_type"] = output[1]
 
-    except Exception as exc:
-        sys.exit(exc)
+    except OSError:
+        pass
 
     try:
         with en_open("/proc/cpuinfo") as cpuinfo_file:
@@ -59,7 +59,7 @@ def get_info():
                 if data_dict["cpu_cache"] == "Unknown":
                     if line.startswith("cache size"):
                         data_dict["cpu_cache"] = convert_bytes(
-                            to_bytes(int(line.split(":")[1].strip().replace("kB", "")))
+                            to_bytes(int(line.split(":")[1].strip().lower().replace("kb", "")))
                         )
 
                 if line.startswith("cpu MHz"):
@@ -183,11 +183,20 @@ def main():
             f"| CPU: {data_dict['cpu_arch']} {data_dict['cpu_model']}"
         )
 
-    return (
+    output_text = (
         f"  --- /proc/cpuinfo {char_padding('-', 47)}\n"
         f"{char_padding(' ', 9)}Usage: {cpu_usage_num}% "
         + " " * (3 - len(str(cpu_usage_num)))
         + arch_model_temp_line
         + "\n"
-        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {data_dict['cpu_freq']} MHz | L{data_dict['cpu_cache_type']} Cache: {data_dict['cpu_cache']}\n"
+        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {data_dict['cpu_freq']} MHz | Cache: {data_dict['cpu_cache']}"
     )
+
+    if data_dict["cpu_cache_type"] != 0:
+        output_text += f", L{data_dict['cpu_cache_type']}\n"
+
+    else:
+        output_text += "\n"
+
+
+    return output_text
