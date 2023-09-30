@@ -143,7 +143,7 @@ def cpu_temp(hwmon_dirs):
     """getting the cpu temperature from /sys/class/hwmon"""
 
     temperature = "!?"
-    allowed_types = ("coretemp", "fam15h_power", "k10temp", "acpitz", "cpu_1_0_usr")
+    allowed_types = ("coretemp", "k10temp", "acpitz", "cpu_1_0_usr")
 
     for temp_dir in hwmon_dirs:
         with en_open(temp_dir + "/name") as temp_type:
