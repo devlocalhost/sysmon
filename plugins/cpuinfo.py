@@ -5,6 +5,7 @@
 import os
 import sys
 import glob
+import ctypes
 import platform
 import subprocess
 
@@ -26,6 +27,7 @@ data_dict = {
     "cpu_cores_all": 0,
     "cpu_model": "Unknown",
     "cpu_arch": "Unknown",
+    "cpu_cache_type": 0,
 }
 
 
@@ -40,19 +42,16 @@ def get_info():
     data_dict["cpu_arch"] = platform.machine()
 
     try:
-        data_dict["cpu_cache"] = convert_bytes(
-            int(
-                subprocess.run(
-                    ["getconf", "LEVEL2_CACHE_SIZE"],
-                    capture_output=True,
-                    text=True,
-                    check=False,
-                ).stdout.strip()
-            )
-        )
+        buffer = ctypes.create_string_buffer(64)
 
-    except ValueError:
-        pass
+        ctypes.CDLL("./util/cache.so").get_cache_size(buffer)
+        output = buffer.value.decode().split(".")
+
+        data_dict["cpu_cache"] = convert_bytes(int(output[0]))
+        data_dict["cpu_cache_type"] = output[1]
+
+    except Exception as exc:
+        sys.exit(exc)
 
     try:
         with en_open("/proc/cpuinfo") as cpuinfo_file:
@@ -190,5 +189,5 @@ def main():
         + " " * (3 - len(str(cpu_usage_num)))
         + arch_model_temp_line
         + "\n"
-        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {data_dict['cpu_freq']} MHz | L2 Cache: {data_dict['cpu_cache']}\n"
+        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {data_dict['cpu_freq']} MHz | L{data_dict['cpu_cache_type']} Cache: {data_dict['cpu_cache']}\n"
     )
