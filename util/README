@@ -1,0 +1,3 @@
+# compiling
+
+`clang -O3 -shared -o cache.so -fPIC cache.c`
