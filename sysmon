@@ -96,6 +96,13 @@ arguments = [
             "help": "select which interface to use for netstats",
         },
     },
+    {
+        "options": ["-in", "--ipno"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disable IP in netstat",
+        },
+    },
 ]
 
 
@@ -204,5 +211,8 @@ if __name__ == "__main__":
 
     if args.interface:
         util.INTERFACE = args.interface
+
+    if args.ipno:
+        util.SHOW_LOCAL_IP = False
 
     main()

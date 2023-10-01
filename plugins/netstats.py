@@ -14,6 +14,7 @@ from util.util import (
     convert_bytes,
     detect_network_adapter,
     SAVE_DIR,
+    SHOW_LOCAL_IP,
 )
 
 
@@ -61,17 +62,21 @@ def main():
         # bad name...?
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-        try:
-            local_ip = socket.inet_ntoa(
-                fcntl.ioctl(
-                    s.fileno(),
-                    0x8915,
-                    struct.pack("256s", device_name[:15].encode("UTF-8")),
-                )[20:24]
-            )
+        if SHOW_LOCAL_IP:
+            try:
+                local_ip = socket.inet_ntoa(
+                    fcntl.ioctl(
+                        s.fileno(),
+                        0x8915,
+                        struct.pack("256s", device_name[:15].encode("UTF-8")),
+                    )[20:24]
+                )
 
-        except OSError:
-            local_ip = "!?!?"
+            except OSError:
+                local_ip = "!?!?"
+
+        else:
+            local_ip = "Hidden"
 
         return (
             f"  --- /sys/class/net/{device_name} {char_padding('-', (45 - len(device_name)))}\n"

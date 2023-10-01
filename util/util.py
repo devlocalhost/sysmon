@@ -27,6 +27,7 @@ PROCS = 6
 # netstats vars - custom interface, from /sys/class/net/
 # check /sys/class/net/ for more
 INTERFACE = None
+SHOW_LOCAL_IP = True
 
 # END OF IMPORTANT PART FOR THE PLUGINS
 
