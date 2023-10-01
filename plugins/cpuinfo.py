@@ -66,7 +66,9 @@ def get_info():
                         )
 
                 if line.startswith("cpu MHz"):
-                    data_dict["cpu_freq"] = round(float(line.split(":")[1].strip()) / 1000, 2)
+                    data_dict["cpu_freq"] = round(
+                        float(line.split(":")[1].strip()) / 1000, 2
+                    )
 
                 if line.startswith("model name"):
                     model = clean_cpu_model(line.split(":")[1].strip())
