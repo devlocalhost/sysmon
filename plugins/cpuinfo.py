@@ -217,7 +217,7 @@ def main():
         + " " * (3 - len(str(cpu_usage_num)))
         + arch_model_temp_line
         + "\n"
-        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {cpu_freq()} GHz | Cache: {data_dict['cpu_cache']}"
+        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {cpu_freq()} MHz | Cache: {data_dict['cpu_cache']}"
     )
 
     if data_dict["cpu_cache_type"] != 0:
