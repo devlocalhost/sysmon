@@ -46,8 +46,9 @@ def get_info():
         ctypes.CDLL("sysmon_cpu_cache.so").get_cache_size(buffer)
         output = buffer.value.decode().split(".")
 
-        data_dict["cpu_cache"] = convert_bytes(int(output[0]))
-        data_dict["cpu_cache_type"] = output[1]
+        if output[0] != "Unknown":
+            data_dict["cpu_cache"] = convert_bytes(int(output[0]))
+            data_dict["cpu_cache_type"] = output[1]
 
     except OSError:
         pass
