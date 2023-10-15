@@ -111,6 +111,7 @@ def cpu_freq():
     except FileNotFoundError:
         return data_dict["cpu_freq"]
 
+
 def cpu_usage():
     """/proc/stat - cpu usage of the system"""
 
@@ -183,6 +184,7 @@ def cpu_temp(hwmon_dirs):
 
 
 get_info()
+
 
 def main():
     """/proc/cpuinfo - cpu information"""
