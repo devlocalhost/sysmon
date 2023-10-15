@@ -56,10 +56,17 @@ def get_info():
             cpu_utils = ctypes.CDLL("sysmon_cpu_utils.so")
 
         buffer_cores_phys = cpu_utils.get_cores(1)
-        data_dict["cpu_cores_phys"] = buffer_cores_phys
-
         buffer_cores_log = cpu_utils.get_cores(0)
-        data_dict["cpu_cores_logical"] = buffer_cores_log
+
+        if (
+            buffer_cores_phys > buffer_cores_log
+            or buffer_cores_log == 0
+            or buffer_cores_phys == 0
+        ):
+            pass
+        else:
+            data_dict["cpu_cores_phys"] = buffer_cores_phys
+            data_dict["cpu_cores_logical"] = buffer_cores_log
 
         cpu_utils.get_cache_size(buffer)
         output = buffer.value.decode().split(".")
