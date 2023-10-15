@@ -101,8 +101,8 @@ def main():
                     f"  --- /proc/meminfo {char_padding('-', 47)}\n"
                     f"     RAM: {char_padding(' ', 25)}Swap:\n"
                     f"         Total: {convert_bytes(memory_total)}"
-                    + char_padding(" ", (spaces_swap - len(convert_bytes(swap_total))))
-                    + f"Total: {convert_bytes(swap_total)}\n"
+                    # + char_padding(" ", (spaces_swap - len(convert_bytes(swap_total))))
+                    + f"{' ':<16}Total: {convert_bytes(swap_total)}\n"
                     f"          Used: {memory_used_format}"
                     + char_padding(" ", (25 - len(memory_used_format)))
                     + f"Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
@@ -114,7 +114,6 @@ def main():
                     f"        Cached: {convert_bytes(memory_cached)}"
                     + char_padding(" ", (23 - len(convert_bytes(memory_cached))))
                     + f"Cached: {convert_bytes(swap_cached)}\n"
-                    + f"       Buffers: {convert_bytes(memory_buffers)}\n"
                 )
 
             return (
