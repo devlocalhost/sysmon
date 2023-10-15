@@ -14,7 +14,6 @@ from util.util import (
     clean_cpu_model,
     convert_bytes,
     to_bytes,
-    char_padding,
     SHOW_TEMPERATURE,
 )
 

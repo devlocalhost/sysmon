@@ -6,7 +6,7 @@ import time
 import sys
 
 from datetime import datetime
-from util.util import en_open, char_padding, uptime_format
+from util.util import en_open, uptime_format
 
 
 def main():
@@ -25,7 +25,7 @@ def main():
             ).strftime("%A %B %d %Y, %I:%M:%S %p")
 
         return (
-            f"  --- /proc/loadavg {char_padding('-', 47)}\n"
+            f"  --- /proc/loadavg {'-' * 47}\n"
             f"   System load: {onemin}, {fivemin}, {fiveteenmin} (1, 5, 15 mins)\n"
             f"      Entities: {entities_active} executing, {entities_total} total"
             f"\n\n   System up for {uptime_func_out[0]}\n    Since {up_since_fmt}\n"
