@@ -24,6 +24,7 @@ data_dict = {
     "cpu_cache": "Unknown",
     "cpu_cores_phys": 0,
     "cpu_cores_logical": 0,
+    "cpu_uses_smt": False,
     "cpu_model": "Unknown",
     "cpu_arch": "Unknown",
     "cpu_cache_type": 0,
@@ -75,6 +76,15 @@ def get_info():
             data_dict["cpu_cache_type"] = output[1]
 
     except OSError:
+        pass
+
+    try:
+        with en_open("/sys/devices/system/cpu/smt/active") as smt_file:
+            content = smt_file.read().strip()
+            if content == "1":
+                data_dict["cpu_uses_smt"] = True
+
+    except (FileNotFoundError, PermissionError):
         pass
 
     try:
@@ -227,6 +237,8 @@ def main():
 
     cpu_cores = data_dict["cpu_cores_phys"]
     if data_dict["cpu_cores_phys"] == 0:
+        if data_dict["cpu_uses_smt"] == True:
+            cpu_cores = data_dict["cpu_cores_logical"] / 2
         cpu_cores = data_dict["cpu_cores_logical"]
 
     output_text = (
