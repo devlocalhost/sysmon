@@ -237,20 +237,20 @@ def main():
             f"| CPU: {data_dict['cpu_arch']} {data_dict['cpu_model']}"
         )
 
-    cpu_cores = data_dict["cpu_cores_phys"]
+    cpu_cores_phys = data_dict["cpu_cores_phys"]
 
-    if cpu_cores == 0:
+    if cpu_cores_phys == 0:
         if data_dict["cpu_uses_smt"] == True:
-            cpu_cores = data_dict["cpu_cores_logical"] / 2
+            cpu_cores_phys = data_dict["cpu_cores_logical"] / 2
 
-        cpu_cores = data_dict["cpu_cores_logical"]
+        cpu_cores_phys = data_dict["cpu_cores_logical"]
 
     output_text = (
         f"  --- /proc/cpuinfo {'-' * 47}\n"
         f"{' ':>9}Usage: {cpu_usage_num}% "
         + f"{' ':>{3 - len(str(cpu_usage_num))}}{arch_model_temp_line}"
         + "\n"
-        f"   Total Cores: {cpu_cores} | Frequency: {cpu_freq():>7} MHz | Cache: {data_dict['cpu_cache']}"
+        f"   Phys: {cpu_cores_phys} (Log: {data_dict['cpu_cores_logical']}) | Frequency: {cpu_freq():>7} MHz | Cache: {data_dict['cpu_cache']}"
     )
 
     if data_dict["cpu_cache_type"] != 0:
