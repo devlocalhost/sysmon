@@ -247,10 +247,10 @@ def main():
 
     output_text = (
         f"  --- /proc/cpuinfo {'-' * 47}\n"
-        f"{' ':>9}Usage: {cpu_usage_num}% "
+        f"{' ':>3}Usage: {cpu_usage_num}% "
         + f"{' ':>{3 - len(str(cpu_usage_num))}}{arch_model_temp_line}"
         + "\n"
-        f"         Cores: {cpu_cores_phys}c/{data_dict['cpu_cores_logical']}t | Frequency: {cpu_freq():>7} MHz | Cache: {data_dict['cpu_cache']}"
+        f"   Cores: {cpu_cores_phys}c/{data_dict['cpu_cores_logical']}t | Frequency: {cpu_freq():>7} MHz | Cache: {data_dict['cpu_cache']}"
     )
 
     if data_dict["cpu_cache_type"] != 0:
