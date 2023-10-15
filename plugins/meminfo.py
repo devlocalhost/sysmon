@@ -100,7 +100,7 @@ def main():
                     f"  --- /proc/meminfo {'-' * 47}\n"
                     f"     RAM: {' ' * 25}Swap:\n"
                     f"         Total: {convert_bytes(memory_total)}"
-                    + f"{' ':<16}Total: {convert_bytes(swap_total)}\n"
+                    + f"{' ':<15}Total: {convert_bytes(swap_total)}\n"
                     f"          Used: {memory_used_format}"
                     + " " * (25 - len(memory_used_format))
                     + f"Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
