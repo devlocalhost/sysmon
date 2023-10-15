@@ -250,7 +250,7 @@ def main():
         f"{' ':>9}Usage: {cpu_usage_num}% "
         + f"{' ':>{3 - len(str(cpu_usage_num))}}{arch_model_temp_line}"
         + "\n"
-        f"   Phys: {cpu_cores_phys} (Log: {data_dict['cpu_cores_logical']}) | Frequency: {cpu_freq():>7} MHz | Cache: {data_dict['cpu_cache']}"
+        f"         Cores: {cpu_cores_phys}c/{data_dict['cpu_cores_logical']}t | Frequency: {cpu_freq():>7} MHz | Cache: {data_dict['cpu_cache']}"
     )
 
     if data_dict["cpu_cache_type"] != 0:
