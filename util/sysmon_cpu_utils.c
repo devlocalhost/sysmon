@@ -16,3 +16,19 @@ void get_cache_size(char* cache_info) {
     }
 }
 
+// physical = 1 -> physical cores
+// physical = 0 -> logical cores
+unsigned int get_cores(int physical) {
+    unsigned int eax = 11, ebx = 0, ecx = 1;
+
+    asm volatile("cpuid"
+                 : "=a"(eax), "=b"(ebx), "=c"(ecx)
+                 : "0"(eax), "2"(ecx)
+                 :);
+    if (physical) {
+        return eax;
+    }
+    else {
+        return ebx;
+    }
+}

@@ -22,7 +22,8 @@ hwmon_dirs_out = glob.glob("/sys/class/hwmon/*")
 data_dict = {
     "cpu_freq": "Unknown",
     "cpu_cache": "Unknown",
-    "cpu_cores_all": 0,
+    "cpu_cores_phys": 0,
+    "cpu_cores_logical": 0,
     "cpu_model": "Unknown",
     "cpu_arch": "Unknown",
     "cpu_cache_type": 0,
@@ -41,17 +42,26 @@ def get_info():
 
     try:
         buffer = ctypes.create_string_buffer(64)
+        buffer_cores_phys = ctypes.c_uint
+        buffer_cores_log = ctypes.c_uint
 
         # prioritize in-tree shared object
-        if os.path.exists("util/sysmon_cpu_cache.so"):
-            ctypes.CDLL(
-                os.path.dirname(os.path.abspath("util/sysmon_cpu_cache.so"))
+        if os.path.exists("util/sysmon_cpu_utils.so"):
+            cpu_utils = ctypes.CDLL(
+                os.path.dirname(os.path.abspath("util/sysmon_cpu_utils.so"))
                 + os.path.sep
-                + "sysmon_cpu_cache.so"
-            ).get_cache_size(buffer)
+                + "sysmon_cpu_utils.so"
+            )
         else:
-            ctypes.CDLL("sysmon_cpu_cache.so").get_cache_size(buffer)
+            cpu_utils = ctypes.CDLL("sysmon_cpu_utils.so")
 
+        buffer_cores_phys = cpu_utils.get_cores(1)
+        data_dict["cpu_cores_phys"] = buffer_cores_phys
+
+        buffer_cores_log = cpu_utils.get_cores(0)
+        data_dict["cpu_cores_logical"] = buffer_cores_log
+
+        cpu_utils.get_cache_size(buffer)
         output = buffer.value.decode().split(".")
         if output[0] != "Unknown":
             data_dict["cpu_cache"] = convert_bytes(int(output[0]))
@@ -92,9 +102,10 @@ def get_info():
             # because os.sysconf LEVEL2_CACHE_SIZE wont return anything on my system
             # there are better ways to handle this yeah, but for now, it is what it is
 
-            data_dict["cpu_cores_all"] = os.sysconf(
-                os.sysconf_names["SC_NPROCESSORS_CONF"]
-            )
+            if data_dict["cpu_cores_logical"] == 0:
+                data_dict["cpu_cores_logical"] = os.sysconf(
+                    os.sysconf_names["SC_NPROCESSORS_CONF"]
+                )
 
     except FileNotFoundError:
         sys.exit("Couldnt find /proc/stat file")
@@ -207,12 +218,16 @@ def main():
             f"| CPU: {data_dict['cpu_arch']} {data_dict['cpu_model']}"
         )
 
+    cpu_cores = data_dict["cpu_cores_phys"]
+    if data_dict["cpu_cores_phys"] == 0:
+        cpu_cores = data_dict["cpu_cores_logical"]
+
     output_text = (
         f"  --- /proc/cpuinfo {'-' * 47}\n"
         f"{' ':>9}Usage: {cpu_usage_num}% "
         + f"{' ':>{3 - len(str(cpu_usage_num))}}{arch_model_temp_line}"
         + "\n"
-        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {cpu_freq():>7} MHz | Cache: {data_dict['cpu_cache']}"
+        f"   Total Cores: {cpu_cores} | Frequency: {cpu_freq():>7} MHz | Cache: {data_dict['cpu_cache']}"
     )
 
     if data_dict["cpu_cache_type"] != 0:
