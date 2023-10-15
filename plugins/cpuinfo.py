@@ -201,12 +201,12 @@ def main():
         )
 
     output_text = (
-        f"  --- /proc/cpuinfo {char_padding('-', 47)}\n"
-        f"{char_padding(' ', 9)}Usage: {cpu_usage_num}% "
+        f"  --- /proc/cpuinfo {char_padding('-', 47, '>')}\n"
+        f"{char_padding(' ', 9, '<')}Usage: {cpu_usage_num}% "
         + " " * (3 - len(str(cpu_usage_num)))
         + arch_model_temp_line
         + "\n"
-        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {cpu_freq():>7} MHz | Cache: {data_dict['cpu_cache']}"
+        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {char_padding(' ', 7, '>')}{cpu_freq()} MHz | Cache: {data_dict['cpu_cache']}"
     )
 
     if data_dict["cpu_cache_type"] != 0:
