@@ -41,12 +41,6 @@ except OSError:
     SAVE_DIR = ".sysmon_save"
 
 
-def char_padding(char, value, alignment):
-    """return char value times"""
-
-    return f"{char:{alignment}{value}}"
-
-
 def convert_bytes(fsize, units=(" bytes", " KiB", " MiB", " GiB", " TiB")):
     """convert bytes to human readable format"""
 
