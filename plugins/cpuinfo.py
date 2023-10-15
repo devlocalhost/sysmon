@@ -43,11 +43,14 @@ def get_info():
         buffer = ctypes.create_string_buffer(64)
 
         # prioritize in-tree shared object
-        if(os.path.exists('util/sysmon_cpu_cache.so')):
-            ctypes.CDLL(os.path.dirname(os.path.abspath('util/sysmon_cpu_cache.so'))
-                        + os.path.sep + 'sysmon_cpu_cache.so').get_cache_size(buffer)
+        if os.path.exists("util/sysmon_cpu_cache.so"):
+            ctypes.CDLL(
+                os.path.dirname(os.path.abspath("util/sysmon_cpu_cache.so"))
+                + os.path.sep
+                + "sysmon_cpu_cache.so"
+            ).get_cache_size(buffer)
         else:
-            ctypes.CDLL('sysmon_cpu_cache.so').get_cache_size(buffer)
+            ctypes.CDLL("sysmon_cpu_cache.so").get_cache_size(buffer)
 
         output = buffer.value.decode().split(".")
         if output[0] != "Unknown":
@@ -71,9 +74,7 @@ def get_info():
                         )
 
                 if line.startswith("cpu MHz"):
-                    data_dict["cpu_freq"] = round(
-                        float(line.split(":")[1].strip()), 2
-                    )
+                    data_dict["cpu_freq"] = round(float(line.split(":")[1].strip()), 2)
 
                 if line.startswith("model name"):
                     model = clean_cpu_model(line.split(":")[1].strip())
