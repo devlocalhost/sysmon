@@ -67,7 +67,7 @@ def get_info():
 
                 if line.startswith("cpu MHz"):
                     data_dict["cpu_freq"] = round(
-                        float(line.split(":")[1].strip()) / 1000, 2
+                        float(line.split(":")[1].strip()), 2
                     )
 
                 if line.startswith("model name"):
@@ -105,7 +105,7 @@ def cpu_freq():
     core_dir = glob.glob("/sys/devices/system/cpu/cpu*[0-9]")[0]
 
     try:
-        with en_open(f"{core_dir}/cpufreq/scaling_cur_freq") as core_file:
+        with en_open(f"{core_dir}/cpufreq/22873scaling_cur_freq") as core_file:
             return round(int(core_file.read().strip()) / 1000, 2)
 
     except FileNotFoundError:
