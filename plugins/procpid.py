@@ -6,7 +6,6 @@ import os
 
 from util.util import (
     en_open,
-    char_padding,
     convert_bytes,
     clean_output,
     to_bytes,
@@ -62,16 +61,16 @@ def main():
     processes.sort(key=lambda a: a[1], reverse=True)
 
     formatted_data = [
-        f"  --- /proc/pid/status {char_padding('-', 44)}\n   Name            PID         RSS            State"
+        f"  --- /proc/pid/status {'-' * 44}\n   Name            PID         RSS            State"
     ]
 
     for process_name, rss, pstate, pid in processes[:PROCS]:
         rss_usage = convert_bytes(rss) if rss is not None else "!?"
 
         formatted_data.append(
-            f"   {process_name or '!?!?'}{char_padding(' ', (15 - len(process_name or '!?!?')))}"
-            f" {pid}{char_padding(' ', (11 - len(pid)))}"
-            f" {rss_usage}{char_padding(' ', (14 - len(rss_usage)))} {pstate or '!?!?'}"
+            f"   {process_name or '!?!?'}{' ' * (15 - len(process_name or '!?!?'))}"
+            f" {pid}{' ' * (11 - len(pid))}"
+            f" {rss_usage}{' ' * (14 - len(rss_usage))} {pstate or '!?!?'}"
         )
 
     return "\n".join(formatted_data) + "\n"
