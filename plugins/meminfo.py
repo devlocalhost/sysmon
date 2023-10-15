@@ -8,7 +8,6 @@ from util.util import (
     en_open,
     convert_bytes,
     to_bytes,
-    char_padding,
     clean_output,
     file_has,
     SHOW_SWAP,
@@ -98,31 +97,30 @@ def main():
                 )
 
                 return (
-                    f"  --- /proc/meminfo {char_padding('-', 47)}\n"
-                    f"     RAM: {char_padding(' ', 25)}Swap:\n"
+                    f"  --- /proc/meminfo {'-' * 47}\n"
+                    f"     RAM: {' ' * 25}Swap:\n"
                     f"         Total: {convert_bytes(memory_total)}"
-                    # + char_padding(" ", (spaces_swap - len(convert_bytes(swap_total))))
                     + f"{' ':<16}Total: {convert_bytes(swap_total)}\n"
                     f"          Used: {memory_used_format}"
-                    + char_padding(" ", (25 - len(memory_used_format)))
+                    + " " * (25 - len(memory_used_format))
                     + f"Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
                     f"   Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
                     f"     Available: {memory_avail_format}"
-                    + char_padding(" ", (20 - len(memory_avail_format)))
+                    + " " * (20 - len(memory_avail_format))
                     + f"Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
                     f"          Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
                     f"        Cached: {convert_bytes(memory_cached)}"
-                    + char_padding(" ", (23 - len(convert_bytes(memory_cached))))
+                    + " " * (23 - len(convert_bytes(memory_cached)))
                     + f"Cached: {convert_bytes(swap_cached)}\n"
                 )
 
             return (
-                f"  --- /proc/meminfo {char_padding('-', 47)}\n"
-                f"   RAM: {char_padding(' ', 25)}\n"
+                f"  --- /proc/meminfo {'-' * 47}\n"
+                f"   RAM: {' ' * 25}\n"
                 f"        Total: {convert_bytes(memory_total)}"
                 + f"{' ':<17}Cached: {convert_bytes(memory_cached)}\n"
                 f"         Used: {convert_bytes(memory_used)} ({memory_used_percent}%)"
-                + char_padding(" ", (20 - len(str(memory_used_format))))
+                + " " * (20 - len(str(memory_used_format)))
                 + f"Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
                 f"    Available: {convert_bytes(memory_available)} ({memory_available_percent}%)"
                 + f"{' ':<11}Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
