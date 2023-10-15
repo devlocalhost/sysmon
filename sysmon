@@ -172,7 +172,7 @@ def start_sysmon(stdscr, plugins, sleep):
     curses.endwin()
 
 
-def main():
+def main(arg):
     """execute sysmon"""
 
     plugins_array = [
@@ -183,13 +183,15 @@ def main():
         "plugins.netstats",
     ]
 
-    for argument in args.__dict__:
-        if argument.startswith("no"):
-            if getattr(args, argument):
+    for argument in arg.__dict__:
+        if argument.startswith("no") and argument in (
+            x.split(".")[1] for x in plugins_array
+        ):
+            if getattr(arg, argument):
                 argument = f"plugins.{argument.replace('no', '')}"
                 plugins_array.pop(plugins_array.index(argument))
 
-    curses.wrapper(start_sysmon, plugins_array, args.sleep)
+    curses.wrapper(start_sysmon, plugins_array, arg.sleep)
 
 
 if __name__ == "__main__":
@@ -213,4 +215,4 @@ if __name__ == "__main__":
     if args.ipno:
         util.SHOW_LOCAL_IP = False
 
-    main()
+    main(args)
