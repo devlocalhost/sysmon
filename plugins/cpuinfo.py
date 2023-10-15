@@ -42,9 +42,14 @@ def get_info():
     try:
         buffer = ctypes.create_string_buffer(64)
 
-        ctypes.CDLL("sysmon_cpu_cache.so").get_cache_size(buffer)
-        output = buffer.value.decode().split(".")
+        # prioritize in-tree shared object
+        if(os.path.exists('util/sysmon_cpu_cache.so')):
+            ctypes.CDLL(os.path.dirname(os.path.abspath('util/sysmon_cpu_cache.so'))
+                        + os.path.sep + 'sysmon_cpu_cache.so').get_cache_size(buffer)
+        else:
+            ctypes.CDLL('sysmon_cpu_cache.so').get_cache_size(buffer)
 
+        output = buffer.value.decode().split(".")
         if output[0] != "Unknown":
             data_dict["cpu_cache"] = convert_bytes(int(output[0]))
             data_dict["cpu_cache_type"] = output[1]
