@@ -71,6 +71,7 @@ def get_info():
 
         cpu_utils.get_cache_size(buffer)
         output = buffer.value.decode().split(".")
+
         if output[0] != "Unknown":
             data_dict["cpu_cache"] = convert_bytes(int(output[0]))
             data_dict["cpu_cache_type"] = output[1]
@@ -81,6 +82,7 @@ def get_info():
     try:
         with en_open("/sys/devices/system/cpu/smt/active") as smt_file:
             content = smt_file.read().strip()
+
             if content == "1":
                 data_dict["cpu_uses_smt"] = True
 
@@ -236,9 +238,11 @@ def main():
         )
 
     cpu_cores = data_dict["cpu_cores_phys"]
-    if data_dict["cpu_cores_phys"] == 0:
+
+    if cpu_cores == 0:
         if data_dict["cpu_uses_smt"] == True:
             cpu_cores = data_dict["cpu_cores_logical"] / 2
+
         cpu_cores = data_dict["cpu_cores_logical"]
 
     output_text = (
