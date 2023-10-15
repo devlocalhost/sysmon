@@ -103,23 +103,11 @@ def get_info():
 def cpu_freq():
     """get cpu frequency"""
 
-    # if data_dict["cpu_freq"] == "Unknown":
+    core_dir = glob.glob("/sys/devices/system/cpu/cpu*[0-9]")[0]
+
     try:
-        max_c = int(int(data_dict["cpu_cores_all"]) / 2)
-        min_c = max_c - 1
-
-        max_c_freq = 0
-        min_c_freq = 0
-
-        with en_open(f"/sys/devices/system/cpu/cpu{max_c}/cpufreq/scaling_cur_freq") as max_c_file:
-            max_c_freq = int(max_c_file.read().strip())
-
-        with en_open(f"/sys/devices/system/cpu/cpu{min_c}/cpufreq/scaling_cur_freq") as min_c_file:
-            min_c_freq = int(min_c_file.read().strip())
-
-        sum_c = max_c_freq + min_c_freq
-    
-        return round((sum_c / 2) / 1000, 2)
+        with en_open(f"{core_dir}/cpufreq/scaling_cur_freq") as core_file:
+            return round(int(core_file.read().strip()) / 1000, 2)
 
     except FileNotFoundError:
         return data_dict["cpu_freq"]
@@ -218,7 +206,7 @@ def main():
         + " " * (3 - len(str(cpu_usage_num)))
         + arch_model_temp_line
         + "\n"
-        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {cpu_freq()} MHz | Cache: {data_dict['cpu_cache']}"
+        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {cpu_freq():>7} MHz | Cache: {data_dict['cpu_cache']}"
     )
 
     if data_dict["cpu_cache_type"] != 0:
