@@ -100,17 +100,17 @@ def main():
                     f"  --- /proc/meminfo {'-' * 47}\n"
                     f"     RAM: {' ' * 25}Swap:\n"
                     f"         Total: {convert_bytes(memory_total)}"
-                    + f"{' ':<16}Total: {convert_bytes(swap_total)}\n"
+                    + f"{' ':<15}Total: {convert_bytes(swap_total)}\n"
                     f"          Used: {memory_used_format}"
-                    + " " * (26 - len(memory_used_format))
+                    + " " * (25 - len(memory_used_format))
                     + f"Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
                     f"   Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
                     f"     Available: {memory_avail_format}"
-                    + " " * (21 - len(memory_avail_format))
+                    + " " * (20 - len(memory_avail_format))
                     + f"Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
                     f"          Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
                     f"        Cached: {convert_bytes(memory_cached)}"
-                    + " " * (24 - len(convert_bytes(memory_cached)))
+                    + " " * (23 - len(convert_bytes(memory_cached)))
                     + f"Cached: {convert_bytes(swap_cached)}\n"
                 )
 
