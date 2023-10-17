@@ -8,6 +8,7 @@ import sys
 from datetime import datetime
 from util.util import en_open
 
+
 def uptime_format():
     """format the uptime from seconds to a human readable format"""
 
@@ -33,6 +34,7 @@ def uptime_format():
         result[-1] = "and " + result[-1]
 
     return (", ".join(result), original_seconds)
+
 
 def main():
     """/proc/loadavg - system load times and uptime"""

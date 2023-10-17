@@ -17,6 +17,7 @@ from util.util import (
     SHOW_LOCAL_IP,
 )
 
+
 def detect_network_adapter():
     """detect an active network adapter/card/whatever and return its directory"""
 
@@ -30,6 +31,7 @@ def detect_network_adapter():
         return None
 
     return "/sys/class/net/" + INTERFACE
+
 
 def main():
     """/sys/class/net/ - network stats, and speed"""

@@ -91,7 +91,9 @@ def main():
                 total_available = memory_available + swap_available
 
                 used_perc = round((memory_used_percent + swap_used_percent) / 2, 1)
-                available_perc = round((memory_available_percent + swap_available_percent) / 2, 1)
+                available_perc = round(
+                    (memory_available_percent + swap_available_percent) / 2, 1
+                )
 
                 return (
                     f"  --- /proc/meminfo {'-' * 47}\n"

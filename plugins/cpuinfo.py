@@ -52,6 +52,7 @@ def clean_cpu_model(model):
 
     return " ".join(model.split()).split("@", maxsplit=1)[0].rstrip(" ")
 
+
 def get_info():
     """
     instead of repeatedly getting the information that usually doesnt change
@@ -158,7 +159,9 @@ def cpu_freq():
     """get cpu frequency"""
 
     try:
-        with en_open(f"/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") as core_file:
+        with en_open(
+            f"/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"
+        ) as core_file:
             return round(int(core_file.read().strip()) / 1000, 2)
 
     except FileNotFoundError:
