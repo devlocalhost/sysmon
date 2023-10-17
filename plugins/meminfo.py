@@ -85,16 +85,13 @@ def main():
                 swap_used_percent = round((int(swap_used) / int(swap_total)) * 100, 1)
                 swap_available_percent = round(100 - swap_used_percent, 1)
 
-                spaces_swap = (
-                    25
-                    if str(convert_bytes(swap_total)).split(" ")[1] == "GiB"
-                    else 23
-                    if str(convert_bytes(swap_total)).split(" ")[1] == "TiB"
-                    and str(convert_bytes(memory_total)).split(" ")[1] == "TiB"
-                    else 22
-                    if str(convert_bytes(swap_total)).split(" ")[1] == "TiB"
-                    else 25
-                )
+                total_memory = memory_total + swap_total
+                total_actual_used = memory_actual_used + swap_used
+                total_used = memory_used + swap_used
+                total_available = memory_available + swap_available
+
+                used_perc = round((memory_used_percent + swap_used_percent) / 2, 1)
+                available_perc = round((memory_available_percent + swap_available_percent) / 2, 1)
 
                 return (
                     f"  --- /proc/meminfo {'-' * 47}\n"
@@ -111,7 +108,9 @@ def main():
                     f"          Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
                     f"        Cached: {convert_bytes(memory_cached)}"
                     + " " * (23 - len(convert_bytes(memory_cached)))
-                    + f"Cached: {convert_bytes(swap_cached)}\n"
+                    + f"Cached: {convert_bytes(swap_cached)}\n   - Combined: {'- ' * 26}\n"
+                    + f"         Total: {convert_bytes(total_memory)}{' ':<17}Used: {convert_bytes(total_used)} ({used_perc}%)\n"
+                    f"     Available: {convert_bytes(total_available)} ({available_perc}%){' ':<2}Actual Used: {convert_bytes(total_actual_used)}\n"
                 )
 
             return (
