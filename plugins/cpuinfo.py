@@ -60,12 +60,10 @@ def get_info():
         buffer_cores_log = cpu_utils.get_cores(0)
 
         if (
-            buffer_cores_phys > buffer_cores_log
-            or buffer_cores_log == 0
-            or buffer_cores_phys == 0
+            buffer_cores_phys < buffer_cores_log
+            and buffer_cores_log != 0
+            and buffer_cores_phys != 0
         ):
-            pass
-        else:
             data_dict["cpu_cores_phys"] = buffer_cores_phys
             data_dict["cpu_cores_logical"] = buffer_cores_log
 
@@ -240,7 +238,7 @@ def main():
     cpu_cores_phys = data_dict["cpu_cores_phys"]
 
     if cpu_cores_phys == 0:
-        if data_dict["cpu_uses_smt"] == True:
+        if data_dict["cpu_uses_smt"] is True:
             cpu_cores_phys = data_dict["cpu_cores_logical"] / 2
 
         cpu_cores_phys = data_dict["cpu_cores_logical"]
