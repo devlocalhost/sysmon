@@ -26,9 +26,9 @@ def main():
 
         return (
             f"  --- /proc/loadavg {'-' * 47}\n"
-            f"   System load: {onemin}, {fivemin}, {fiveteenmin} (1, 5, 15 mins)\n"
-            f"      Entities: {entities_active} executing, {entities_total} total"
-            f"\n\n   System up for {uptime_func_out[0]}\n    Since {up_since_fmt}\n"
+            f"   Load: {onemin}, {fivemin}, {fiveteenmin}"
+            f"{' ':<6}| Procs: {entities_active} executing, {entities_total} total"
+            f"\n   System up for {uptime_func_out[0]}\n    Since {up_since_fmt}\n"
         )
 
     except FileNotFoundError:
