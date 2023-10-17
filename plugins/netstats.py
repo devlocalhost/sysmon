@@ -5,17 +5,31 @@
 import os
 import sys
 import fcntl
+import glob
 import socket
 import struct
 
 from util.util import (
     en_open,
     convert_bytes,
-    detect_network_adapter,
     SAVE_DIR,
+    INTERFACE,
     SHOW_LOCAL_IP,
 )
 
+def detect_network_adapter():
+    """detect an active network adapter/card/whatever and return its directory"""
+
+    if INTERFACE is None:
+        for adapter_dir in glob.glob("/sys/class/net/*"):
+            with en_open(adapter_dir + "/type") as device_type:
+                if int(device_type.read()) != 772:  # if not loopback device
+                    with en_open(adapter_dir + "/operstate") as status:
+                        if status.read().strip() == "up":
+                            return adapter_dir
+        return None
+
+    return "/sys/class/net/" + INTERFACE
 
 def main():
     """/sys/class/net/ - network stats, and speed"""

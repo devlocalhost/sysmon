@@ -11,7 +11,6 @@ import platform
 from util.util import (
     en_open,
     SAVE_DIR,
-    clean_cpu_model,
     convert_bytes,
     to_bytes,
     SHOW_TEMPERATURE,
@@ -30,6 +29,28 @@ data_dict = {
     "cpu_cache_type": 0,
 }
 
+
+def clean_cpu_model(model):
+    """cleaning cpu model"""
+
+    replace_stuff = [
+        "(R)",
+        "(TM)",
+        "(tm)",
+        "Processor",
+        "processor",
+        '"AuthenticAMD"',
+        "Chip Revision",
+        "Technologies, Inc",
+        "CPU",
+        "with Radeon HD Graphics",
+        "with Radeon Graphics",
+    ]
+
+    for text in replace_stuff:
+        model = model.replace(text, "")
+
+    return " ".join(model.split()).split("@", maxsplit=1)[0].rstrip(" ")
 
 def get_info():
     """

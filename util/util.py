@@ -59,21 +59,6 @@ def en_open(file, method="r"):
     return open(file, mode=method, encoding="utf-8")
 
 
-def detect_network_adapter():
-    """detect an active network adapter/card/whatever and return its directory"""
-
-    if INTERFACE is None:
-        for adapter_dir in glob.glob("/sys/class/net/*"):
-            with en_open(adapter_dir + "/type") as device_type:
-                if int(device_type.read()) != 772:  # if not loopback device
-                    with en_open(adapter_dir + "/operstate") as status:
-                        if status.read().strip() == "up":
-                            return adapter_dir
-        return None
-
-    return "/sys/class/net/" + INTERFACE
-
-
 def file_has(string, lines):
     """checking if file contains string. return string if contains else return None"""
 
@@ -97,53 +82,3 @@ def to_bytes(kilobytes):
     """convert kilobytes to bytes"""
 
     return kilobytes * 1024
-
-
-def uptime_format():
-    """format the uptime from seconds to a human readable format"""
-
-    intervals = (("week", 604800), ("day", 86400), ("hour", 3600), ("minute", 60))
-    result = []
-
-    with en_open("/proc/uptime") as uptime_file:
-        seconds = int(float(uptime_file.readline().split()[0]))
-
-    original_seconds = seconds
-
-    if seconds < 60:
-        return f"{seconds} seconds", original_seconds
-
-    for time_type, count in intervals:
-        value = seconds // count
-
-        if value:
-            seconds -= value * count
-            result.append(f"{value} {time_type if value == 1 else time_type + 's'}")
-
-    if len(result) > 1:
-        result[-1] = "and " + result[-1]
-
-    return (", ".join(result), original_seconds)
-
-
-def clean_cpu_model(model):
-    """cleaning cpu model"""
-
-    replace_stuff = [
-        "(R)",
-        "(TM)",
-        "(tm)",
-        "Processor",
-        "processor",
-        '"AuthenticAMD"',
-        "Chip Revision",
-        "Technologies, Inc",
-        "CPU",
-        "with Radeon HD Graphics",
-        "with Radeon Graphics",
-    ]
-
-    for text in replace_stuff:
-        model = model.replace(text, "")
-
-    return " ".join(model.split()).split("@", maxsplit=1)[0].rstrip(" ")

@@ -6,8 +6,33 @@ import time
 import sys
 
 from datetime import datetime
-from util.util import en_open, uptime_format
+from util.util import en_open
 
+def uptime_format():
+    """format the uptime from seconds to a human readable format"""
+
+    intervals = (("week", 604800), ("day", 86400), ("hour", 3600), ("minute", 60))
+    result = []
+
+    with en_open("/proc/uptime") as uptime_file:
+        seconds = int(float(uptime_file.readline().split()[0]))
+
+    original_seconds = seconds
+
+    if seconds < 60:
+        return f"{seconds} seconds", original_seconds
+
+    for time_type, count in intervals:
+        value = seconds // count
+
+        if value:
+            seconds -= value * count
+            result.append(f"{value} {time_type if value == 1 else time_type + 's'}")
+
+    if len(result) > 1:
+        result[-1] = "and " + result[-1]
+
+    return (", ".join(result), original_seconds)
 
 def main():
     """/proc/loadavg - system load times and uptime"""
