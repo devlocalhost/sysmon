@@ -7,4 +7,4 @@ replace clang with gcc if you want to use gcc
 this method is better than the other ones. more accurate
 
 # credit
-chatgpt. lol
+chatgpt and [skyblueborb](https://github.com/Skyblueborb)
