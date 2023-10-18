@@ -3,7 +3,7 @@
 using [**curses**](https://docs.python.org/3/howto/curses.html)
 
 # preview
-[PREVIEW.md file](PREVIEW.md)
+[PREVIEW.md file](screens/PREVIEW.md)
 
 # what is sysmon
 sysmon is a system monitor which is **ready to use** and easy to understand. it uses [**linux's /proc pseudo filesystem**](https://www.kernel.org/doc/html/latest/filesystems/proc.html) to read information and [**curses**](https://docs.python.org/3/howto/curses.html) to display them. the only thing you have to do is git clone this repo, and run the sysmon file
