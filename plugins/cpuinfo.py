@@ -11,10 +11,8 @@ import platform
 from util.util import (
     en_open,
     SAVE_DIR,
-    clean_cpu_model,
     convert_bytes,
     to_bytes,
-    char_padding,
     SHOW_TEMPERATURE,
 )
 
@@ -23,11 +21,36 @@ hwmon_dirs_out = glob.glob("/sys/class/hwmon/*")
 data_dict = {
     "cpu_freq": "Unknown",
     "cpu_cache": "Unknown",
-    "cpu_cores_all": 0,
+    "cpu_cores_phys": 0,
+    "cpu_cores_logical": 0,
+    "cpu_uses_smt": False,
     "cpu_model": "Unknown",
     "cpu_arch": "Unknown",
     "cpu_cache_type": 0,
 }
+
+
+def clean_cpu_model(model):
+    """cleaning cpu model"""
+
+    replace_stuff = [
+        "(R)",
+        "(TM)",
+        "(tm)",
+        "Processor",
+        "processor",
+        '"AuthenticAMD"',
+        "Chip Revision",
+        "Technologies, Inc",
+        "CPU",
+        "with Radeon HD Graphics",
+        "with Radeon Graphics",
+    ]
+
+    for text in replace_stuff:
+        model = model.replace(text, "")
+
+    return " ".join(model.split()).split("@", maxsplit=1)[0].rstrip(" ")
 
 
 def get_info():
@@ -42,14 +65,48 @@ def get_info():
 
     try:
         buffer = ctypes.create_string_buffer(64)
+        buffer_cores_phys = ctypes.c_uint
+        buffer_cores_log = ctypes.c_uint
 
-        ctypes.CDLL("sysmon_cpu_cache.so").get_cache_size(buffer)
+        # prioritize in-tree shared object
+        if os.path.exists("util/sysmon_cpu_utils.so"):
+            cpu_utils = ctypes.CDLL(
+                os.path.dirname(os.path.abspath("util/sysmon_cpu_utils.so"))
+                + os.path.sep
+                + "sysmon_cpu_utils.so"
+            )
+        else:
+            cpu_utils = ctypes.CDLL("sysmon_cpu_utils.so")
+
+        buffer_cores_phys = cpu_utils.get_cores(1)
+        buffer_cores_log = cpu_utils.get_cores(0)
+
+        if (
+            buffer_cores_phys < buffer_cores_log
+            and buffer_cores_log != 0
+            and buffer_cores_phys != 0
+        ):
+            data_dict["cpu_cores_phys"] = buffer_cores_phys
+            data_dict["cpu_cores_logical"] = buffer_cores_log
+
+        cpu_utils.get_cache_size(buffer)
         output = buffer.value.decode().split(".")
 
-        data_dict["cpu_cache"] = convert_bytes(int(output[0]))
-        data_dict["cpu_cache_type"] = output[1]
+        if output[0] != "Unknown":
+            data_dict["cpu_cache"] = convert_bytes(int(output[0]))
+            data_dict["cpu_cache_type"] = output[1]
 
     except OSError:
+        pass
+
+    try:
+        with en_open("/sys/devices/system/cpu/smt/active") as smt_file:
+            content = smt_file.read().strip()
+
+            if content == "1":
+                data_dict["cpu_uses_smt"] = True
+
+    except (FileNotFoundError, PermissionError):
         pass
 
     try:
@@ -66,9 +123,7 @@ def get_info():
                         )
 
                 if line.startswith("cpu MHz"):
-                    data_dict["cpu_freq"] = round(
-                        float(line.split(":")[1].strip()) / 1000, 2
-                    )
+                    data_dict["cpu_freq"] = round(float(line.split(":")[1].strip()), 2)
 
                 if line.startswith("model name"):
                     model = clean_cpu_model(line.split(":")[1].strip())
@@ -86,9 +141,10 @@ def get_info():
             # because os.sysconf LEVEL2_CACHE_SIZE wont return anything on my system
             # there are better ways to handle this yeah, but for now, it is what it is
 
-            data_dict["cpu_cores_all"] = os.sysconf(
-                os.sysconf_names["SC_NPROCESSORS_CONF"]
-            )
+            if data_dict["cpu_cores_logical"] == 0:
+                data_dict["cpu_cores_logical"] = os.sysconf(
+                    os.sysconf_names["SC_NPROCESSORS_CONF"]
+                )
 
     except FileNotFoundError:
         sys.exit("Couldnt find /proc/stat file")
@@ -97,6 +153,19 @@ def get_info():
         sys.exit(
             "Couldnt read the file. Do you have read permissions for /proc/stat file?"
         )
+
+
+def cpu_freq():
+    """get cpu frequency"""
+
+    try:
+        with en_open(
+            f"/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"
+        ) as core_file:
+            return round(int(core_file.read().strip()) / 1000, 2)
+
+    except FileNotFoundError:
+        return data_dict["cpu_freq"]
 
 
 def cpu_usage():
@@ -134,7 +203,7 @@ def cpu_usage():
             update_data.write(".".join(new_stats))
 
         try:
-            return round(100 * ((previous_data - current_data) / total))
+            return str(round(100 * ((previous_data - current_data) / total), 1)) + "%"
 
         except (
             ZeroDivisionError
@@ -188,13 +257,18 @@ def main():
             f"| CPU: {data_dict['cpu_arch']} {data_dict['cpu_model']}"
         )
 
+    cpu_cores_phys = data_dict["cpu_cores_phys"]
+
+    if cpu_cores_phys == 0:
+        if data_dict["cpu_uses_smt"] is True:
+            cpu_cores_phys = data_dict["cpu_cores_logical"] / 2
+
+        cpu_cores_phys = data_dict["cpu_cores_logical"]
+
     output_text = (
-        f"  --- /proc/cpuinfo {char_padding('-', 47)}\n"
-        f"{char_padding(' ', 9)}Usage: {cpu_usage_num}% "
-        + " " * (3 - len(str(cpu_usage_num)))
-        + arch_model_temp_line
-        + "\n"
-        f"   Total Cores: {data_dict['cpu_cores_all']} | Frequency: {data_dict['cpu_freq']} GHz | Cache: {data_dict['cpu_cache']}"
+        f"  ——— /proc/cpuinfo {'—' * 47}\n"
+        f"   Usage: {cpu_usage_num:<7}{arch_model_temp_line}" + "\n"
+        f"   Cores: {cpu_cores_phys}c/{data_dict['cpu_cores_logical']}t | Frequency: {cpu_freq():>7} MHz | Cache: {data_dict['cpu_cache']}"
     )
 
     if data_dict["cpu_cache_type"] != 0:

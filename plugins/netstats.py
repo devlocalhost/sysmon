@@ -5,17 +5,32 @@
 import os
 import sys
 import fcntl
+import glob
 import socket
 import struct
 
 from util.util import (
     en_open,
-    char_padding,
     convert_bytes,
-    detect_network_adapter,
     SAVE_DIR,
+    INTERFACE,
     SHOW_LOCAL_IP,
 )
+
+
+def detect_network_adapter():
+    """detect an active network adapter/card/whatever and return its directory"""
+
+    if INTERFACE is None:
+        for adapter_dir in glob.glob("/sys/class/net/*"):
+            with en_open(adapter_dir + "/type") as device_type:
+                if int(device_type.read()) != 772:  # if not loopback device
+                    with en_open(adapter_dir + "/operstate") as status:
+                        if status.read().strip() == "up":
+                            return adapter_dir
+        return None
+
+    return "/sys/class/net/" + INTERFACE
 
 
 def main():
@@ -79,17 +94,17 @@ def main():
             local_ip = "Hidden"
 
         return (
-            f"  --- /sys/class/net/{device_name} {char_padding('-', (45 - len(device_name)))}\n"
+            f"  ——— /sys/class/net/{device_name} {'—' * (45 - len(device_name))}\n"
             f"      Local IP: {local_ip}\n"
             f"      Received: {human_received}"
-            + char_padding(" ", (14 - len(human_received)))
+            + " " * (14 - len(human_received))
             + f"({received} bytes)\n"
             f"   Transferred: {human_transferred}"
-            + char_padding(" ", (14 - len(human_transferred)))
+            + " " * (14 - len(human_transferred))
             + f"({transferred} bytes)\n"
             f"         Speed: Down {convert_bytes(recv_speed)}"
-            + char_padding(" ", (14 - len(convert_bytes(recv_speed))))
+            + " " * (14 - len(convert_bytes(recv_speed)))
             + f"| Up {convert_bytes(transf_speed)}\n"
         )
 
-    return f"  --- /sys/class/net/!?!? {char_padding('-', 41)}\n"
+    return f"  ——— /sys/class/net/!?!? {'—' * 41}\n"
