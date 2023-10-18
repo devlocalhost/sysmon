@@ -52,7 +52,7 @@ def main():
             ).strftime("%A %B %d %Y, %I:%M:%S %p")
 
         return (
-            f"  --- /proc/loadavg {'-' * 47}\n"
+            f"  ——— /proc/loadavg {'—' * 47}\n"
             f"   Load: {onemin}, {fivemin}, {fiveteenmin}"
             f"{' ':<6}| Procs: {entities_active} executing, {entities_total} total"
             f"\n   System up for {uptime_func_out[0]}\n    Since {up_since_fmt}\n"

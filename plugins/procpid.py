@@ -61,7 +61,7 @@ def main():
     processes.sort(key=lambda a: a[1], reverse=True)
 
     formatted_data = [
-        f"  --- /proc/pid/status {'-' * 44}\n   Name            PID         RSS            State"
+        f"  ——— /proc/pid/status {'—' * 44}\n   Name            PID         RSS            State"
     ]
 
     for process_name, rss, pstate, pid in processes[:PROCS]:
