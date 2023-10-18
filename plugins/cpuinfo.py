@@ -203,7 +203,7 @@ def cpu_usage():
             update_data.write(".".join(new_stats))
 
         try:
-            return str(round(100 * ((previous_data - current_data) / total))) + "%"
+            return str(round(100 * ((previous_data - current_data) / total), 1)) + "%"
 
         except (
             ZeroDivisionError
@@ -267,7 +267,7 @@ def main():
 
     output_text = (
         f"  ——— /proc/cpuinfo {'—' * 47}\n"
-        f"   Usage: {cpu_usage_num:<5}{arch_model_temp_line}" + "\n"
+        f"   Usage: {cpu_usage_num:<7}{arch_model_temp_line}" + "\n"
         f"   Cores: {cpu_cores_phys}c/{data_dict['cpu_cores_logical']}t | Frequency: {cpu_freq():>7} MHz | Cache: {data_dict['cpu_cache']}"
     )
 
