@@ -116,7 +116,7 @@ def main():
                 )
 
             return (
-                f"  --- /proc/meminfo {'-' * 47}\n"
+                f"  ——— /proc/meminfo {'—' * 47}\n"
                 f"   RAM: {' ' * 25}\n"
                 f"        Total: {convert_bytes(memory_total)}"
                 + f"{' ':<17}Cached: {convert_bytes(memory_cached)}\n"
