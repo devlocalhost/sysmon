@@ -94,8 +94,8 @@ def main():
             local_ip = "Hidden"
 
         return (
-            f"  ——— /sys/class/net/{device_name} {'—' * (45 - len(device_name))}\n"
-            f"      Local IP: {local_ip}\n"
+            f"  ——— /sys/class/net {'—' * (52 - len(device_name))}\n"
+            f"      Local IP: {local_ip}{' ' * max(15 - len(local_ip), 0)} | Interface: {device_name}\n"
             f"      Received: {human_received}"
             + " " * (14 - len(human_received))
             + f"({received} bytes)\n"
