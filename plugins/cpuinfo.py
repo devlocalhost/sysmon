@@ -160,7 +160,7 @@ def cpu_freq():
 
     try:
         with en_open(
-            f"/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"
+            "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"
         ) as core_file:
             return round(int(core_file.read().strip()) / 1000, 2)
 

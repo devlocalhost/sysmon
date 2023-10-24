@@ -30,6 +30,7 @@ except PermissionError:
         "Couldn't read the file. Do you have read permissions for /proc/loadavg file?"
     )
 
+
 def uptime_format():
     """format the uptime from seconds to a human readable format"""
 
@@ -68,9 +69,9 @@ def main():
 
     uptime_func_out = uptime_format()
 
-    up_since_fmt = datetime.fromtimestamp(
-        time.time() - uptime_func_out[1]
-    ).strftime("%A %B %d %Y, %I:%M:%S %p")
+    up_since_fmt = datetime.fromtimestamp(time.time() - uptime_func_out[1]).strftime(
+        "%A %B %d %Y, %I:%M:%S %p"
+    )
 
     file.seek(0)
     logger.info(" data out")
