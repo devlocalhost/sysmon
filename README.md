@@ -1,5 +1,7 @@
 # sysmon, a system monitor "ready to use"
 
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 using [**curses**](https://docs.python.org/3/howto/curses.html)
 
 # preview
