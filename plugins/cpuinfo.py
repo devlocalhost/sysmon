@@ -250,7 +250,7 @@ def main():
 
     if cpu_temperature != "!?" and SHOW_TEMPERATURE:
         cpu_temperature += " °C"
-        arch_model_temp_line = f"({cpu_temperature}) | CPU: {data_dict['cpu_arch']} {data_dict['cpu_model']}"
+        arch_model_temp_line = f"{cpu_temperature:>6} | CPU: {data_dict['cpu_arch']} {data_dict['cpu_model']}"
 
     else:
         arch_model_temp_line = (
@@ -267,7 +267,7 @@ def main():
 
     output_text = (
         f"  ——— /proc/cpuinfo {'—' * 47}\n"
-        f"   Usage: {cpu_usage_num:<7}{arch_model_temp_line}" + "\n"
+        f"   Usage: {cpu_usage_num:>6}, {arch_model_temp_line}" + "\n"
         f"   Cores: {cpu_cores_phys}c/{data_dict['cpu_cores_logical']}t | Frequency: {cpu_freq():>7} MHz | Cache: {data_dict['cpu_cache']}"
     )
 
