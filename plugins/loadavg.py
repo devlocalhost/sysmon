@@ -7,7 +7,7 @@ import time
 import sys
 
 from datetime import datetime
-from util.util import open_readonly, en_open
+from util.util import open_readonly
 from util.logger import setup_logger
 
 logger = setup_logger(__name__)

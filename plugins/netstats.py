@@ -3,7 +3,6 @@
 """netstats plugin for sysmon"""
 
 import os
-import sys
 import fcntl
 import glob
 import socket

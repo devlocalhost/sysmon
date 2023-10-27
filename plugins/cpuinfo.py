@@ -234,7 +234,6 @@ def cpu_usage():
 def get_cpu_temp_file(hwmon_dirs):
     """getting the cpu temperature from /sys/class/hwmon"""
 
-    temperature = "!?"
     allowed_types = ("coretemp", "k10temp", "acpitz", "cpu_1_0_usr")
 
     for temp_dir in hwmon_dirs:

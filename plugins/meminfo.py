@@ -2,10 +2,7 @@
 
 """meminfo plugin for sysmon"""
 
-import sys
-
 from util.util import (
-    en_open,
     convert_bytes,
     to_bytes,
     clean_output,

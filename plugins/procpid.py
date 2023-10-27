@@ -2,11 +2,10 @@
 
 """procpid plugin for sysmon"""
 
-import os, sys
+import os
 from util.util import (
     en_open,
     convert_bytes,
-    clean_output,
     to_bytes,
     PROCS,
 )
@@ -56,25 +55,24 @@ def main():
         except FileNotFoundError:
             pass
 
-    for process in processes:
-        processes = sorted(
-            processes, key=lambda x: int(x.get("VmRSS", 0)), reverse=True
+    processes = sorted(
+        processes, key=lambda x: int(x.get("VmRSS", 0)), reverse=True
+    )
+
+    formatted_data = [
+        f"  ——— /proc/pid/status {'—' * 44}\n   Name            PID         RSS            State"
+    ]
+
+    for procs_data in processes[:PROCS]:
+        process_name = procs_data["Name"]
+        pid = procs_data["pid"]
+        rss_usage = convert_bytes(to_bytes(int(procs_data["VmRSS"])))
+        pstate = procs_data["State"]
+
+        formatted_data.append(
+            f"   {process_name or '!?!?'}{' ' * (15 - len(process_name or '!?!?'))}"
+            f" {pid}{' ' * (11 - len(pid))}"
+            f" {rss_usage}{' ' * (14 - len(rss_usage))} {pstate or '!?!?'}"
         )
-
-        formatted_data = [
-            f"  ——— /proc/pid/status {'—' * 44}\n   Name            PID         RSS            State"
-        ]
-
-        for procs_data in processes[:PROCS]:
-            process_name = procs_data["Name"]
-            pid = procs_data["pid"]
-            rss_usage = convert_bytes(to_bytes(int(procs_data["VmRSS"])))
-            pstate = procs_data["State"]
-
-            formatted_data.append(
-                f"   {process_name or '!?!?'}{' ' * (15 - len(process_name or '!?!?'))}"
-                f" {pid}{' ' * (11 - len(pid))}"
-                f" {rss_usage}{' ' * (14 - len(rss_usage))} {pstate or '!?!?'}"
-            )
 
     return "\n".join(formatted_data) + "\n"
