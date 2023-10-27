@@ -16,15 +16,9 @@ from util.util import (
     SHOW_TEMPERATURE,
     open_readonly,
 )
-from util.logger import setup_logger
-
-logger = setup_logger(__name__)
 
 core_file = open_readonly("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
-logger.info("[open ->] freq file")
-
 proc_stat_file = open_readonly("/proc/stat")
-logger.info("[open ->] /proc/stat")
 
 hwmon_dirs_out = glob.glob("/sys/class/hwmon/*")
 
@@ -169,8 +163,6 @@ def cpu_freq():
     """get cpu frequency"""
 
     try:
-        logger.info("[read <-] freq file")
-
         core_file.seek(0)
         return round(int(core_file.read().strip()) / 1000, 2)
 
@@ -198,7 +190,6 @@ def cpu_usage():
 
         proc_stat_file.seek(0)
         new_stats = proc_stat_file.readline().replace("cpu ", "cpu").strip().split(" ")
-        logger.info("[read <-] /proc/stat")
 
         current_data = (
             int(new_stats[1])
@@ -249,7 +240,6 @@ def get_cpu_temp_file(hwmon_dirs):
 
 get_info()
 
-logger.info("[open ->] temperature")
 temperature_data = open_readonly(get_cpu_temp_file(hwmon_dirs_out))
 
 
@@ -260,7 +250,6 @@ def main():
 
     temperature_data.seek(0)
     cpu_temperature = str(int(temperature_data.read().strip()) // 1000)
-    logger.info("[read <-] temperature")
 
     if cpu_temperature != "!?" and SHOW_TEMPERATURE:
         cpu_temperature += " °C"
@@ -290,7 +279,5 @@ def main():
 
     else:
         output_text += "\n"
-
-    logger.info("[ out >>] cpuinfo")
 
     return output_text

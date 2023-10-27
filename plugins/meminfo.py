@@ -10,12 +10,8 @@ from util.util import (
     SHOW_SWAP,
     open_readonly,
 )
-from util.logger import setup_logger
-
-logger = setup_logger(__name__)
 
 meminfo_file = open_readonly("/proc/meminfo")
-logger.info("[open ->] /proc/meminfo")
 
 
 def main():
@@ -23,7 +19,6 @@ def main():
 
     meminfo_file.seek(0)
     meminfo_data = meminfo_file.readlines()
-    logger.info("[read <-] /proc/meminfo")
 
     memory_total = to_bytes(int(clean_output(file_has("MemTotal", meminfo_data))))
     memory_available = to_bytes(
@@ -85,8 +80,6 @@ def main():
             (memory_available_percent + swap_available_percent) / 2, 1
         )
 
-        logger.info("[ out >>] meminfo")
-
         return (
             f"  ——— /proc/meminfo {'—' * 47}\n"
             f"     RAM: {' ' * 25}Swap:\n"
@@ -106,8 +99,6 @@ def main():
             + f"         Total: {convert_bytes(total_memory)}{' ':<17}Used: {convert_bytes(total_used)} ({used_perc}%)\n"
             f"     Available: {convert_bytes(total_available)} ({available_perc}%){' ':<2}Actual Used: {convert_bytes(total_actual_used)}\n"
         )
-
-    logger.info("[ out >>] meminfo")
 
     return (
         f"  ——— /proc/meminfo {'—' * 47}\n"

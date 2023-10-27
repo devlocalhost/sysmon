@@ -8,14 +8,9 @@ import sys
 
 from datetime import datetime
 from util.util import open_readonly
-from util.logger import setup_logger
-
-logger = setup_logger(__name__)
 
 file = open_readonly("/proc/loadavg")
 uptime_file = open_readonly("/proc/uptime")
-logger.info("[open ->] /proc/loadavg")
-logger.info("[open ->] /proc/uptime")
 
 
 def uptime_format():
@@ -48,8 +43,6 @@ def uptime_format():
 def main():
     """/proc/loadavg - system load times and uptime"""
 
-    logger.info("[read <-] /proc/loadavg")
-
     loadavg_data = file.read().split()
     onemin, fivemin, fiveteenmin = loadavg_data[:3]
     entities_active, entities_total = loadavg_data[3].split("/")
@@ -61,7 +54,6 @@ def main():
     )
 
     file.seek(0)
-    logger.info("[ out >>] /proc/loadavg")
 
     return (
         f"  ——— /proc/loadavg {'—' * 47}\n"

@@ -9,9 +9,7 @@ from util.util import (
     to_bytes,
     PROCS,
 )
-from util.logger import setup_logger
 
-logger = setup_logger("procpid")
 sysmon_pid = os.getpid()
 
 
