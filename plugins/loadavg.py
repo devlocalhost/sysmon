@@ -13,7 +13,9 @@ from util.logger import setup_logger
 logger = setup_logger(__name__)
 
 file = open_readonly("/proc/loadavg")
+uptime_file = open_readonly("/proc/uptime")
 logger.info("[open ->] /proc/loadavg")
+logger.info("[open ->] /proc/uptime")
 
 
 def uptime_format():
@@ -22,8 +24,8 @@ def uptime_format():
     intervals = (("week", 604800), ("day", 86400), ("hour", 3600), ("minute", 60))
     result = []
 
-    with en_open("/proc/uptime") as uptime_file:
-        seconds = int(float(uptime_file.readline().split()[0]))
+    uptime_file.seek(0)
+    seconds = int(float(uptime_file.readline().split()[0]))
 
     original_seconds = seconds
 
