@@ -7,6 +7,7 @@ to understand, and "ready to use", without installing dependecies (except curses
 made by dev64 (also known as .dev, devlocalhost)
 """
 
+import os
 import sys
 import curses
 import select
@@ -142,7 +143,7 @@ def start_sysmon(stdscr, plugins, sleep):
             stdscr.erase()
 
             stdscr.addstr(
-                f" ——— Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
+                    f" ——— {os.getpid():<6} | {datetime.now().strftime('%I:%M:%S %p')} "
                 + "—" * 42
                 + "\n"
             )
