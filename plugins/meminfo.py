@@ -93,20 +93,20 @@ def main():
         return (
             f"  ——— /proc/meminfo {'—' * 47}\n"
             f"     RAM: {' ' * 25}Swap:\n"
-            f"     Total: {convert_bytes(memory_total)}"
+            f"         Total: {convert_bytes(memory_total)}"
             + f"{' ':<16}Total: {convert_bytes(swap_total)}\n"
-            f"      Used: {memory_used_format}"
+            f"          Used: {memory_used_format}"
             + " " * (25 - len(memory_used_format))
             + f"Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
             f"   Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
             f"     Available: {memory_avail_format}"
             + " " * (20 - len(memory_avail_format))
             + f"Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
-            f"      Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
-            f"    Cached: {convert_bytes(memory_cached)}"
+            f"          Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
+            f"        Cached: {convert_bytes(memory_cached)}"
             + " " * (23 - len(convert_bytes(memory_cached)))
             + f"Cached: {convert_bytes(swap_cached)}\n   — Combined: {'— ' * 26}\n"
-            + f"     Total: {convert_bytes(total_memory)}{' ':<17}Used: {convert_bytes(total_used)} ({used_perc}%)\n"
+            + f"         Total: {convert_bytes(total_memory)}{' ':<17}Used: {convert_bytes(total_used)} ({used_perc}%)\n"
             f"     Available: {convert_bytes(total_available)} ({available_perc}%){' ':<2}Actual Used: {convert_bytes(total_actual_used)}\n"
         )
 
@@ -115,11 +115,11 @@ def main():
     return (
         f"  ——— /proc/meminfo {'—' * 47}\n"
         f"   RAM: {' ' * 25}\n"
-        f"    Total: {convert_bytes(memory_total)}"
+        f"        Total: {convert_bytes(memory_total)}"
         + f"{' ':<17}Cached: {convert_bytes(memory_cached)}\n"
-        f"     Used: {convert_bytes(memory_used)} ({memory_used_percent}%)"
+        f"         Used: {convert_bytes(memory_used)} ({memory_used_percent}%)"
         + " " * (20 - len(str(memory_used_format)))
         + f"Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
         f"    Available: {convert_bytes(memory_available)} ({memory_available_percent}%)"
-        + f"{' ':<11}Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
+        + f"{' ':<9}Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
     )
