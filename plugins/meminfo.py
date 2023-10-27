@@ -88,7 +88,7 @@ def main():
             (memory_available_percent + swap_available_percent) / 2, 1
         )
 
-        logger.info("[ out >>] /proc/meminfo")
+        logger.info("[ out >>] meminfo")
 
         return (
             f"  ——— /proc/meminfo {'—' * 47}\n"
@@ -110,7 +110,7 @@ def main():
             f"     Available: {convert_bytes(total_available)} ({available_perc}%){' ':<2}Actual Used: {convert_bytes(total_actual_used)}\n"
         )
 
-    logger.info("[ out >>] /proc/meminfo")
+    logger.info("[ out >>] meminfo")
 
     return (
         f"  ——— /proc/meminfo {'—' * 47}\n"
