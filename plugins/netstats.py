@@ -65,6 +65,7 @@ def net_save():
         open_readonly(f"{SAVE_DIR}/tx"),
     )
 
+
 iface_device = get_network_interface()
 recv_speed_file = net_save()[0]
 transf_speed_file = net_save()[1]
