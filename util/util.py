@@ -63,7 +63,7 @@ def en_open(file, method="r"):
 def open_readonly(file):
     """open a file in read only and return
 
-       avoids opening and closing files repeatedly
+    avoids opening and closing files repeatedly
     """
 
     try:
