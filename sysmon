@@ -65,6 +65,13 @@ arguments = [
         },
     },
     {
+        "options": ["-nss", "--showsysmon"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disable sysmon stats in procpid",
+        },
+    },
+    {
         "options": ["-ni", "--ip"],
         "kwargs": {
             "action": "store_true",
@@ -212,5 +219,8 @@ if __name__ == "__main__":
 
     if args.ip:
         util.SHOW_LOCAL_IP = False
+
+    if args.showsysmon:
+        util.SHOW_SYSMON = False
 
     main()

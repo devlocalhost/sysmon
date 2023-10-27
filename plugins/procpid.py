@@ -8,6 +8,7 @@ from util.util import (
     convert_bytes,
     to_bytes,
     PROCS,
+    SHOW_SYSMON,
 )
 
 sysmon_pid = os.getpid()
@@ -68,11 +69,11 @@ def main():
         f"  ——— /proc/pid/status {'—' * 44}\n   Name            PID         RSS            State"
     ]
 
-    if sysmon_pid is not None:
+    if SHOW_SYSMON:
         sysmon_info = read_process_status(sysmon_pid)
-        if sysmon_info:
-            sysmon_info["Name"] = "sysmon"
-            processes.insert(0, sysmon_info)
+
+        sysmon_info["Name"] = "sysmon"
+        processes.insert(0, sysmon_info)
 
     for procs_data in processes[: PROCS + 1]:
         process_name = procs_data["Name"]
