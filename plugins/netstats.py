@@ -27,7 +27,6 @@ def get_network_interface():
                 if int(device_type.read()) != 772:  # if not loopback device
                     with en_open(iface + "/operstate") as status:
                         if status.read().strip() == "up":
-
                             return (
                                 open_readonly(f"{iface}/statistics/rx_bytes"),
                                 open_readonly(f"{iface}/statistics/tx_bytes"),
@@ -111,7 +110,6 @@ def main():
 
         else:
             local_ip = "Hidden"
-
 
         return (
             f"  ——— /sys/class/net {'—' * (52 - len(device_name))}\n"
