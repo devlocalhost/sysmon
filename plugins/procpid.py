@@ -60,7 +60,7 @@ def main():
     )
 
     formatted_data = [
-        f"  ——— /proc/pid/status {'—' * 44}\n   Name            PID         RSS            State"
+            f"  ——— /proc/pid/status (self: {os.getpid():<5}) {'—' * 30}\n   Name            PID         RSS            State"
     ]
 
     for procs_data in processes[:PROCS]:
