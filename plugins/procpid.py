@@ -68,7 +68,7 @@ def main():
         for procs_data in processes[:PROCS]:
             process_name = procs_data["Name"]
             pid = procs_data["pid"]
-            rss_usage = procs_data["VmRSS"]
+            rss_usage = convert_bytes(to_bytes(int(procs_data["VmRSS"])))
             pstate = procs_data["State"]
 
             formatted_data.append(
