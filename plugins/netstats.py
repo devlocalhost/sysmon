@@ -15,31 +15,49 @@ from util.util import (
     SAVE_DIR,
     INTERFACE,
     SHOW_LOCAL_IP,
+    open_readonly,
 )
+from util.logger import setup_logger
+
+logger = setup_logger(__name__)
 
 
 def detect_network_adapter():
     """detect an active network adapter/card/whatever and return its directory"""
 
     if INTERFACE is None:
-        for adapter_dir in glob.glob("/sys/class/net/*"):
-            with en_open(adapter_dir + "/type") as device_type:
+        for iface in glob.glob("/sys/class/net/*"):
+            with en_open(iface + "/type") as device_type:
                 if int(device_type.read()) != 772:  # if not loopback device
-                    with en_open(adapter_dir + "/operstate") as status:
+                    with en_open(iface + "/operstate") as status:
                         if status.read().strip() == "up":
-                            return adapter_dir
+                            logger.info("[open ->] open net dev")
+
+                            return (
+                                open_readonly(f"{iface}/statistics/rx_bytes"),
+                                open_readonly(f"{iface}/statistics/tx_bytes"),
+                                iface.split("/")[4],
+                            )
         return None
 
-    return "/sys/class/net/" + INTERFACE
+    logger.info("[open ->] open cust net dev")
+
+    return (
+        open_readonly(f"/sys/class/net/{INTERFACE}/statistics/rx_bytes"),
+        open_readonly(f"/sys/class/net/{INTERFACE}/statistics/tx_bytes"),
+        INTERFACE,
+    )
+
+
+iface_device = detect_network_adapter()
 
 
 def main():
     """/sys/class/net/ - network stats, and speed"""
 
-    adapter_directory = detect_network_adapter()
+    if iface_device is not None:
+        device_name = iface_device[2]
 
-    if adapter_directory is not None:
-        device_name = adapter_directory.split("/")[4]
         if not os.path.isfile(f"{SAVE_DIR}/rx") and not os.path.isfile(f"{SAVE_DIR}tx"):
             with en_open(f"{SAVE_DIR}/rx", "w") as rx_file:
                 rx_file.write("0")
@@ -47,18 +65,18 @@ def main():
             with en_open(f"{SAVE_DIR}/tx", "w") as tx_file:
                 tx_file.write("0")
 
-        try:
-            with en_open(adapter_directory + "/statistics/rx_bytes") as received:
-                received = received.read().strip()
+        recv_file = iface_device[0]
+        transf_file = iface_device[1]
+        recv_file.seek(0)
+        transf_file.seek(0)
 
-            with en_open(adapter_directory + "/statistics/tx_bytes") as transferred:
-                transferred = transferred.read().strip()
+        received = recv_file.read().strip()
+        transferred = transf_file.read().strip()
 
-            with en_open(f"{SAVE_DIR}/rx") as recv_speed:
-                recv_speed = abs(int(recv_speed.read().strip()) - int(received))
+        logger.info("[read <-] net dev")
 
-        except FileNotFoundError:
-            sys.exit(f'Network interface "{device_name}" not found')
+        with en_open(f"{SAVE_DIR}/rx") as recv_speed:
+            recv_speed = abs(int(recv_speed.read().strip()) - int(received))
 
         with en_open(f"{SAVE_DIR}/tx") as transf_speed:
             transf_speed = abs(int(transf_speed.read().strip()) - int(transferred))
@@ -92,6 +110,8 @@ def main():
 
         else:
             local_ip = "Hidden"
+
+        logger.info("[ out >>] net dev")
 
         return (
             f"  ——— /sys/class/net {'—' * (52 - len(device_name))}\n"

@@ -7,28 +7,13 @@ import time
 import sys
 
 from datetime import datetime
-from util.util import en_open
+from util.util import open_readonly, en_open
+from util.logger import setup_logger
 
-logging.basicConfig(
-    filename="logs/loadavg.log",
-    level=logging.DEBUG,
-    format="%(asctime)s: %(message)s",
-)
-logger = logging.getLogger()
+logger = setup_logger(__name__)
 
-try:
-    file = en_open("/proc/loadavg")
-    logger.info("file opened")
-
-except FileNotFoundError:
-    logger.warning("file not found")
-    sys.exit("Couldn't find /proc/loadavg file")
-
-except PermissionError:
-    logger.error("file cant read")
-    sys.exit(
-        "Couldn't read the file. Do you have read permissions for /proc/loadavg file?"
-    )
+file = open_readonly("/proc/loadavg")
+logger.info("[open ->] /proc/loadavg")
 
 
 def uptime_format():
@@ -61,7 +46,7 @@ def uptime_format():
 def main():
     """/proc/loadavg - system load times and uptime"""
 
-    logger.info(" file read")
+    logger.info("[read <-] /proc/loadavg")
 
     loadavg_data = file.read().split()
     onemin, fivemin, fiveteenmin = loadavg_data[:3]
@@ -74,7 +59,7 @@ def main():
     )
 
     file.seek(0)
-    logger.info(" data out")
+    logger.info("[ out >>] /proc/loadavg")
 
     return (
         f"  ——— /proc/loadavg {'—' * 47}\n"

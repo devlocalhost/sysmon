@@ -14,7 +14,17 @@ from util.util import (
     convert_bytes,
     to_bytes,
     SHOW_TEMPERATURE,
+    open_readonly,
 )
+from util.logger import setup_logger
+
+logger = setup_logger(__name__)
+
+core_file = open_readonly("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
+logger.info("[open ->] core file")
+
+proc_stat_file = open_readonly("/proc/stat")
+logger.info("[open ->] /proc/stat")
 
 hwmon_dirs_out = glob.glob("/sys/class/hwmon/*")
 
@@ -159,10 +169,10 @@ def cpu_freq():
     """get cpu frequency"""
 
     try:
-        with en_open(
-            "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"
-        ) as core_file:
-            return round(int(core_file.read().strip()) / 1000, 2)
+        logger.info("[read <-] core")
+
+        core_file.seek(0)
+        return round(int(core_file.read().strip()) / 1000, 2)
 
     except FileNotFoundError:
         return data_dict["cpu_freq"]
@@ -186,16 +196,17 @@ def cpu_usage():
                 + int(old_stats[7])
             )
 
-        with en_open("/proc/stat") as new_stats:
-            new_stats = new_stats.readline().replace("cpu ", "cpu").strip().split(" ")
+        proc_stat_file.seek(0)
+        new_stats = proc_stat_file.readline().replace("cpu ", "cpu").strip().split(" ")
+        logger.info("[read <-] /proc/stat")
 
-            current_data = (
-                int(new_stats[1])
-                + int(new_stats[2])
-                + int(new_stats[3])
-                + int(new_stats[6])
-                + int(new_stats[7])
-            )
+        current_data = (
+            int(new_stats[1])
+            + int(new_stats[2])
+            + int(new_stats[3])
+            + int(new_stats[6])
+            + int(new_stats[7])
+        )
 
         total = sum(map(int, old_stats[1:])) - sum(map(int, new_stats[1:]))
 
@@ -203,6 +214,7 @@ def cpu_usage():
             update_data.write(".".join(new_stats))
 
         try:
+            logger.info("[ out >>] /proc/stat")
             return str(round(100 * ((previous_data - current_data) / total), 1)) + "%"
 
         except (

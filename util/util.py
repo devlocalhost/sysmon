@@ -6,6 +6,7 @@ needed for sysmon to function
 """
 
 import os
+import sys
 import glob
 
 
@@ -57,6 +58,17 @@ def en_open(file, method="r"):
     """modifying the default open method so i dont have to define encoding every time"""
 
     return open(file, mode=method, encoding="utf-8")
+
+
+def open_readonly(file):
+    try:
+        return en_open(file)
+
+    except FileNotFoundError:
+        sys.exit(f"[{file}]: Could not find file.")
+
+    except PermissionError:
+        sys.exit("[{file}]: PermissionError: Could not read the file?")
 
 
 def file_has(string, lines):
