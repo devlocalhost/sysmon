@@ -21,7 +21,7 @@ from util.logger import setup_logger
 logger = setup_logger(__name__)
 
 core_file = open_readonly("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
-logger.info("[open ->] core file")
+logger.info("[open ->] freq file")
 
 proc_stat_file = open_readonly("/proc/stat")
 logger.info("[open ->] /proc/stat")
@@ -169,7 +169,7 @@ def cpu_freq():
     """get cpu frequency"""
 
     try:
-        logger.info("[read <-] core")
+        logger.info("[read <-] freq file")
 
         core_file.seek(0)
         return round(int(core_file.read().strip()) / 1000, 2)
@@ -214,7 +214,6 @@ def cpu_usage():
             update_data.write(".".join(new_stats))
 
         try:
-            logger.info("[ out >>] /proc/stat")
             return str(round(100 * ((previous_data - current_data) / total), 1)) + "%"
 
         except (
@@ -231,7 +230,8 @@ def cpu_usage():
         )
 
 
-def cpu_temp(hwmon_dirs):
+# there has to be a different, better way to do this.
+def get_cpu_temp_file(hwmon_dirs):
     """getting the cpu temperature from /sys/class/hwmon"""
 
     temperature = "!?"
@@ -240,25 +240,28 @@ def cpu_temp(hwmon_dirs):
     for temp_dir in hwmon_dirs:
         with en_open(temp_dir + "/name") as temp_type:
             if temp_type.read().strip() in allowed_types:
-                try:
-                    with en_open(temp_dir + "/temp1_input") as temp_value:
-                        temperature = int(temp_value.readline().strip()) // 1000
-                        break
+                temperature_file = (
+                    temp_dir + "/temp1_input"
+                )  # some systems might not have temp1 (sky's pc for example)
+                break
 
-                except (FileNotFoundError, OSError):
-                    pass
-
-    return temperature
+    return temperature_file
 
 
 get_info()
+
+logger.info("[open ->] temperature")
+temperature_data = open_readonly(get_cpu_temp_file(hwmon_dirs_out))
 
 
 def main():
     """/proc/cpuinfo - cpu information"""
 
     cpu_usage_num = cpu_usage()
-    cpu_temperature = str(cpu_temp(hwmon_dirs_out))
+
+    temperature_data.seek(0)
+    cpu_temperature = str(int(temperature_data.read().strip()) // 1000)
+    logger.info("[read <-] temperature")
 
     if cpu_temperature != "!?" and SHOW_TEMPERATURE:
         cpu_temperature += " °C"
@@ -288,5 +291,7 @@ def main():
 
     else:
         output_text += "\n"
+
+    logger.info("[ out >>] cpuinfo")
 
     return output_text

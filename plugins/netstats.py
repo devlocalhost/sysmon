@@ -31,7 +31,7 @@ def get_network_interface():
                 if int(device_type.read()) != 772:  # if not loopback device
                     with en_open(iface + "/operstate") as status:
                         if status.read().strip() == "up":
-                            logger.info("[read ->] open net dev")
+                            logger.info("[read ->] net dev")
 
                             return (
                                 open_readonly(f"{iface}/statistics/rx_bytes"),
@@ -40,7 +40,7 @@ def get_network_interface():
                             )
         return None
 
-    logger.info("[read ->] open cust net dev")
+    logger.info("[read ->] cust net dev")
 
     return (
         open_readonly(f"/sys/class/net/{INTERFACE}/statistics/rx_bytes"),
@@ -59,7 +59,7 @@ def net_save():
         with en_open(f"{SAVE_DIR}/tx", "w") as tx_file:
             tx_file.write("0")
 
-    logger.info("[read ->] open rx tx")
+    logger.info("[read ->] rx tx")
     return (
         open_readonly(f"{SAVE_DIR}/rx"),
         open_readonly(f"{SAVE_DIR}/tx"),
@@ -90,7 +90,7 @@ def main():
         transf_speed_file.seek(0)
         recv_speed = abs(int(recv_speed_file.read().strip()) - int(received))
         transf_speed = abs(int(transf_speed_file.read().strip()) - int(transferred))
-        logger.info("[read ->] read rx tx")
+        logger.info("[read ->] rx tx")
 
         with en_open(f"{SAVE_DIR}/rx", "w") as rxsave:
             rxsave.write(received if len(received) != 0 else "0")
