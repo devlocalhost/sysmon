@@ -230,9 +230,7 @@ def get_cpu_temp_file(hwmon_dirs):
     for temp_dir in hwmon_dirs:
         with en_open(temp_dir + "/name") as temp_type:
             if temp_type.read().strip() in allowed_types:
-                temperature_file = (
-                    temp_dir + "/temp1_input"
-                )  # some systems might not have temp1 (sky's pc for example)
+                temperature_file = glob.glob(f"{temp_dir}/temp*_input")[-1]
                 break
 
     return temperature_file
