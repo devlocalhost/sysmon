@@ -7,7 +7,6 @@ needed for sysmon to function
 
 import os
 import sys
-import glob
 
 
 # START OF IMPORTANT PART FOR THE PLUGINS
@@ -61,6 +60,11 @@ def en_open(file, method="r"):
 
 
 def open_readonly(file):
+    """open a file in read only and return
+
+       avoids opening and closing files repeatedly
+    """
+
     try:
         return en_open(file)
 
