@@ -67,7 +67,7 @@ def main():
     processes = sorted(processes, key=lambda x: int(x.get("VmRSS", 0)), reverse=True)
 
     formatted_data = [
-        f"  ——— /proc/pid/status (self: {os.getpid():<5}) {'—' * 30}\n   Name            PID         RSS            State"
+        f"  ——— /proc/pid/status {'—' * 44}\n   Name            PID         RSS            State"
     ]
 
     if sysmon_pid is not None:
