@@ -22,7 +22,7 @@ from util.logger import setup_logger
 logger = setup_logger(__name__)
 
 
-def detect_network_adapter():
+def get_network_interface():
     """detect an active network adapter/card/whatever and return its directory"""
 
     if INTERFACE is None:
@@ -31,7 +31,7 @@ def detect_network_adapter():
                 if int(device_type.read()) != 772:  # if not loopback device
                     with en_open(iface + "/operstate") as status:
                         if status.read().strip() == "up":
-                            logger.info("[open ->] open net dev")
+                            logger.info("[read ->] open net dev")
 
                             return (
                                 open_readonly(f"{iface}/statistics/rx_bytes"),
@@ -40,7 +40,7 @@ def detect_network_adapter():
                             )
         return None
 
-    logger.info("[open ->] open cust net dev")
+    logger.info("[read ->] open cust net dev")
 
     return (
         open_readonly(f"/sys/class/net/{INTERFACE}/statistics/rx_bytes"),
@@ -49,7 +49,25 @@ def detect_network_adapter():
     )
 
 
-iface_device = detect_network_adapter()
+def net_save():
+    """save file used to calculate network speed"""
+
+    if not os.path.isfile(f"{SAVE_DIR}/rx") and not os.path.isfile(f"{SAVE_DIR}tx"):
+        with en_open(f"{SAVE_DIR}/rx", "w") as rx_file:
+            rx_file.write("0")
+
+        with en_open(f"{SAVE_DIR}/tx", "w") as tx_file:
+            tx_file.write("0")
+
+    logger.info("[read ->] open rx tx")
+    return (
+        open_readonly(f"{SAVE_DIR}/rx"),
+        open_readonly(f"{SAVE_DIR}/tx"),
+    )
+
+iface_device = get_network_interface()
+recv_speed_file = net_save()[0]
+transf_speed_file = net_save()[1]
 
 
 def main():
@@ -57,13 +75,6 @@ def main():
 
     if iface_device is not None:
         device_name = iface_device[2]
-
-        if not os.path.isfile(f"{SAVE_DIR}/rx") and not os.path.isfile(f"{SAVE_DIR}tx"):
-            with en_open(f"{SAVE_DIR}/rx", "w") as rx_file:
-                rx_file.write("0")
-
-            with en_open(f"{SAVE_DIR}/tx", "w") as tx_file:
-                tx_file.write("0")
 
         recv_file = iface_device[0]
         transf_file = iface_device[1]
@@ -75,11 +86,11 @@ def main():
 
         logger.info("[read <-] net dev")
 
-        with en_open(f"{SAVE_DIR}/rx") as recv_speed:
-            recv_speed = abs(int(recv_speed.read().strip()) - int(received))
-
-        with en_open(f"{SAVE_DIR}/tx") as transf_speed:
-            transf_speed = abs(int(transf_speed.read().strip()) - int(transferred))
+        recv_speed_file.seek(0)
+        transf_speed_file.seek(0)
+        recv_speed = abs(int(recv_speed_file.read().strip()) - int(received))
+        transf_speed = abs(int(transf_speed_file.read().strip()) - int(transferred))
+        logger.info("[read ->] read rx tx")
 
         with en_open(f"{SAVE_DIR}/rx", "w") as rxsave:
             rxsave.write(received if len(received) != 0 else "0")
@@ -111,7 +122,7 @@ def main():
         else:
             local_ip = "Hidden"
 
-        logger.info("[ out >>] net dev")
+        logger.info("[ out >>] netstats")
 
         return (
             f"  ——— /sys/class/net {'—' * (52 - len(device_name))}\n"
