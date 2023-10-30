@@ -14,7 +14,11 @@ from util.util import (
     convert_bytes,
     to_bytes,
     SHOW_TEMPERATURE,
+    open_readonly,
 )
+
+core_file = open_readonly("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
+proc_stat_file = open_readonly("/proc/stat")
 
 hwmon_dirs_out = glob.glob("/sys/class/hwmon/*")
 
@@ -159,10 +163,8 @@ def cpu_freq():
     """get cpu frequency"""
 
     try:
-        with en_open(
-            f"/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"
-        ) as core_file:
-            return round(int(core_file.read().strip()) / 1000, 2)
+        core_file.seek(0)
+        return round(int(core_file.read().strip()) / 1000, 2)
 
     except FileNotFoundError:
         return data_dict["cpu_freq"]
@@ -186,16 +188,16 @@ def cpu_usage():
                 + int(old_stats[7])
             )
 
-        with en_open("/proc/stat") as new_stats:
-            new_stats = new_stats.readline().replace("cpu ", "cpu").strip().split(" ")
+        proc_stat_file.seek(0)
+        new_stats = proc_stat_file.readline().replace("cpu ", "cpu").strip().split(" ")
 
-            current_data = (
-                int(new_stats[1])
-                + int(new_stats[2])
-                + int(new_stats[3])
-                + int(new_stats[6])
-                + int(new_stats[7])
-            )
+        current_data = (
+            int(new_stats[1])
+            + int(new_stats[2])
+            + int(new_stats[3])
+            + int(new_stats[6])
+            + int(new_stats[7])
+        )
 
         total = sum(map(int, old_stats[1:])) - sum(map(int, new_stats[1:]))
 
@@ -219,38 +221,37 @@ def cpu_usage():
         )
 
 
-def cpu_temp(hwmon_dirs):
+# there has to be a different, better way to do this.
+def get_cpu_temp_file(hwmon_dirs):
     """getting the cpu temperature from /sys/class/hwmon"""
 
-    temperature = "!?"
     allowed_types = ("coretemp", "k10temp", "acpitz", "cpu_1_0_usr")
 
     for temp_dir in hwmon_dirs:
         with en_open(temp_dir + "/name") as temp_type:
             if temp_type.read().strip() in allowed_types:
-                try:
-                    with en_open(temp_dir + "/temp1_input") as temp_value:
-                        temperature = int(temp_value.readline().strip()) // 1000
-                        break
+                temperature_file = glob.glob(f"{temp_dir}/temp*_input")[-1]
+                break
 
-                except (FileNotFoundError, OSError):
-                    pass
-
-    return temperature
+    return temperature_file
 
 
 get_info()
+
+temperature_data = open_readonly(get_cpu_temp_file(hwmon_dirs_out))
 
 
 def main():
     """/proc/cpuinfo - cpu information"""
 
     cpu_usage_num = cpu_usage()
-    cpu_temperature = str(cpu_temp(hwmon_dirs_out))
+
+    temperature_data.seek(0)
+    cpu_temperature = str(int(temperature_data.read().strip()) // 1000)
 
     if cpu_temperature != "!?" and SHOW_TEMPERATURE:
         cpu_temperature += " °C"
-        arch_model_temp_line = f"({cpu_temperature}) | CPU: {data_dict['cpu_arch']} {data_dict['cpu_model']}"
+        arch_model_temp_line = f"{cpu_temperature:>6} | CPU: {data_dict['cpu_arch']} {data_dict['cpu_model']}"
 
     else:
         arch_model_temp_line = (
@@ -267,7 +268,7 @@ def main():
 
     output_text = (
         f"  ——— /proc/cpuinfo {'—' * 47}\n"
-        f"   Usage: {cpu_usage_num:<7}{arch_model_temp_line}" + "\n"
+        f"   Usage: {cpu_usage_num:>6}, {arch_model_temp_line}" + "\n"
         f"   Cores: {cpu_cores_phys}c/{data_dict['cpu_cores_logical']}t | Frequency: {cpu_freq():>7} MHz | Cache: {data_dict['cpu_cache']}"
     )
 

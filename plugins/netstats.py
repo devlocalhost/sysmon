@@ -3,7 +3,6 @@
 """netstats plugin for sysmon"""
 
 import os
-import sys
 import fcntl
 import glob
 import socket
@@ -15,53 +14,72 @@ from util.util import (
     SAVE_DIR,
     INTERFACE,
     SHOW_LOCAL_IP,
+    open_readonly,
 )
 
 
-def detect_network_adapter():
+def get_network_interface():
     """detect an active network adapter/card/whatever and return its directory"""
 
     if INTERFACE is None:
-        for adapter_dir in glob.glob("/sys/class/net/*"):
-            with en_open(adapter_dir + "/type") as device_type:
+        for iface in glob.glob("/sys/class/net/*"):
+            with en_open(iface + "/type") as device_type:
                 if int(device_type.read()) != 772:  # if not loopback device
-                    with en_open(adapter_dir + "/operstate") as status:
+                    with en_open(iface + "/operstate") as status:
                         if status.read().strip() == "up":
-                            return adapter_dir
+                            return (
+                                open_readonly(f"{iface}/statistics/rx_bytes"),
+                                open_readonly(f"{iface}/statistics/tx_bytes"),
+                                iface.split("/")[4],
+                            )
         return None
 
-    return "/sys/class/net/" + INTERFACE
+    return (
+        open_readonly(f"/sys/class/net/{INTERFACE}/statistics/rx_bytes"),
+        open_readonly(f"/sys/class/net/{INTERFACE}/statistics/tx_bytes"),
+        INTERFACE,
+    )
+
+
+def net_save():
+    """save file used to calculate network speed"""
+
+    if not os.path.isfile(f"{SAVE_DIR}/rx") and not os.path.isfile(f"{SAVE_DIR}tx"):
+        with en_open(f"{SAVE_DIR}/rx", "w") as rx_file:
+            rx_file.write("0")
+
+        with en_open(f"{SAVE_DIR}/tx", "w") as tx_file:
+            tx_file.write("0")
+
+    return (
+        open_readonly(f"{SAVE_DIR}/rx"),
+        open_readonly(f"{SAVE_DIR}/tx"),
+    )
+
+
+iface_device = get_network_interface()
+recv_speed_file = net_save()[0]
+transf_speed_file = net_save()[1]
 
 
 def main():
     """/sys/class/net/ - network stats, and speed"""
 
-    adapter_directory = detect_network_adapter()
+    if iface_device is not None:
+        device_name = iface_device[2]
 
-    if adapter_directory is not None:
-        device_name = adapter_directory.split("/")[4]
-        if not os.path.isfile(f"{SAVE_DIR}/rx") and not os.path.isfile(f"{SAVE_DIR}tx"):
-            with en_open(f"{SAVE_DIR}/rx", "w") as rx_file:
-                rx_file.write("0")
+        recv_file = iface_device[0]
+        transf_file = iface_device[1]
+        recv_file.seek(0)
+        transf_file.seek(0)
 
-            with en_open(f"{SAVE_DIR}/tx", "w") as tx_file:
-                tx_file.write("0")
+        received = recv_file.read().strip()
+        transferred = transf_file.read().strip()
 
-        try:
-            with en_open(adapter_directory + "/statistics/rx_bytes") as received:
-                received = received.read().strip()
-
-            with en_open(adapter_directory + "/statistics/tx_bytes") as transferred:
-                transferred = transferred.read().strip()
-
-            with en_open(f"{SAVE_DIR}/rx") as recv_speed:
-                recv_speed = abs(int(recv_speed.read().strip()) - int(received))
-
-        except FileNotFoundError:
-            sys.exit(f'Network interface "{device_name}" not found')
-
-        with en_open(f"{SAVE_DIR}/tx") as transf_speed:
-            transf_speed = abs(int(transf_speed.read().strip()) - int(transferred))
+        recv_speed_file.seek(0)
+        transf_speed_file.seek(0)
+        recv_speed = abs(int(recv_speed_file.read().strip()) - int(received))
+        transf_speed = abs(int(transf_speed_file.read().strip()) - int(transferred))
 
         with en_open(f"{SAVE_DIR}/rx", "w") as rxsave:
             rxsave.write(received if len(received) != 0 else "0")
@@ -94,8 +112,8 @@ def main():
             local_ip = "Hidden"
 
         return (
-            f"  ——— /sys/class/net/{device_name} {'—' * (45 - len(device_name))}\n"
-            f"      Local IP: {local_ip}\n"
+            f"  ——— /sys/class/net {'—' * (52 - len(device_name))}\n"
+            f"      Local IP: {local_ip}{' ' * max(15 - len(local_ip), 0)} | Interface: {device_name}\n"
             f"      Received: {human_received}"
             + " " * (14 - len(human_received))
             + f"({received} bytes)\n"

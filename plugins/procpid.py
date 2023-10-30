@@ -3,69 +3,83 @@
 """procpid plugin for sysmon"""
 
 import os
-
 from util.util import (
     en_open,
     convert_bytes,
-    clean_output,
     to_bytes,
     PROCS,
+    SHOW_SYSMON,
 )
+
+sysmon_pid = os.getpid()
+
+
+def read_process_status(pid):
+    """get pid data, like name, state, vmrss"""
+
+    try:
+        with en_open(f"/proc/{pid}/status") as status_file:
+            process_info = {}
+            vmrss_found = False
+            process_info["pid"] = pid
+
+            for line in status_file:
+                parts = line.split()
+                if len(parts) >= 2:
+                    key = parts[0].rstrip(":")
+                    if (
+                        key == "Name"
+                        or key == "State"
+                        or (key == "VmRSS" and len(parts) >= 3)
+                    ):
+                        if key != "State":
+                            value = parts[1]
+                        else:
+                            state_part = (
+                                parts[2].partition("(")[2].partition(")")[0].title()
+                            )
+                            value = state_part
+                        process_info[key] = value
+
+                        if key == "VmRSS":
+                            vmrss_found = True
+
+            if vmrss_found:
+                return process_info
+    except FileNotFoundError:
+        pass
+
+    return None
 
 
 def main():
-    """return the most ram (vmrss) consuming pids, with their state and name"""
+    """Return the most RAM (VmRSS) consuming PIDs, with their state and name"""
 
+    process_dirs = [pid for pid in os.listdir("/proc") if pid.isdigit()]
     processes = []
 
-    for entry_dir in os.scandir("/proc"):
-        if entry_dir.is_dir() and entry_dir.name.isdigit():
-            try:
-                with en_open(
-                    os.path.join(entry_dir.path, "status"), "r"
-                ) as status_file:
-                    s_readlines = status_file.readlines()
+    for pid in process_dirs:
+        process_info = read_process_status(pid)
+        if process_info:
+            processes.append(process_info)
 
-                    pid_name = None
-                    rss = None
-                    state = None
-
-                    pid_name_line = next(
-                        (line for line in s_readlines if line.startswith("Name:")), None
-                    )
-                    if pid_name_line:
-                        pid_name = pid_name_line.partition(":")[2].strip()
-
-                    rss_line = next(
-                        (line for line in s_readlines if line.startswith("VmRSS:")),
-                        None,
-                    )
-                    if rss_line:
-                        rss = int(clean_output(rss_line.partition(":")[2].strip()))
-
-                    state_line = next(
-                        (line for line in s_readlines if line.startswith("State:")),
-                        None,
-                    )
-                    if state_line:
-                        state = state_line.partition("(")[2].partition(")")[0].title()
-
-                    if rss is not None:
-                        processes.append(
-                            (pid_name, to_bytes(rss), state, entry_dir.name)
-                        )
-
-            except FileNotFoundError:
-                pass  # processes.append((None, 76328097200209, None, "64"))
-
-    processes.sort(key=lambda a: a[1], reverse=True)
+    processes = sorted(processes, key=lambda x: int(x.get("VmRSS", 0)), reverse=True)
 
     formatted_data = [
         f"  ——— /proc/pid/status {'—' * 44}\n   Name            PID         RSS            State"
     ]
 
-    for process_name, rss, pstate, pid in processes[:PROCS]:
-        rss_usage = convert_bytes(rss) if rss is not None else "!?"
+    if SHOW_SYSMON:
+        sysmon_info = read_process_status(sysmon_pid)
+
+        sysmon_info["Name"] = "sysmon"
+        processes.insert(0, sysmon_info)
+
+    for procs_data in processes[: PROCS + 1]:
+        process_name = procs_data["Name"]
+        pid = str(procs_data["pid"])
+        rss_usage = convert_bytes(to_bytes(int(procs_data["VmRSS"])))
+        pstate = procs_data["State"]
 
         formatted_data.append(
             f"   {process_name or '!?!?'}{' ' * (15 - len(process_name or '!?!?'))}"

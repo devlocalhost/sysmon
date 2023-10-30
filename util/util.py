@@ -6,7 +6,7 @@ needed for sysmon to function
 """
 
 import os
-import glob
+import sys
 
 
 # START OF IMPORTANT PART FOR THE PLUGINS
@@ -23,6 +23,7 @@ SHOW_SWAP = True
 
 # procpid.py vars - how many processes to display
 PROCS = 6
+SHOW_SYSMON = True
 
 # netstats vars - custom interface, from /sys/class/net/
 # check /sys/class/net/ for more
@@ -57,6 +58,22 @@ def en_open(file, method="r"):
     """modifying the default open method so i dont have to define encoding every time"""
 
     return open(file, mode=method, encoding="utf-8")
+
+
+def open_readonly(file):
+    """open a file in read only and return
+
+    avoids opening and closing files repeatedly
+    """
+
+    try:
+        return en_open(file)
+
+    except FileNotFoundError:
+        sys.exit(f"[{file}]: Could not find file.")
+
+    except PermissionError:
+        sys.exit("[{file}]: PermissionError: Could not read the file?")
 
 
 def file_has(string, lines):
