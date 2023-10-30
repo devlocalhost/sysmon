@@ -115,11 +115,13 @@ arguments = [
 
 def custom_help_formatter(prog):
     """fixing the ugly looking help menu"""
+
     return argparse.HelpFormatter(prog, max_help_position=46)
 
 
 def parse_arguments():
     """create arguments"""
+
     parser = argparse.ArgumentParser(
         formatter_class=custom_help_formatter,
         description="sysmon, a system monitor made in python | github.com/devlocalhost/sysmon",

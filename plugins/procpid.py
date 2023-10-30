@@ -25,8 +25,10 @@ def read_process_status(pid):
 
             for line in status_file:
                 parts = line.split()
+
                 if len(parts) >= 2:
                     key = parts[0].rstrip(":")
+
                     if (
                         key == "Name"
                         or key == "State"
@@ -34,11 +36,13 @@ def read_process_status(pid):
                     ):
                         if key != "State":
                             value = parts[1]
+
                         else:
                             state_part = (
                                 parts[2].partition("(")[2].partition(")")[0].title()
                             )
                             value = state_part
+
                         process_info[key] = value
 
                         if key == "VmRSS":
@@ -46,6 +50,7 @@ def read_process_status(pid):
 
             if vmrss_found:
                 return process_info
+
     except FileNotFoundError:
         pass
 
@@ -60,6 +65,7 @@ def main():
 
     for pid in process_dirs:
         process_info = read_process_status(pid)
+
         if process_info:
             processes.append(process_info)
 
@@ -71,8 +77,8 @@ def main():
 
     if SHOW_SYSMON:
         sysmon_info = read_process_status(sysmon_pid)
-
         sysmon_info["Name"] = "sysmon"
+
         processes.insert(0, sysmon_info)
 
     for procs_data in processes[: PROCS + 1]:

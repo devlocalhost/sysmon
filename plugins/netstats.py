@@ -32,6 +32,7 @@ def get_network_interface():
                                 open_readonly(f"{iface}/statistics/tx_bytes"),
                                 iface.split("/")[4],
                             )
+
         return None
 
     return (
