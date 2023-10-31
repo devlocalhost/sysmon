@@ -74,11 +74,8 @@ def get_info():
 
         # prioritize in-tree shared object
         if os.path.exists("util/sysmon_cpu_utils.so"):
-            cpu_utils = ctypes.CDLL(
-                os.path.dirname(os.path.abspath("util/sysmon_cpu_utils.so"))
-                + os.path.sep
-                + "sysmon_cpu_utils.so"
-            )
+            cpu_utils = ctypes.CDLL("util/sysmon_cpu_utils.so")
+
         else:
             cpu_utils = ctypes.CDLL("sysmon_cpu_utils.so")
 
