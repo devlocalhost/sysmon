@@ -28,16 +28,16 @@ def get_network_interface():
                     with en_open(iface + "/operstate") as status:
                         if status.read().strip() == "up":
                             return (
-                                open_readonly(f"{iface}/statistics/rx_bytes"),
-                                open_readonly(f"{iface}/statistics/tx_bytes"),
+                                f"{iface}/statistics/rx_bytes",
+                                f"{iface}/statistics/tx_bytes",
                                 iface.split("/")[4],
                             )
 
         return None
 
     return (
-        open_readonly(f"/sys/class/net/{INTERFACE}/statistics/rx_bytes"),
-        open_readonly(f"/sys/class/net/{INTERFACE}/statistics/tx_bytes"),
+        f"/sys/class/net/{INTERFACE}/statistics/rx_bytes",
+        f"/sys/class/net/{INTERFACE}/statistics/tx_bytes",
         INTERFACE,
     )
 
@@ -58,7 +58,6 @@ def net_save():
     )
 
 
-iface_device = get_network_interface()
 recv_speed_file = net_save()[0]
 transf_speed_file = net_save()[1]
 
@@ -66,16 +65,16 @@ transf_speed_file = net_save()[1]
 def main():
     """/sys/class/net/ - network stats, and speed"""
 
+    iface_device = get_network_interface()
+
     if iface_device is not None:
         device_name = iface_device[2]
 
-        recv_file = iface_device[0]
-        transf_file = iface_device[1]
-        recv_file.seek(0)
-        transf_file.seek(0)
+        with en_open(iface_device[0]) as recv_file:
+            received = recv_file.read().strip()
 
-        received = recv_file.read().strip()
-        transferred = transf_file.read().strip()
+        with en_open(iface_device[1]) as transf_file:
+            transferred = transf_file.read().strip()
 
         recv_speed_file.seek(0)
         transf_speed_file.seek(0)
