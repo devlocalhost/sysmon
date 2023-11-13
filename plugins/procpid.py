@@ -39,7 +39,10 @@ def read_process_status(pid):
 
                         else:
                             value = (
-                                " ".join(parts[2:]).partition("(")[2].partition(")")[0].title()
+                                " ".join(parts[2:])
+                                .partition("(")[2]
+                                .partition(")")[0]
+                                .title()
                                 # parts[2].partition("(")[2].partition(")")[0].title()
                                 # " ".join(parts[:2]).partition("(")[2].partition(")")[0].title()
                             )
