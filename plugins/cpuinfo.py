@@ -222,15 +222,13 @@ def cpu_usage():
 def get_cpu_temp_file(hwmon_dirs):
     """getting the cpu temperature from /sys/class/hwmon"""
 
-    allowed_types = ("coretemp", "k10temp", "cpu_1_0_usr", "acpitz")
+    allowed_types = ("coretemp", "k10temp", "acpitz", "cpu_1_0_usr")
 
     for temp_dir in hwmon_dirs:
         with en_open(temp_dir + "/name") as temp_type:
-            # prioritizing. theres probably a better way
-            for temp_zone in allowed_types:
-                if temp_type.read().strip() == temp_zone:
-                    temperature_file = glob.glob(f"{temp_dir}/temp*_input")[-1]
-                    break
+            if temp_type.read().strip() in allowed_types:
+                temperature_file = glob.glob(f"{temp_dir}/temp*_input")[-1]
+                break
 
     return temperature_file
 
