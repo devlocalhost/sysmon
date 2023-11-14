@@ -60,22 +60,6 @@ def en_open(file, method="r"):
     return open(file, mode=method, encoding="utf-8")
 
 
-def open_readonly(file):
-    """open a file in read only and return
-
-    avoids opening and closing files repeatedly
-    """
-
-    try:
-        return en_open(file)
-
-    except FileNotFoundError:
-        sys.exit(f"[{file}]: Could not find file.")
-
-    except PermissionError:
-        sys.exit("[{file}]: PermissionError: Could not read the file?")
-
-
 def file_has(string, lines):
     """checking if file contains string. return string if contains else return None"""
 

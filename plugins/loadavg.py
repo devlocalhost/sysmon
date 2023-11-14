@@ -7,10 +7,10 @@ import time
 import sys
 
 from datetime import datetime
-from util.util import open_readonly
+from util.util import en_open
 
-file = open_readonly("/proc/loadavg")
-uptime_file = open_readonly("/proc/uptime")
+file = en_open("/proc/loadavg")
+uptime_file = en_open("/proc/uptime")
 
 
 def uptime_format():

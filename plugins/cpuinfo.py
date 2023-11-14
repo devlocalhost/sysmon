@@ -14,11 +14,10 @@ from util.util import (
     convert_bytes,
     to_bytes,
     SHOW_TEMPERATURE,
-    open_readonly,
 )
 
-core_file = open_readonly("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
-proc_stat_file = open_readonly("/proc/stat")
+core_file = en_open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
+proc_stat_file = en_open("/proc/stat")
 
 hwmon_dirs_out = glob.glob("/sys/class/hwmon/*")
 
@@ -235,7 +234,7 @@ def get_cpu_temp_file(hwmon_dirs):
 
 get_info()
 
-temperature_data = open_readonly(get_cpu_temp_file(hwmon_dirs_out))
+temperature_data = en_open(get_cpu_temp_file(hwmon_dirs_out))
 
 
 def main():

@@ -8,10 +8,10 @@ from util.util import (
     clean_output,
     file_has,
     SHOW_SWAP,
-    open_readonly,
+    en_open,
 )
 
-meminfo_file = open_readonly("/proc/meminfo")
+meminfo_file = en_open("/proc/meminfo")
 
 
 def main():

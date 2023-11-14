@@ -14,7 +14,6 @@ from util.util import (
     SAVE_DIR,
     INTERFACE,
     SHOW_LOCAL_IP,
-    open_readonly,
 )
 
 
@@ -53,8 +52,8 @@ def net_save():
             tx_file.write("0")
 
     return (
-        open_readonly(f"{SAVE_DIR}/rx"),
-        open_readonly(f"{SAVE_DIR}/tx"),
+        en_open(f"{SAVE_DIR}/rx"),
+        en_open(f"{SAVE_DIR}/tx"),
     )
 
 
