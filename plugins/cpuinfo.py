@@ -245,7 +245,7 @@ def get_cpu_temp_file(hwmon_dirs):
         with en_open(temp_dir + "/name") as temp_type:
             sensor_type = temp_type.read().strip()
 
-            logger.debug(f"[sensors] available sensors on tbis system: {sensor_type}")
+            logger.debug(f"[sensors] available sensors on this system: {sensor_type}")
 
             if sensor_type in allowed_types:
                 temperature_file = glob.glob(f"{temp_dir}/temp*_input")[-1]
