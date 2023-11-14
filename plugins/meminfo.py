@@ -10,7 +10,13 @@ from util.util import (
     SHOW_SWAP,
     en_open,
 )
+from util.logger import setup_logger
 
+logger = setup_logger(__name__)
+
+logger.debug("[init] initializing")
+
+logger.debug("[open] /proc/meminfo")
 meminfo_file = en_open("/proc/meminfo")
 
 
@@ -18,6 +24,8 @@ def main():
     """/proc/meminfo - system memory information"""
 
     meminfo_file.seek(0)
+    logger.debug("[seek] /proc/meminfo")
+
     meminfo_data = meminfo_file.readlines()
 
     memory_total = to_bytes(int(clean_output(file_has("MemTotal", meminfo_data))))
@@ -62,6 +70,8 @@ def main():
         to_bytes(int(clean_output(file_has("SwapTotal", meminfo_data)))) != 0
         and SHOW_SWAP is not False
     ):
+        logger.debug("[memory] swap stats")
+
         swap_total = to_bytes(int(clean_output(file_has("SwapTotal", meminfo_data))))
         swap_available = to_bytes(int(clean_output(file_has("SwapFree", meminfo_data))))
         swap_cached = to_bytes(int(clean_output(file_has("SwapCached", meminfo_data))))
@@ -79,6 +89,8 @@ def main():
         available_perc = round(
             (memory_available_percent + swap_available_percent) / 2, 1
         )
+
+        logger.debug("[data] print out")
 
         return (
             f"  ——— /proc/meminfo {'—' * 47}\n"
@@ -99,6 +111,8 @@ def main():
             + f"         Total: {convert_bytes(total_memory)}{' ':<17}Used: {convert_bytes(total_used)} ({used_perc}%)\n"
             f"     Available: {convert_bytes(total_available)} ({available_perc}%){' ':<2}Actual Used: {convert_bytes(total_actual_used)}\n"
         )
+
+    logger.debug("[data] print out")
 
     return (
         f"  ——— /proc/meminfo {'—' * 47}\n"

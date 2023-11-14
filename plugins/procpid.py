@@ -11,7 +11,14 @@ from util.util import (
     SHOW_SYSMON,
 )
 
+from util.logger import setup_logger
+
+logger = setup_logger(__name__)
+
+logger.debug("[init] initializing")
+
 sysmon_pid = os.getpid()
+logger.debug(f"[pid] sysmon pid: {sysmon_pid}")
 
 
 def read_process_status(pid):
@@ -73,6 +80,7 @@ def main():
         if process_info:
             processes.append(process_info)
 
+    logger.debug("[procs] sorting")
     processes = sorted(processes, key=lambda x: int(x.get("VmRSS", 0)), reverse=True)
 
     formatted_data = [
@@ -96,5 +104,7 @@ def main():
             f" {pid}{' ' * (11 - len(pid))}"
             f" {rss_usage}{' ' * (14 - len(rss_usage))} {pstate or '!?!?'}"
         )
+
+    logger.debug("[data] print out")
 
     return "\n".join(formatted_data) + "\n"

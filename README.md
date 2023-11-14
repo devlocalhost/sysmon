@@ -41,9 +41,12 @@ this will `echo` the current working dir + `/sysmon`, create a new file in `/usr
   -np, --noprocpid                     disables procpid (shows the most vmrss consuming processes)
   -nn, --nonetstats                    disables network_stats (network stats, like received/transfered bytes, and
                                        more)
-  -nt, --notemp                        disables cpu temperature
-  -ns, --noswap                        disables swap information in meminfo
+  -nt, --temp                          disables cpu temperature
+  -ns, --swap                          disables swap information in meminfo
+  -nss, --showsysmon                   disable sysmon stats in procpid
+  -ni, --ip                            disable IP in netstat
   -m, --metric                         use metric (1000) instead of IEC (1024) unit for data convertion
+  -d, --debug                          enable logs (debugging)
   -p INT, --procs INT                  how many processes to show in procpid. Default: 6
   -s FLOAT, --sleep FLOAT              refresh time. Default: 1.0
   -i INTERFACE, --interface INTERFACE  select which interface to use for netstats

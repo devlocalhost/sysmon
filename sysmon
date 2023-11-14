@@ -86,6 +86,13 @@ arguments = [
         },
     },
     {
+        "options": ["-d", "--debug"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "enable logs (debugging)",
+        },
+    },
+    {
         "options": ["-p", "--procs"],
         "kwargs": {
             "type": int,
@@ -224,5 +231,8 @@ if __name__ == "__main__":
 
     if args.showsysmon:
         util.SHOW_SYSMON = False
+
+    if args.debug:
+        util.DEBUGGING = True
 
     main()

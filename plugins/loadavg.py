@@ -8,8 +8,16 @@ import sys
 
 from datetime import datetime
 from util.util import en_open
+from util.logger import setup_logger
 
+logger = setup_logger(__name__)
+
+logger.debug("[init] initializing")
+
+logger.debug("[open] /proc/loadavg")
 file = en_open("/proc/loadavg")
+
+logger.debug("[open] /proc/uptime")
 uptime_file = en_open("/proc/uptime")
 
 
@@ -20,6 +28,8 @@ def uptime_format():
     result = []
 
     uptime_file.seek(0)
+    logger.debug("[seek] /proc/uptime")
+
     seconds = int(float(uptime_file.readline().split()[0]))
 
     original_seconds = seconds
@@ -54,6 +64,9 @@ def main():
     )
 
     file.seek(0)
+    logger.debug("[seek] /proc/loadavv")
+
+    logger.debug("[data] print out")
 
     return (
         f"  ——— /proc/loadavg {'—' * 47}\n"

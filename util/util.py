@@ -30,6 +30,9 @@ SHOW_SYSMON = True
 INTERFACE = None
 SHOW_LOCAL_IP = True
 
+# debugging - for logger.py
+DEBUGGING = False
+
 # END OF IMPORTANT PART FOR THE PLUGINS
 
 

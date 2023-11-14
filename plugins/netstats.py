@@ -15,6 +15,11 @@ from util.util import (
     INTERFACE,
     SHOW_LOCAL_IP,
 )
+from util.logger import setup_logger
+
+logger = setup_logger(__name__)
+
+logger.debug("[init] initializing")
 
 
 def get_network_interface():
@@ -26,6 +31,8 @@ def get_network_interface():
                 if int(device_type.read()) != 772:  # if not loopback device
                     with en_open(iface + "/operstate") as status:
                         if status.read().strip() == "up":
+                            logger.debug(f"[net] picking {iface}")
+
                             return (
                                 f"{iface}/statistics/rx_bytes",
                                 f"{iface}/statistics/tx_bytes",
@@ -33,6 +40,8 @@ def get_network_interface():
                             )
 
         return None
+
+    logger.debug(f"[net] using custom iface {INTERFACE}")
 
     return (
         f"/sys/class/net/{INTERFACE}/statistics/rx_bytes",
@@ -45,6 +54,8 @@ def net_save():
     """save file used to calculate network speed"""
 
     if not os.path.isfile(f"{SAVE_DIR}/rx") and not os.path.isfile(f"{SAVE_DIR}tx"):
+        logger.debug("[net] creating save dir")
+
         with en_open(f"{SAVE_DIR}/rx", "w") as rx_file:
             rx_file.write("0")
 
@@ -76,7 +87,11 @@ def main():
             transferred = transf_file.read().strip()
 
         recv_speed_file.seek(0)
+        logger.debug("[seek] recv")
+
         transf_speed_file.seek(0)
+        logger.debug("[seek] transf")
+
         recv_speed = abs(int(recv_speed_file.read().strip()) - int(received))
         transf_speed = abs(int(transf_speed_file.read().strip()) - int(transferred))
 
@@ -109,6 +124,8 @@ def main():
 
         else:
             local_ip = "Hidden"
+
+        logger.debug("[data] print out")
 
         return (
             f"  ——— /sys/class/net {'—' * (52 - len(device_name))}\n"

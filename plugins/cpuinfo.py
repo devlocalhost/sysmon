@@ -16,8 +16,17 @@ from util.util import (
     SHOW_TEMPERATURE,
 )
 
+from util.logger import setup_logger
+
+logger = setup_logger(__name__)
+
+logger.debug("[init] initializing")
+
 core_file = en_open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
+logger.debug("[open] core_file")
+
 proc_stat_file = en_open("/proc/stat")
+logger.debug("[open] /proc/stat")
 
 hwmon_dirs_out = glob.glob("/sys/class/hwmon/*")
 
@@ -73,9 +82,11 @@ def get_info():
 
         # prioritize in-tree shared object
         if os.path.exists("util/sysmon_cpu_utils.so"):
+            logger.debug("[cache lib] using lib from util/")
             cpu_utils = ctypes.CDLL("util/sysmon_cpu_utils.so")
 
         else:
+            logger.debug("[cache lib] using global lib")
             cpu_utils = ctypes.CDLL("sysmon_cpu_utils.so")
 
         buffer_cores_phys = cpu_utils.get_cores(1)
@@ -96,7 +107,8 @@ def get_info():
             data_dict["cpu_cache"] = convert_bytes(int(output[0]))
             data_dict["cpu_cache_type"] = output[1]
 
-    except OSError:
+    except OSError as exc:
+        logger.debug(f"[cache lib] failed, {exc}")
         pass
 
     try:
@@ -113,6 +125,8 @@ def get_info():
         with en_open("/proc/cpuinfo") as cpuinfo_file:
             for line in cpuinfo_file:
                 if data_dict["cpu_cache"] == "Unknown":
+                    logger.debug("[cache] fallback to /proc/cpuinfo cache")
+
                     if line.startswith("cache size"):
                         data_dict["cpu_cache"] = convert_bytes(
                             to_bytes(
@@ -160,6 +174,8 @@ def cpu_freq():
 
     try:
         core_file.seek(0)
+        logger.debug("[seek] core_file")
+
         return round(int(core_file.read().strip()) / 1000, 2)
 
     except FileNotFoundError:
@@ -185,6 +201,8 @@ def cpu_usage():
             )
 
         proc_stat_file.seek(0)
+        logger.debug("[seek] /proc/stat")
+
         new_stats = proc_stat_file.readline().replace("cpu ", "cpu").strip().split(" ")
 
         current_data = (
@@ -225,8 +243,13 @@ def get_cpu_temp_file(hwmon_dirs):
 
     for temp_dir in hwmon_dirs:
         with en_open(temp_dir + "/name") as temp_type:
-            if temp_type.read().strip() in allowed_types:
+            sensor_type = temp_type.read().strip()
+
+            logger.debug(f"[sensors] available sensors on tbis system: {sensor_type}")
+
+            if sensor_type in allowed_types:
                 temperature_file = glob.glob(f"{temp_dir}/temp*_input")[-1]
+                logger.debug(f"[temp file] cpu temp sensor: {temperature_file}")
                 break
 
     return temperature_file
@@ -235,6 +258,7 @@ def get_cpu_temp_file(hwmon_dirs):
 get_info()
 
 temperature_data = en_open(get_cpu_temp_file(hwmon_dirs_out))
+logger.debug("[open] cpu temp sensor")
 
 
 def main():
@@ -243,6 +267,8 @@ def main():
     cpu_usage_num = cpu_usage()
 
     temperature_data.seek(0)
+    logger.debug("[seek] cpu temp sensor")
+
     cpu_temperature = str(int(temperature_data.read().strip()) // 1000)
 
     if cpu_temperature != "!?" and SHOW_TEMPERATURE:
@@ -274,4 +300,5 @@ def main():
     else:
         output_text += "\n"
 
+    logger.debug("[data] print out")
     return output_text
