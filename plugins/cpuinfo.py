@@ -243,6 +243,7 @@ def get_cpu_temp_file(hwmon_dirs):
     """getting the cpu temperature from /sys/class/hwmon"""
 
     allowed_types = ("coretemp", "k10temp", "acpitz", "cpu_1_0_usr")
+    temperature_file = None
 
     for temp_dir in hwmon_dirs:
         with en_open(temp_dir + "/name") as temp_type:
@@ -260,8 +261,11 @@ def get_cpu_temp_file(hwmon_dirs):
 
 get_info()
 
-temperature_data = en_open(get_cpu_temp_file(hwmon_dirs_out))
-logger.debug("[open] cpu temp sensor")
+cpu_temp_file = get_cpu_temp_file(hwmon_dirs_out)
+
+if cpu_temp_file:
+    temperature_data = en_open(get_cpu_temp_file(hwmon_dirs_out))
+    logger.debug("[open] cpu temp sensor")
 
 
 def main():
@@ -269,10 +273,13 @@ def main():
 
     cpu_usage_num = cpu_usage()
 
-    temperature_data.seek(0)
-    logger.debug("[seek] cpu temp sensor")
+    cpu_temperature = "!?"
 
-    cpu_temperature = str(int(temperature_data.read().strip()) // 1000)
+    if cpu_temp_file:  # 2 ifs...?
+        temperature_data.seek(0)
+        logger.debug("[seek] cpu temp sensor")
+
+        cpu_temperature = str(int(temperature_data.read().strip()) // 1000)
 
     if cpu_temperature != "!?" and SHOW_TEMPERATURE:
         cpu_temperature += " °C"
