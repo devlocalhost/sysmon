@@ -22,8 +22,12 @@ logger = setup_logger(__name__)
 
 logger.debug("[init] initializing")
 
-core_file = en_open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
-logger.debug("[open] core_file")
+try:
+    core_file = en_open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
+    logger.debug("[open] core_file")
+
+except FileNotFoundError:
+    core_file = None
 
 proc_stat_file = en_open("/proc/stat")
 logger.debug("[open] /proc/stat")
@@ -172,14 +176,13 @@ def get_info():
 def cpu_freq():
     """get cpu frequency"""
 
-    try:
+    if core_file:
         core_file.seek(0)
         logger.debug("[seek] core_file")
 
         return round(int(core_file.read().strip()) / 1000, 2)
 
-    except FileNotFoundError:
-        return data_dict["cpu_freq"]
+    return data_dict["cpu_freq"]
 
 
 def cpu_usage():
