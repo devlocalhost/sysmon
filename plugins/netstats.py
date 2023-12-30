@@ -27,17 +27,18 @@ def get_network_interface():
 
     if INTERFACE is None:
         for iface in glob.glob("/sys/class/net/*"):
-            with en_open(iface + "/type") as device_type:
-                if int(device_type.read()) != 772:  # if not loopback device
-                    with en_open(iface + "/operstate") as status:
-                        if status.read().strip() == "up":
-                            logger.debug(f"[net] using iface {iface}")
+            if os.path.isdir(iface):
+                with en_open(iface + "/type") as device_type:
+                    if int(device_type.read()) != 772:  # if not loopback device
+                        with en_open(iface + "/operstate") as status:
+                            if status.read().strip() == "up":
+                                logger.debug(f"[net] using iface {iface}")
 
-                            return (
-                                f"{iface}/statistics/rx_bytes",
-                                f"{iface}/statistics/tx_bytes",
-                                iface.split("/")[4],
-                            )
+                                return (
+                                    f"{iface}/statistics/rx_bytes",
+                                    f"{iface}/statistics/tx_bytes",
+                                    iface.split("/")[4],
+                                )
 
         return None
 
