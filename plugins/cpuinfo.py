@@ -222,7 +222,7 @@ def cpu_usage():
             update_data.write(".".join(new_stats))
 
         try:
-            return str(round(100 * ((previous_data - current_data) / total), 1)) + "%"
+            return str(abs(round(100 * ((previous_data - current_data) / total), 1))) + "%"
 
         except (
             ZeroDivisionError
