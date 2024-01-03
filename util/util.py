@@ -45,12 +45,12 @@ except OSError:
     SAVE_DIR = ".sysmon_save"
 
 
-def convert_bytes(fsize, units=(" bytes", " KiB", " MiB", " GiB", " TiB")):
+def convert_bytes(fsize, units=("bytes", "KiB", "MiB", "GiB", "TiB")):
     """convert bytes to human readable format"""
 
     for unit in units:
         if fsize < CONVERSION_TYPE:
-            return f"{fsize:.2f}{unit if CONVERSION_TYPE == 1024 else unit.replace('i', '')}"
+            return f"{fsize:.2f} {unit if CONVERSION_TYPE == 1024 else unit.replace('i', '')}"
 
         fsize /= CONVERSION_TYPE
 
