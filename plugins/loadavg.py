@@ -2,9 +2,7 @@
 
 """loadavg plugin for sysmon"""
 
-import logging
 import time
-import sys
 
 from datetime import datetime
 from util.util import en_open
@@ -17,8 +15,6 @@ def get_uptime(file):
 
     intervals = (("week", 604800), ("day", 86400), ("hour", 3600), ("minute", 60))
     result = []
-
-    file.seek(0)
 
     seconds = int(float(file.readline().split()[0]))
     original_seconds = seconds
@@ -40,6 +36,20 @@ def get_uptime(file):
 
 
 class Loadavg:
+    """
+    Loadavg class - get load times and uptime
+
+    Usage:
+        call get_data() to get data
+            returns dict
+
+    DO:
+        NOT CALL print_data(). That function
+    is intended to be used by sysmon. (might change in the future...?)
+        CALL close_files() when your program ends
+        to avoid opened files
+    """
+
     def __init__(self):
         """
         initializing important stuff
@@ -73,6 +83,7 @@ class Loadavg:
         """
 
         for file in self.files_opened:
+            self.logger.debug(f"[seek] {file.name}")
             file.seek(0)
 
         loadavg_data = self.loadavg_file.read().split()
@@ -89,7 +100,9 @@ class Loadavg:
                 "total": loadavg_data[3].split("/")[1],
             },
             "uptime": {
-                "since": datetime.fromtimestamp(time.time() - uptime_data[1]).strftime("%A %B %d %Y, %I:%M:%S %p"),
+                "since": datetime.fromtimestamp(time.time() - uptime_data[1]).strftime(
+                    "%A %B %d %Y, %I:%M:%S %p"
+                ),
                 "uptime": uptime_data[0],
             },
         }
@@ -114,26 +127,3 @@ class Loadavg:
             f"{' ':<6}| Procs: {data['entities']['active']} active, {data['entities']['total']} total"
             f"\n   Uptime: {data['uptime']['uptime']}\n   Booted: {data['uptime']['since']}\n"
         )
-
-def main():
-    """/proc/loadavg - system load times and uptime"""
-
-    loadavg_data = file.read().split()
-    onemin, fivemin, fiveteenmin = loadavg_data[:3]
-    entities_active, entities_total = loadavg_data[3].split("/")
-
-    uptime_func_out = uptime_format()
-
-    up_since_fmt = datetime.fromtimestamp(time.time() - uptime_func_out[1]).strftime("%A %B %d %Y, %I:%M:%S %p")
-
-    file.seek(0)
-    logger.debug("[seek] /proc/loadavv")
-
-    logger.debug("[data] print out")
-
-    return (
-        f"  ——— /proc/loadavg {'—' * 47}\n"
-        f"     Load: {onemin}, {fivemin}, {fiveteenmin}"
-        f"{' ':<6}| Procs: {entities_active} executing, {entities_total} total"
-        f"\n   Uptime: {uptime_func_out[0]}\n   Booted: {up_since_fmt}\n"
-    )
