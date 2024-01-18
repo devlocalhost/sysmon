@@ -20,6 +20,96 @@ logger.debug("[open] /proc/meminfo")
 meminfo_file = en_open("/proc/meminfo")
 
 
+class Meminfo:
+    """
+    Meminfo class - get physical and swap memory usage
+
+    Usage:
+        call get_data() to get data
+            returns dict
+
+    DO:
+        NOT CALL print_data(). That function
+    is intended to be used by sysmon. (might change in the future...?)
+        CALL close_files() when your program ends
+        to avoid opened files
+    """
+
+    def __init__(self):
+        """
+        initializing important stuff
+        """
+
+        self.logger = setup_logger(__name__)
+
+        self.logger.debug("[init] initializing")
+
+        self.meminfo_file = en_open("/proc/meminfo")
+        self.logger.debug("[open] /proc/meminfo")
+
+        self.files_opened = [self.meminfo_file]
+
+    def close_files(self):
+        """
+        closing the opened files. always call this
+        when ending the program
+        """
+
+        for file in self.files_opened:
+            self.logger.debug(f"[close] {file.name}")
+            file.close()
+
+    def get_data(self):
+        # thanks to https://stackoverflow.com/a/28161352
+        meminfo_data = dict(
+            (i.split()[0].rstrip(":"), int(i.split()[1]) * 1024)
+            for i in self.meminfo_file.readlines()
+        )
+
+        # NOTE: should data be returned raw? (in bytes)
+        # or converted?
+        phy_memory_total = meminfo_data.get("MemTotal")
+        phy_memory_available = meminfo_data.get("MemAvailable")
+        phy_memory_free = meminfo_data.get("MemFree")
+
+        phy_memory_raw_cached = meminfo_data.get("Cached")
+        phy_memory_sreclaimable = meminfo_data.get("SReclaimable")
+        phy_memory_buffers = meminfo_data.get("Buffers")
+
+        phy_memory_cached = (
+            phy_memory_raw_cached + phy_memory_buffers + phy_memory_sreclaimable
+        )
+        phy_memory_actual_used = round(
+            phy_memory_total
+            - phy_memory_free
+            - phy_memory_buffers
+            - phy_memory_raw_cached
+            - phy_memory_sreclaimable
+        )
+        phy_memory_used = round(phy_memory_total - phy_memory_available)
+
+        data = {
+            "physical_memory": {
+                "total": phy_memory_total,
+                "used": phy_memory_used,
+                "actual_used": phy_memory_actual_used,
+                "available": phy_memory_available,
+                "free": phy_memory_free,
+                "cached": phy_memory_cached,
+            },
+            "swap_memory": {
+                "total": xyz,
+                "used": xyz,
+                "available": xyz,
+                "cached": xyz,
+            },
+        }
+
+        # meminfo_data.get("")
+
+        return meminfo_data
+
+
 def main():
     """/proc/meminfo - system memory information"""
 
