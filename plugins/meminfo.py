@@ -12,13 +12,6 @@ from util.util import (
 )
 from util.logger import setup_logger
 
-logger = setup_logger(__name__)
-
-logger.debug("[init] initializing")
-
-logger.debug("[open] /proc/meminfo")
-meminfo_file = en_open("/proc/meminfo")
-
 
 class Meminfo:
     """
@@ -76,13 +69,13 @@ class Meminfo:
 
         # NOTE: should data be returned raw? (in bytes)
         # or converted?
-        phy_memory_total = meminfo_data.get("MemTotal")
-        phy_memory_available = meminfo_data.get("MemAvailable")
-        phy_memory_free = meminfo_data.get("MemFree")
+        phy_memory_total = meminfo_data.get("MemTotal", 0)
+        phy_memory_available = meminfo_data.get("MemAvailable", 0)
+        phy_memory_free = meminfo_data.get("MemFree", 0)
 
-        phy_memory_raw_cached = meminfo_data.get("Cached")
-        phy_memory_sreclaimable = meminfo_data.get("SReclaimable")
-        phy_memory_buffers = meminfo_data.get("Buffers")
+        phy_memory_raw_cached = meminfo_data.get("Cached", 0)
+        phy_memory_sreclaimable = meminfo_data.get("SReclaimable", 0)
+        phy_memory_buffers = meminfo_data.get("Buffers", 0)
 
         phy_memory_cached = (
             phy_memory_raw_cached + phy_memory_buffers + phy_memory_sreclaimable
@@ -99,12 +92,12 @@ class Meminfo:
             (int(phy_memory_used) / int(phy_memory_total)) * 100, 1
         )
 
-        swap_memory_total = meminfo_data.get("SwapTotal")
-        swap_memory_available = meminfo_data.get("SwapFree")
+        swap_memory_total = meminfo_data.get("SwapTotal", 0)
+        swap_memory_available = meminfo_data.get("SwapFree", 0)
         # NOTE: Swap available (in output) = this.
-        # NOTE: Rename to Free instead of Available?
+        # NOTE: Rename to Free instead?
 
-        swap_memory_cached = meminfo_data.get("SwapCached")
+        swap_memory_cached = meminfo_data.get("SwapCached", 0)
         swap_memory_used = round(swap_memory_total - swap_memory_available)
 
         swap_memory_used_percent = round(
@@ -160,26 +153,26 @@ class Meminfo:
 
         data = self.get_data()
 
-        memory_used_format = f"{convert_bytes(data['physical']['values']['used'])} ({data['physical']['percentage']['used']}%)"
-        memory_avail_format = f"{convert_bytes(data['physical']['values']['available'])} ({data['physical']['percentage']['available']}%)"
+        phys_memory_used_format = f"{convert_bytes(data['physical']['values']['used'])} ({data['physical']['percentage']['used']}%)"
+        phys_memory_avail_format = f"{convert_bytes(data['physical']['values']['available'])} ({data['physical']['percentage']['available']}%)"
 
         if data["virtual"]["values"]["total"] != 0 and SHOW_SWAP is not False:
-            total_memory = (
+            combined_total_memory = (
                 data["physical"]["values"]["total"] + data["virtual"]["values"]["total"]
             )
-            total_actual_used = (
+            combined_total_actual_used = (
                 data["physical"]["values"]["actual_used"]
                 + data["virtual"]["values"]["used"]
             )
-            total_used = (
+            combined_total_used = (
                 data["physical"]["values"]["used"] + data["virtual"]["values"]["used"]
             )
-            total_available = (
+            combined_total_available = (
                 data["physical"]["values"]["available"]
                 + data["virtual"]["values"]["available"]
             )
 
-            used_perc = round(
+            combined_used_percent = round(
                 (
                     data["physical"]["percentage"]["used"]
                     + data["virtual"]["percentage"]["used"]
@@ -187,7 +180,7 @@ class Meminfo:
                 / 2,
                 1,
             )
-            available_perc = round(
+            combined_available_percent = round(
                 (
                     data["physical"]["percentage"]["available"]
                     + data["virtual"]["percentage"]["available"]
@@ -201,19 +194,19 @@ class Meminfo:
                 f"     RAM: {' ' * 25}Swap:\n"
                 f"         Total: {convert_bytes(data['physical']['values']['total'])}"
                 + f"{' ':<16}Total: {convert_bytes(data['virtual']['values']['total'])}\n"
-                f"          Used: {memory_used_format}"
-                + " " * (25 - len(memory_used_format))
+                f"          Used: {phys_memory_used_format}"
+                + " " * (25 - len(phys_memory_used_format))
                 + f"Used: {convert_bytes(data['virtual']['values']['used'])} ({data['virtual']['percentage']['used']}%)\n"
                 f"   Actual Used: {convert_bytes(data['physical']['values']['actual_used'])} ({data['physical']['percentage']['actual_used']}%)\n"
-                f"     Available: {memory_avail_format}"
-                + " " * (20 - len(memory_avail_format))
+                f"     Available: {phys_memory_avail_format}"
+                + " " * (20 - len(phys_memory_avail_format))
                 + f"Available: {convert_bytes(data['virtual']['values']['available'])} ({data['virtual']['percentage']['available']}%)\n"
                 f"          Free: {convert_bytes(data['physical']['values']['free'])} ({data['physical']['percentage']['free']}%)\n"
                 f"        Cached: {convert_bytes(data['physical']['values']['cached'])}"
                 + " " * (23 - len(convert_bytes(data["physical"]["values"]["cached"])))
                 + f"Cached: {convert_bytes(data['virtual']['values']['cached'])}\n   — Combined: {'— ' * 26}\n"
-                + f"         Total: {convert_bytes(total_memory)}{' ':<17}Used: {convert_bytes(total_used)} ({used_perc}%)\n"
-                f"     Available: {convert_bytes(total_available)} ({available_perc}%){' ':<2}Actual Used: {convert_bytes(total_actual_used)}\n"
+                + f"         Total: {convert_bytes(combined_total_memory)}{' ':<17}Used: {convert_bytes(combined_total_used)} ({combined_used_percent}%)\n"
+                f"     Available: {convert_bytes(combined_total_available)} ({combined_available_percent}%){' ':<2}Actual Used: {convert_bytes(combined_total_actual_used)}\n"
             )
 
         return (
