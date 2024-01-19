@@ -4,9 +4,6 @@
 
 from util.util import (
     convert_bytes,
-    to_bytes,
-    clean_output,
-    file_has,
     SHOW_SWAP,
     en_open,
 )
@@ -67,8 +64,6 @@ class Meminfo:
             for i in self.meminfo_file.readlines()
         )
 
-        # NOTE: should data be returned raw? (in bytes)
-        # or converted?
         phy_memory_total = meminfo_data.get("MemTotal", 0)
         phy_memory_available = meminfo_data.get("MemAvailable", 0)
         phy_memory_free = meminfo_data.get("MemFree", 0)
@@ -140,7 +135,6 @@ class Meminfo:
                 },
             },
         }
-        # meminfo_data.get("")
 
         return data
 
@@ -212,11 +206,11 @@ class Meminfo:
         return (
             f"  ——— /proc/meminfo {'—' * 47}\n"
             f"   RAM: {' ' * 25}\n"
-            f"        Total: {convert_bytes(memory_total)}"
-            + f"{' ':<17}Cached: {convert_bytes(memory_cached)}\n"
-            f"         Used: {convert_bytes(memory_used)} ({memory_used_percent}%)"
-            + " " * (20 - len(str(memory_used_format)))
-            + f"Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
-            f"    Available: {convert_bytes(memory_available)} ({memory_available_percent}%)"
-            + f"{' ':<9}Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
+            f"        Total: {convert_bytes(data['physical']['values']['total'])}"
+            + f"{' ':<17}Cached: {convert_bytes(data['physical']['values']['cached'])}\n"
+            f"         Used: {convert_bytes(data['physical']['values']['used'])} ({data['physical']['percentage']['used']}%)"
+            + " " * (20 - len(str(phys_memory_used_format)))
+            + f"Actual Used: {convert_bytes(data['physical']['values']['actual_used'])} ({data['physical']['percentage']['actual_used']}%)\n"
+            f"    Available: {convert_bytes(data['physical']['values']['available'])} ({data['physical']['percentage']['available']}%)"
+            + f"{' ':<9}Free: {convert_bytes(data['physical']['values']['free'])} ({data['physical']['percentage']['free']}%)\n"
         )
