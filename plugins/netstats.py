@@ -22,28 +22,52 @@ logger = setup_logger(__name__)
 logger.debug("[init] initializing")
 
 
+def is_not_blacklisted_interface(iface):
+    """checks if a interface is not 'valid'"""
+
+    blacklist = [768, 769, 770, 771, 772, 777, 778, 779, 783]
+
+    with en_open(iface + "/type") as device_type:
+        return int(device_type.read()) not in blacklist
+
+
+def is_interface_up(iface):
+    """check if interface is up"""
+
+    with en_open(iface + "/operstate") as status:
+        return status.read().strip() == "up"
+
+
+def find_active_network_interface():
+    """get active interface"""
+    for iface in glob.glob("/sys/class/net/*"):
+        if (
+            os.path.isdir(iface)
+            and is_not_blacklisted_interface(iface)
+            and is_interface_up(iface)
+        ):
+            return (
+                f"{iface}/statistics/rx_bytes",
+                f"{iface}/statistics/tx_bytes",
+                iface.split("/")[4],
+            )
+
+    return None
+
+
 def get_network_interface():
-    """detect an active network adapter/card/whatever and return its directory"""
+    """Detect an active network interface and return its directory"""
 
     if INTERFACE is None:
-        for iface in glob.glob("/sys/class/net/*"):
-            if os.path.isdir(iface):
-                with en_open(iface + "/type") as device_type:
-                    if int(device_type.read()) != 772:  # if not loopback device
-                        with en_open(iface + "/operstate") as status:
-                            if status.read().strip() == "up":
-                                logger.debug(f"[net] using iface {iface}")
+        result = find_active_network_interface()
 
-                                return (
-                                    f"{iface}/statistics/rx_bytes",
-                                    f"{iface}/statistics/tx_bytes",
-                                    iface.split("/")[4],
-                                )
+        if result:
+            logger.debug(f"[net] using iface {result[2]}")
+            return result
 
         return None
 
     logger.debug(f"[net] using custom iface {INTERFACE}")
-
     return (
         f"/sys/class/net/{INTERFACE}/statistics/rx_bytes",
         f"/sys/class/net/{INTERFACE}/statistics/tx_bytes",
