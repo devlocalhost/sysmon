@@ -9,7 +9,7 @@ from datetime import datetime
 
 
 @dataclass
-class LoadTimes:
+class LoadavgDataLoadTimes:
     """
     dataclass containing load times of LoadavgData
     part of LoadavgData class
@@ -21,7 +21,7 @@ class LoadTimes:
 
 
 @dataclass
-class Entities:
+class LoadavgDataEntities:
     """
     dataclass containing entities of LoadavgData
     part of LoadavgData class
@@ -32,7 +32,7 @@ class Entities:
 
 
 @dataclass
-class Uptime:
+class LoadavgDataUptime:
     """
     dataclass containing uptimes of LoadavgData
     part of LoadavgData class
@@ -50,18 +50,18 @@ class LoadavgData:
 
     def __init__(self, loadavg_data, uptime_data):
 
-        self.load_times = LoadTimes(
+        self.load_times = LoadavgDataLoadTimes(
             one=float(loadavg_data[0]),
             five=float(loadavg_data[1]),
             fifteen=float(loadavg_data[2])
         )
 
-        self.entities = Entities(
+        self.entities = LoadavgDataEntities(
             active=int(loadavg_data[3].split("/")[0]),
             total=int(loadavg_data[3].split("/")[1])
         )
 
-        self.uptime = Uptime(
+        self.uptime = LoadavgDataUptime(
             since=datetime.fromtimestamp(time.time() - uptime_data[1]).strftime(
                 "%A %B %d %Y, %I:%M:%S %p"
             ),
