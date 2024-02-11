@@ -37,7 +37,7 @@ def main():
 
     output_text = (
         f"  ——— /proc/cpuinfo {'—' * 47}\n"
-        f"   Usage: {data['usage']:>6} {arch_model_temp_line}" + "\n"
+        f"   Usage: {data['usage']:>5}% {arch_model_temp_line}" + "\n"
         f"   Cores: {cpu_cores_phys}c/{data['static']['cores']['logical']}t | Frequency: {data['static']['frequency']} MHz | Cache: {data['static']['cache_size']}"
     )
 
