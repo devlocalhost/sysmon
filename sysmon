@@ -199,10 +199,10 @@ def main():
     #     "plugins.netstats",
     # ]
     plugins_array = [
-        "formatters.netstats",
+        "formatters.cpuinfo",
         "formatters.meminfo",
         "formatters.loadavg",
-        "formatters.cpuinfo",
+        "formatters.netstats",
     ]
 
     for argument in args.__dict__:
