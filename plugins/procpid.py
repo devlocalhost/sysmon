@@ -5,20 +5,18 @@
 import os
 from util.util import (
     en_open,
-    convert_bytes,
     to_bytes,
     PROCS,
-    SHOW_SYSMON,
 )
 
 from util.logger import setup_logger
 
-logger = setup_logger(__name__)
+# logger = setup_logger(__name__)
 
-logger.debug("[init] initializing")
+# logger.debug("[init] initializing")
 
-sysmon_pid = os.getpid()
-logger.debug(f"[pid] sysmon pid: {sysmon_pid}")
+# sysmon_pid = os.getpid()
+# logger.debug(f"[pid] sysmon pid: {sysmon_pid}")
 
 
 def read_process_status(pid):
@@ -68,43 +66,98 @@ def read_process_status(pid):
     return None
 
 
-def main():
-    """Return the most RAM (VmRSS) consuming PIDs, with their state and name"""
+class Procpid:
+    """
+    Procpid class - get processes and sort from highest to lowest
+    based on VmRSS usage
 
-    process_dirs = [pid for pid in os.listdir("/proc") if pid.isdigit()]
-    processes = []
+    Usage:
+        call get_data() to get data
+            returns dict
 
-    for pid in process_dirs:
-        process_info = read_process_status(pid)
+    DO:
+        NOT CALL print_data(). That function
+    is intended to be used by sysmon. (might change in the future...?)
+        CALL close_files() when your program ends
+        to avoid opened files
+    """
 
-        if process_info:
-            processes.append(process_info)
+    def __init__(self):
+        """
+        initializing important stuff
+        """
 
-    logger.debug("[procs] sorting")
-    processes = sorted(processes, key=lambda x: int(x.get("VmRSS", 0)), reverse=True)
+        self.logger = setup_logger(__name__)
 
-    formatted_data = [
-        f"  ——— /proc/pid/status {'—' * 44}\n   Name            PID         RSS            State"
-    ]
+        self.logger.debug("[init] initializing")
 
-    if SHOW_SYSMON:
-        sysmon_info = read_process_status(sysmon_pid)
-        sysmon_info["Name"] = "sysmon"
+    def get_data(self):
+        """
+        returns a json dict with data
+        """
 
-        processes.insert(0, sysmon_info)
+        data = {}
 
-    for procs_data in processes[: PROCS + 1]:
-        process_name = procs_data["Name"]
-        pid = str(procs_data["pid"])
-        rss_usage = convert_bytes(to_bytes(int(procs_data["VmRSS"])))
-        pstate = procs_data["State"]
+        process_dirs = [pid for pid in os.listdir("/proc") if pid.isdigit()]
+        processes = []
 
-        formatted_data.append(
-            f"   {process_name or '!?!?'}{' ' * (15 - len(process_name or '!?!?'))}"
-            f" {pid}{' ' * (11 - len(pid))}"
-            f" {rss_usage}{' ' * (14 - len(rss_usage))} {pstate or '!?!?'}"
+        for pid in process_dirs:
+            process_info = read_process_status(pid)
+
+            if process_info:
+                processes.append(process_info)
+
+        self.logger.debug("[procs] sorting")
+        processes = sorted(
+            processes, key=lambda x: int(x.get("VmRSS", 0)), reverse=True
         )
 
-    logger.debug("[data] print out")
+        for proc_data in processes[: PROCS + 1]:
+            data[proc_data["Name"]] = {
+                "pid": proc_data["pid"],
+                "vmrss": to_bytes(int(proc_data["VmRSS"])),
+                "state": proc_data["State"],
+            }
 
-    return "\n".join(formatted_data) + "\n"
+        return data
+
+    # def main():
+    #     """Return the most RAM (VmRSS) consuming PIDs, with their state and name"""
+
+    #     process_dirs = [pid for pid in os.listdir("/proc") if pid.isdigit()]
+    #     processes = []
+
+    #     for pid in process_dirs:
+    #         process_info = read_process_status(pid)
+
+    #         if process_info:
+    #             processes.append(process_info)
+
+    #     logger.debug("[procs] sorting")
+    #     processes = sorted(processes, key=lambda x: int(x.get("VmRSS", 0)), reverse=True)
+
+    #     formatted_data = [
+    #         f"  ——— /proc/pid/status {'—' * 44}\n   Name            PID         RSS            State"
+    #     ]
+
+    #     if SHOW_SYSMON:
+    #         sysmon_info = read_process_status(sysmon_pid)
+    #         sysmon_info["Name"] = "sysmon"
+
+    #         processes.insert(0, sysmon_info)
+
+    #     for procs_data in processes[: PROCS + 1]:
+    #         process_name = procs_data["Name"]
+    #         pid = str(procs_data["pid"])
+    #         rss_usage = convert_bytes(to_bytes(int(procs_data["VmRSS"])))
+    #         pstate = procs_data["State"]
+
+    #         formatted_data.append(
+    #             f"   {process_name or '!?!?'}{' ' * (15 - len(process_name or '!?!?'))}"
+    #             f" {pid}{' ' * (11 - len(pid))}"
+    #             f" {rss_usage}{' ' * (14 - len(rss_usage))} {pstate or '!?!?'}"
+    #         )
+
+    #     logger.debug("[data] print out")
+
+    #     return "\n".join(formatted_data) + "\n"
