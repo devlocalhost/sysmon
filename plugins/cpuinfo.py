@@ -18,6 +18,7 @@ from util.util import (
 
 from util.logger import setup_logger
 
+
 def clean_cpu_model(model):
     """cleaning cpu model"""
 
@@ -51,7 +52,9 @@ class Cpuinfo:
         self.temperature_file = None
 
         try:
-            self.core_file = en_open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
+            self.core_file = en_open(
+                "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"
+            )
 
         except FileNotFoundError:
             self.core_file = None
@@ -138,8 +141,8 @@ class Cpuinfo:
 
         try:
             with en_open("/proc/cpuinfo") as cpuinfo_file:
-            # FIXME: this needs to be rewriten
-            # FIXME: in a similar way as meminfo
+                # FIXME: this needs to be rewriten
+                # FIXME: in a similar way as meminfo
                 for line in cpuinfo_file:
                     if data_dict["cache_size"] == "Unknown":
                         logger.debug("[cache] fallback to /proc/cpuinfo cache")
@@ -148,13 +151,18 @@ class Cpuinfo:
                             data_dict["cache"] = convert_bytes(
                                 to_bytes(
                                     int(
-                                        line.split(":")[1].strip().lower().replace("kb", "")
+                                        line.split(":")[1]
+                                        .strip()
+                                        .lower()
+                                        .replace("kb", "")
                                     )
                                 )
                             )
 
                     if line.startswith("cpu MHz"):
-                        data_dict["frequency"] = round(float(line.split(":")[1].strip()), 2)
+                        data_dict["frequency"] = round(
+                            float(line.split(":")[1].strip()), 2
+                        )
 
                     if line.startswith("model name"):
                         model = clean_cpu_model(line.split(":")[1].strip())
@@ -217,7 +225,9 @@ class Cpuinfo:
 
             self.stat_file.seek(0)
 
-            new_stats = self.stat_file.readline().replace("cpu ", "cpu").strip().split(" ")
+            new_stats = (
+                self.stat_file.readline().replace("cpu ", "cpu").strip().split(" ")
+            )
 
             current_data = (
                 int(new_stats[1])
@@ -241,15 +251,16 @@ class Cpuinfo:
                 return 0
 
         except FileNotFoundError:
-            sys.exit("Couldnt find /proc/stat file") # FIXME: this has to be moved, possibly in __init__
+            sys.exit(
+                "Couldnt find /proc/stat file"
+            )  # FIXME: this has to be moved, possibly in __init__
 
         except PermissionError:
             sys.exit(
                 "Couldnt read the file. Do you have read permissions for /proc/stat file?"
-            ) # FIXME: this has to be moved, possibly in __init__
+            )  # FIXME: this has to be moved, possibly in __init__
 
-
-    def get_temperature_file(self): # get_cpu_temp_file()
+    def get_temperature_file(self):  # get_cpu_temp_file()
         """getting the cpu temperature from /sys/class/hwmon"""
 
         allowed_types = ("coretemp", "k10temp", "acpitz", "cpu_1_0_usr")
@@ -262,14 +273,15 @@ class Cpuinfo:
                 logger.debug(f"[sensors] {temp_dir}: {sensor_type}")
 
                 if sensor_type in allowed_types:
-                    self.temperature_file = en_open(glob.glob(f"{temp_dir}/temp*_input")[-1])
+                    self.temperature_file = en_open(
+                        glob.glob(f"{temp_dir}/temp*_input")[-1]
+                    )
                     logger.debug(f"[temp file] cpu temp sensor: {temperature_file}")
                     break
 
-
     def get_data(self):
         """/proc/cpuinfo - cpu information"""
-        
+
         self.get_temperature_file()
 
         data = {
@@ -281,7 +293,7 @@ class Cpuinfo:
         if self.temperature_file:  # 2 ifs...?
             self.temperature_file.seek(0)
             data["temperature"] = str(int(self.temperature_file.read().strip()) // 1000)
-            
+
         return data
 
         # if cpu_temperature != "!?" and SHOW_TEMPERATURE:
