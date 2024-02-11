@@ -9,6 +9,7 @@ from plugins import netstats
 
 netstats_class = netstats.Netstats()
 
+
 def main():
     """
     returns the data, but formatted.
@@ -21,13 +22,11 @@ def main():
     if device_name and data["local_ip"] != "!?!?":
         # the above local_ip check is a workaround so netstats updates the output
         # when youre using sysmon, and your internet connection goes down or up
-        
+
         local_ip = data["local_ip"]
         human_received = convert_bytes(data["statistics"]["received"])
         human_transferred = convert_bytes(data["statistics"]["transferred"])
-        human_received_speed = convert_bytes(
-            data["statistics"]["speeds"]["received"]
-        )
+        human_received_speed = convert_bytes(data["statistics"]["speeds"]["received"])
         human_transferred_speed = convert_bytes(
             data["statistics"]["speeds"]["transferred"]
         )

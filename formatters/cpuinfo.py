@@ -9,6 +9,7 @@ from plugins import cpuinfo
 
 cpuinfo_class = cpuinfo.Cpuinfo()
 
+
 def main():
     """
     returns the data, but formatted.
@@ -33,7 +34,7 @@ def main():
         if data["static"]["uses_smt"] is True:
             cpu_cores_phys = data["static"]["cores"]["logical"] / 2
 
-        cpu_cores_phys = data["static"]["cores"]["logical"] # um, what the fuck?
+        cpu_cores_phys = data["static"]["cores"]["logical"]  # um, what the fuck?
 
     output_text = (
         f"  ——— /proc/cpuinfo {'—' * 47}\n"
@@ -48,6 +49,7 @@ def main():
         output_text += "\n"
 
     return output_text
+
 
 if __name__ == "__main__":
     main()

@@ -96,7 +96,7 @@ class Meminfo:
 
         swap_memory_used_percent = round(
             (int(swap_memory_used) / int(swap_memory_total)) * 100, 1
-        ) # TODO: fix ZeroDivisionError
+        )  # TODO: fix ZeroDivisionError
 
         data = {
             "physical": {
@@ -128,7 +128,8 @@ class Meminfo:
                 },
                 "percentage": {
                     "used": round(
-                        (int(swap_memory_used) / int(swap_memory_total)) * 100, 1 # TODO: fix ZeroDivisionError
+                        (int(swap_memory_used) / int(swap_memory_total)) * 100,
+                        1,  # TODO: fix ZeroDivisionError
                     ),
                     "available": round(100 - swap_memory_used_percent, 1),
                 },

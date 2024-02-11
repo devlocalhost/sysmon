@@ -9,6 +9,7 @@ from plugins import meminfo
 
 meminfo_class = meminfo.Meminfo()
 
+
 def main():
     """
     returns the data, but formatted.
@@ -83,6 +84,7 @@ def main():
         f"    Available: {convert_bytes(data['physical']['values']['available'])} ({data['physical']['percentage']['available']}%)"
         + f"{' ':<9}Free: {convert_bytes(data['physical']['values']['free'])} ({data['physical']['percentage']['free']}%)\n"
     )
+
 
 if __name__ == "__main__":
     main()
