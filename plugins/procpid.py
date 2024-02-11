@@ -96,7 +96,7 @@ class Procpid:
         returns a json dict with data
         """
 
-        data = {}
+        data = {"processes": []}
 
         process_dirs = [pid for pid in os.listdir("/proc") if pid.isdigit()]
         processes = []
@@ -113,11 +113,14 @@ class Procpid:
         )
 
         for proc_data in processes[: PROCS + 1]:
-            data[proc_data["Name"]] = {
-                "pid": proc_data["pid"],
-                "vmrss": to_bytes(int(proc_data["VmRSS"])),
-                "state": proc_data["State"],
-            }
+            data["processes"].append(
+                {
+                    "name": proc_data["Name"],
+                    "pid": proc_data["pid"],
+                    "vmrss": to_bytes(int(proc_data["VmRSS"])),
+                    "state": proc_data["State"],
+                }
+            )
 
         return data
 
