@@ -41,6 +41,20 @@ def clean_cpu_model(model):
 
 
 class Cpuinfo:
+    """
+    Cpuinfo class - get cpu details
+
+    Usage:
+        call get_data() to get data
+            returns dict
+
+    DO:
+        NOT CALL print_data(). That function
+    is intended to be used by sysmon. (might change in the future...?)
+        CALL close_files() when your program ends
+        to avoid opened files
+    """
+    
     def __init__(self):
         self.logger = setup_logger(__name__)
 
@@ -212,7 +226,7 @@ class Cpuinfo:
 
             return round(int(self.core_file.read().strip()) / 1000, 2)
 
-        return get_static_info["frequency"]
+        return get_static_info["frequency"] # FIXME
 
     def cpu_usage(self):
         """/proc/stat - cpu usage of the system"""
