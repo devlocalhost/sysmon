@@ -112,7 +112,7 @@ class Procpid:
             processes, key=lambda x: int(x.get("VmRSS", 0)), reverse=True
         )
 
-        for proc_data in processes[: PROCS + 1]:
+        for proc_data in processes[:PROCS]:
             data["processes"].append(
                 {
                     "name": proc_data["Name"],
