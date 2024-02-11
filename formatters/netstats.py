@@ -18,7 +18,10 @@ def main():
 
     device_name = data["interface"]
 
-    if device_name:
+    if device_name and data["local_ip"] != "!?!?":
+        # the above local_ip check is a workaround so netstats updates the output
+        # when youre using sysmon, and your internet connection goes down or up
+        
         local_ip = data["local_ip"]
         human_received = convert_bytes(data["statistics"]["received"])
         human_transferred = convert_bytes(data["statistics"]["transferred"])
