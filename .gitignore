@@ -1,5 +1,6 @@
-rewrite/
-tests/
-TODO.md
+TODO
 */__pycache__/
+*/__pycache__/*
+__pycache__
+__pycache__/*
 *.so
