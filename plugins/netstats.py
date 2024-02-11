@@ -10,7 +10,6 @@ import struct
 
 from util.util import (
     en_open,
-    convert_bytes,
     INTERFACE,
     SHOW_LOCAL_IP,
 )
@@ -87,6 +86,10 @@ class Speed:
         self.tx = 0
 
     def set_values(self, rx, tx):
+        """
+        set rx and tx values
+        """
+        
         self.rx = int(rx)
         self.tx = int(tx)
 
