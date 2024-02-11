@@ -11,7 +11,6 @@ import struct
 from util.util import (
     en_open,
     convert_bytes,
-    SAVE_DIR,
     INTERFACE,
     SHOW_LOCAL_IP,
 )
@@ -19,7 +18,9 @@ from util.logger import setup_logger
 
 
 def interface_is_not_blacklisted(iface):
-    """checks if a interface is not 'valid'"""
+    """
+    checks if a interface is not 'valid'
+    """
 
     blacklist = [768, 769, 770, 771, 772, 777, 778, 779, 783]
 
@@ -28,14 +29,18 @@ def interface_is_not_blacklisted(iface):
 
 
 def interface_is_up(iface):
-    """check if interface is up"""
+    """
+    check if interface is up
+    """
 
     with en_open(iface + "/operstate") as status:
         return status.read().strip() == "up"
 
 
 def find_active_interface():
-    """get active interface"""
+    """
+    get active interface
+    """
 
     for iface in glob.glob("/sys/class/net/*"):
         if (
@@ -53,18 +58,17 @@ def find_active_interface():
 
 
 def get_network_interface():
-    """Detect an active network interface and return its directory"""
+    """
+    Detect an active network interface and return its directory
+    """
 
     if INTERFACE is None:
         result = find_active_interface()
 
         if result:
-            # logger.debug(f"[net] using iface {result[2]}")
             return result
 
         return None
-
-    logger.debug(f"[net] using custom iface {INTERFACE}")
 
     return (
         f"/sys/class/net/{INTERFACE}/statistics/rx_bytes",
@@ -74,6 +78,10 @@ def get_network_interface():
 
 
 class Speed:
+    """
+    calculate internet speed
+    """
+
     def __init__(self):
         self.rx = 0
         self.tx = 0
@@ -112,7 +120,7 @@ class Netstats:
         if self.interface:
             self.rx_file = en_open(self.interface[0])
             self.tx_file = en_open(self.interface[1])
-            
+
             self.files_opened = [self.rx_file, self.tx_file]
 
         self.logger.debug("[open] net_save")
@@ -130,6 +138,10 @@ class Netstats:
             file.close()
 
     def get_data(self):
+        """
+        returns a json dict with data
+        """
+
         data = {
             "interface": None,
             "local_ip": None,
@@ -152,8 +164,8 @@ class Netstats:
             rx = int(self.rx_file.read().strip())
             tx = int(self.tx_file.read().strip())
 
-            rx_speed = int(abs(self.speed_track.rx - rx))
-            tx_speed = int(abs(self.speed_track.tx - tx))
+            rx_speed = abs(self.speed_track.rx - rx)
+            tx_speed = abs(self.speed_track.tx - tx)
 
             self.speed_track.set_values(rx, tx)
 
@@ -186,6 +198,12 @@ class Netstats:
         return data
 
     def print_data(self):
+        """
+        returns the data, but formatted.
+        not intended to be used, please
+        use get_data() instead
+        """
+
         data = self.get_data()
 
         device_name = data["interface"]
@@ -194,8 +212,12 @@ class Netstats:
             local_ip = data["local_ip"]
             human_received = convert_bytes(data["statistics"]["received"])
             human_transferred = convert_bytes(data["statistics"]["transferred"])
-            human_received_speed = convert_bytes(data["statistics"]["speeds"]["transferred"])
-            human_transferred_speed = convert_bytes(data["statistics"]["speeds"]["transferred"])
+            human_received_speed = convert_bytes(
+                data["statistics"]["speeds"]["received"]
+            )
+            human_transferred_speed = convert_bytes(
+                data["statistics"]["speeds"]["transferred"]
+            )
 
             return (
                 f"  ——— /sys/class/net {'—' * (52 - len(device_name))}\n"
