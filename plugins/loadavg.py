@@ -110,20 +110,3 @@ class Loadavg:
         self.logger.debug("[get_data] return data")
 
         return data
-
-    def print_data(self):
-        """
-        returns the data, but formatted.
-        not intended to be used, please
-        use get_data() instead
-        """
-
-        self.logger.debug("[data] print out")
-        data = self.get_data()
-
-        return (
-            f"  ——— /proc/loadavg {'—' * 47}\n"
-            f"     Load: {data['load_times']['1']}, {data['load_times']['5']}, {data['load_times']['15']}"
-            f"{' ':<6}| Procs: {data['entities']['active']} active, {data['entities']['total']} total"
-            f"\n   Uptime: {data['uptime']['uptime']}\n   Booted: {data['uptime']['since']}\n"
-        )
