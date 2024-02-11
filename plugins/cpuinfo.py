@@ -300,35 +300,3 @@ class Cpuinfo:
             data["temperature"] = str(int(self.temperature_file.read().strip()) // 1000)
 
         return data
-
-        # if cpu_temperature != "!?" and SHOW_TEMPERATURE:
-        #     cpu_temperature += " °C"
-        #     arch_model_temp_line = f"{cpu_temperature:>6} | CPU: {data_dict['architecture']} {data_dict['model']}"
-
-        # else:
-        #     arch_model_temp_line = (
-        #         f"| CPU: {data_dict['architecture']} {data_dict['model']}"
-        #     )
-
-        # cpu_cores_phys = data_dict["cores"]["physical"]
-
-        # if cpu_cores_phys == 0:
-        #     if data_dict["uses_smt"] is True:
-        #         cpu_cores_phys = data_dict["cores"]["logical"] / 2
-
-        #     cpu_cores_phys = data_dict["cores"]["logical"] # um, what the fuck?
-
-        # output_text = (
-        #     f"  ——— /proc/cpuinfo {'—' * 47}\n"
-        #     f"   Usage: {cpu_usage_num:>6} {arch_model_temp_line}" + "\n"
-        #     f"   Cores: {cpu_cores_phys}c/{data_dict['cores']['logical']}t | Frequency: {self.cpu_freq():>7} MHz | Cache: {data_dict['cache_size']}"
-        # )
-
-        # if data_dict["cache_type"] != 0:
-        #     output_text += f", L{data_dict['cache_type']}\n"
-
-        # else:
-        #     output_text += "\n"
-
-        # logger.debug("[data] print out")
-        # return output_text
