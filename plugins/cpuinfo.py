@@ -60,6 +60,16 @@ class Cpuinfo:
 
         self.files_opened = [self.core_file, self.stat_file, self.temperature_file]
 
+    def close_files(self):
+        """
+        closing the opened files. always call this
+        when ending the program
+        """
+
+        for file in self.files_opened:
+            self.logger.debug(f"[close] {file.name}")
+            file.close()
+
     def get_static_info(self):
         """
         get 'static' information, like cpu cache, cores count, etc
