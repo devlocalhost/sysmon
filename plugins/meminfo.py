@@ -2,10 +2,7 @@
 
 """meminfo plugin for sysmon"""
 
-from util.util import (
-    SHOW_SWAP,
-    en_open,
-)
+from util.util import en_open
 from util.logger import setup_logger
 
 
