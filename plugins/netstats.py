@@ -59,7 +59,7 @@ def get_network_interface():
         result = find_active_interface()
 
         if result:
-            logger.debug(f"[net] using iface {result[2]}")
+            # logger.debug(f"[net] using iface {result[2]}")
             return result
 
         return None
@@ -107,12 +107,16 @@ class Netstats:
 
         self.logger.debug("[init] initializing")
 
-        self.rx_file = en_open(net_save[0])
-        self.tx_file = en_open(net_save[1])
+        self.interface = get_network_interface()
+
+        if self.interface:
+            self.rx_file = en_open(self.interface[0])
+            self.tx_file = en_open(self.interface[1])
+            
+            self.files_opened = [self.rx_file, self.tx_file]
 
         self.logger.debug("[open] net_save")
 
-        self.files_opened = [self.rx_file, self.tx_file]
         self.speed_track = Speed()
 
     def close_files(self):
@@ -126,8 +130,6 @@ class Netstats:
             file.close()
 
     def get_data(self):
-        iface_device = get_network_interface()
-
         data = {
             "interface": None,
             "local_ip": None,
@@ -141,29 +143,30 @@ class Netstats:
             },
         }
 
-        if iface_device is not None:
-            interface_name = iface_device[2]
+        if self.interface is not None:
+            interface_name = self.interface[2]
 
-            rx = recv_file.read().strip()
-            tx = transf_file.read().strip()
+            self.rx_file.seek(0)
+            self.tx_file.seek(0)
 
-            rx_speed = abs(speed_track.rx - int(received))
-            tx_speed = abs(speed_track.tx - int(transferred))
+            rx = int(self.rx_file.read().strip())
+            tx = int(self.tx_file.read().strip())
 
-            speed_track.set_values(received, transferred)
+            rx_speed = int(abs(self.speed_track.rx - rx))
+            tx_speed = int(abs(self.speed_track.tx - tx))
+
+            self.speed_track.set_values(rx, tx)
 
             # https://stackoverflow.com/a/27494105
-
-            # bad name...?
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            create_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
             if SHOW_LOCAL_IP:
                 try:
                     local_ip = socket.inet_ntoa(
                         fcntl.ioctl(
-                            s.fileno(),
+                            create_socket.fileno(),
                             0x8915,
-                            struct.pack("256s", device_name[:15].encode("UTF-8")),
+                            struct.pack("256s", interface_name[:15].encode("UTF-8")),
                         )[20:24]
                     )
 
@@ -182,21 +185,30 @@ class Netstats:
 
         return data
 
+    def print_data(self):
+        data = self.get_data()
 
-        #     logger.debug("[data] print out")
+        device_name = data["interface"]
 
-        #     return (
-        #         f"  ——— /sys/class/net {'—' * (52 - len(device_name))}\n"
-        #         f"      Local IP: {local_ip}{' ' * max(15 - len(local_ip), 0)} | Interface: {device_name}\n"
-        #         f"      Received: {human_received}"
-        #         + " " * (14 - len(human_received))
-        #         + f"({received} bytes)\n"
-        #         f"   Transferred: {human_transferred}"
-        #         + " " * (14 - len(human_transferred))
-        #         + f"({transferred} bytes)\n"
-        #         f"         Speed: Down {convert_bytes(recv_speed)}"
-        #         + " " * (14 - len(convert_bytes(recv_speed)))
-        #         + f"| Up {convert_bytes(transf_speed)}\n"
-        #     )
+        if device_name:
+            local_ip = data["local_ip"]
+            human_received = convert_bytes(data["statistics"]["received"])
+            human_transferred = convert_bytes(data["statistics"]["transferred"])
+            human_received_speed = convert_bytes(data["statistics"]["speeds"]["transferred"])
+            human_transferred_speed = convert_bytes(data["statistics"]["speeds"]["transferred"])
 
-        # return f"  ——— /sys/class/net/!?!? {'—' * 41}\n"
+            return (
+                f"  ——— /sys/class/net {'—' * (52 - len(device_name))}\n"
+                f"      Local IP: {local_ip}{' ' * max(15 - len(local_ip), 0)} | Interface: {device_name}\n"
+                f"      Received: {human_received}"
+                + " " * (14 - len(human_received))
+                + f"({human_received} bytes)\n"
+                f"   Transferred: {human_transferred}"
+                + " " * (14 - len(human_transferred))
+                + f"({human_transferred} bytes)\n"
+                f"         Speed: Down {human_received_speed}"
+                + " " * (14 - len(human_received_speed))
+                + f"| Up {human_transferred_speed}\n"
+            )
+
+        return f"  ——— /sys/class/net/!?!? {'—' * 41}\n"
