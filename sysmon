@@ -203,6 +203,7 @@ def main():
         "formatters.meminfo",
         "formatters.loadavg",
         "formatters.netstats",
+        "formatters.procpid",
     ]
 
     for argument in args.__dict__:
