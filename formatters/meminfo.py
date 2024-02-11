@@ -4,7 +4,7 @@
 formatter for meminfo plugin
 """
 
-from util.util import convert_bytes
+from util.util import convert_bytes, SHOW_SWAP
 from plugins import meminfo
 
 meminfo_class = meminfo.Meminfo()
