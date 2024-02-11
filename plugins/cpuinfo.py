@@ -260,7 +260,7 @@ class Cpuinfo:
                 "Couldnt read the file. Do you have read permissions for /proc/stat file?"
             )  # FIXME: this has to be moved, possibly in __init__
 
-    def get_temperature_file(self):  # get_cpu_temp_file()
+    def set_temperature_file(self):  # get_cpu_temp_file()
         """getting the cpu temperature from /sys/class/hwmon"""
 
         allowed_types = ("coretemp", "k10temp", "acpitz", "cpu_1_0_usr")
@@ -282,7 +282,7 @@ class Cpuinfo:
     def get_data(self):
         """/proc/cpuinfo - cpu information"""
 
-        self.get_temperature_file()
+        self.set_temperature_file()
 
         data = {
             "static": self.get_static_info(),
