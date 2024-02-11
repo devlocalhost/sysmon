@@ -202,8 +202,8 @@ def main():
         "formatters.cpuinfo",
         "formatters.meminfo",
         "formatters.loadavg",
-        "formatters.netstats",
         "formatters.procpid",
+        "formatters.netstats",
     ]
 
     for argument in args.__dict__:
