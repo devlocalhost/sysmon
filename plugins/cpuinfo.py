@@ -193,7 +193,7 @@ class Cpuinfo:
                             model if len(model) < 25 else model[:22] + "..."
                         )
 
-                    if line.startswith("Hardware") and data_dict["cpu_arch"] in (
+                    if line.startswith("Hardware") and data_dict["architecture"] in (
                         "aarch64",
                         "armv7l",
                     ):
