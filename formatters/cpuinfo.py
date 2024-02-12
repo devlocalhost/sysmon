@@ -19,7 +19,7 @@ def main():
 
     cpu_temperature = data["temperature"]
 
-    if SHOW_TEMPERATURE:
+    if SHOW_TEMPERATURE and cpu_temperature:
         cpu_temperature += " °C"
         arch_model_temp_line = f"{cpu_temperature:>6} | CPU: {data['static']['architecture']} {data['static']['model']}"
 
