@@ -2,6 +2,9 @@
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+# note
+sysmon is currently under "rewrite process". it is stable, but undocumented. many things (like usage on external scripts) has been improved.
+
 # preview
 [PREVIEW.md file](screens/PREVIEW.md)
 
