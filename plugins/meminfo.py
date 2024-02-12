@@ -91,9 +91,13 @@ class Meminfo:
         swap_memory_cached = meminfo_data.get("SwapCached", 0)
         swap_memory_used = round(swap_memory_total - swap_memory_available)
 
-        swap_memory_used_percent = round(
-            (int(swap_memory_used) / int(swap_memory_total)) * 100, 1
-        )  # TODO: fix ZeroDivisionError
+        try:
+            swap_memory_used_percent = round(
+                (int(swap_memory_used) / int(swap_memory_total)) * 100, 1
+            )  # TODO: fix ZeroDivisionError
+
+        except ZeroDivisionError:
+            swap_memory_used_percent = 0
 
         data = {
             "physical": {
@@ -124,10 +128,7 @@ class Meminfo:
                     "cached": swap_memory_cached,
                 },
                 "percentage": {
-                    "used": round(
-                        (int(swap_memory_used) / int(swap_memory_total)) * 100,
-                        1,  # TODO: fix ZeroDivisionError
-                    ),
+                    "used": swap_memory_used_percent,
                     "available": round(100 - swap_memory_used_percent, 1),
                 },
             },
