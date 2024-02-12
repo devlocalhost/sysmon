@@ -289,14 +289,15 @@ class Cpuinfo:
 
                 self.logger.debug(f"[sensors] {temp_dir}: {sensor_type}")
 
-                if sensor_type in allowed_types:
-                    self.temperature_file = en_open(
-                        glob.glob(f"{temp_dir}/temp*_input")[-1]
-                    )
-                    self.logger.debug(
-                        f"[temp file] cpu temp sensor: {temperature_file}"
-                    )
-                    break
+                for types in allowed_types:
+                    if sensor_type == types:
+                        self.temperature_file = en_open(
+                            glob.glob(f"{temp_dir}/temp*_input")[-1]
+                        )
+                        self.logger.debug(
+                            f"[temp file] cpu temp sensor: {temperature_file}"
+                        )
+                        break
 
     def get_data(self):
         """/proc/cpuinfo - cpu information"""
