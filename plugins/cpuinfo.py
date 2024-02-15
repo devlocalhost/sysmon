@@ -255,8 +255,8 @@ class Cpuinfo:
             + int(new_cpu_usage_data[6])
         )
 
-        total = sum(map(int, old_cpu_usage_data[1:])) - sum(
-            map(int, new_cpu_usage_data[1:])
+        total = sum(map(int, old_cpu_usage_data)) - sum(
+            map(int, new_cpu_usage_data)
         )
 
         self.cpu_usage_data = new_cpu_usage_data
