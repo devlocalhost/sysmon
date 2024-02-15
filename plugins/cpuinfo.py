@@ -54,7 +54,7 @@ class Cpuinfo:
         CALL close_files() when your program ends
         to avoid opened files
     """
-    
+
     def __init__(self):
         self.logger = setup_logger(__name__)
 
@@ -115,6 +115,7 @@ class Cpuinfo:
             "cache_size": "Unknown",
         }
 
+        data_dict["frequency"] = self.cpu_freq()
         data_dict["architecture"] = platform.machine()
 
         try:
@@ -218,7 +219,7 @@ class Cpuinfo:
 
         return data_dict
 
-    def cpu_freq(self):
+    def cpu_freq(self): # FIXME
         """get cpu frequency"""
 
         if self.core_file:
@@ -227,6 +228,7 @@ class Cpuinfo:
             return round(int(self.core_file.read().strip()) / 1000, 2)
 
         return get_static_info["frequency"] # FIXME
+
 
     def cpu_usage(self):
         """/proc/stat - cpu usage of the system"""
