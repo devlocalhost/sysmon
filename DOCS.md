@@ -56,7 +56,7 @@ print(cpuinfo_class.get_data())
 cpuinfo_class.close_files()
 ```
 ### Output
-```json
+```
 {'static': {'architecture': 'aarch64',
             'cache_size': 'Unknown',
             'cache_type': 'Unknown',
@@ -100,7 +100,7 @@ meminfo_class.close_files()
 ```
 
 ### Output
-```json
+```
 {'physical': {'percentage': {'actual_used': 69.7,
                              'available': 23.8,
                              'free': 3.7,
