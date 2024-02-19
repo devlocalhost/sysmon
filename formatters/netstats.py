@@ -29,7 +29,7 @@ def main():
 
         human_received = convert_bytes(raw_received)
         human_transferred = convert_bytes(raw_transferred)
-        
+
         human_received_speed = convert_bytes(data["statistics"]["speeds"]["received"])
         human_transferred_speed = convert_bytes(
             data["statistics"]["speeds"]["transferred"]
@@ -39,10 +39,12 @@ def main():
             f"  ——— /sys/class/net {'—' * (52 - len(device_name))}\n"
             f"      Local IP: {local_ip}{' ' * max(15 - len(local_ip), 0)} | Interface: {device_name}\n"
             f"      Received: {human_received}"
-            + " " * (14 - len(human_received))
+            + " "
+            * (14 - len(human_received))
             + f"({raw_received} bytes)\n"
             f"   Transferred: {human_transferred}"
-            + " " * (14 - len(human_transferred))
+            + " "
+            * (14 - len(human_transferred))
             + f"({raw_transferred} bytes)\n"
             f"         Speed: Down {human_received_speed}"
             + " " * (14 - len(human_received_speed))

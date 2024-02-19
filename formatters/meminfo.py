@@ -59,11 +59,13 @@ def main():
             f"         Total: {convert_bytes(data['physical']['values']['total'])}"
             + f"{' ':<16}Total: {convert_bytes(data['virtual']['values']['total'])}\n"
             f"          Used: {phys_memory_used_format}"
-            + " " * (25 - len(phys_memory_used_format))
+            + " "
+            * (25 - len(phys_memory_used_format))
             + f"Used: {convert_bytes(data['virtual']['values']['used'])} ({data['virtual']['percentage']['used']}%)\n"
             f"   Actual Used: {convert_bytes(data['physical']['values']['actual_used'])} ({data['physical']['percentage']['actual_used']}%)\n"
             f"     Available: {phys_memory_avail_format}"
-            + " " * (20 - len(phys_memory_avail_format))
+            + " "
+            * (20 - len(phys_memory_avail_format))
             + f"Available: {convert_bytes(data['virtual']['values']['available'])} ({data['virtual']['percentage']['available']}%)\n"
             f"          Free: {convert_bytes(data['physical']['values']['free'])} ({data['physical']['percentage']['free']}%)\n"
             f"        Cached: {convert_bytes(data['physical']['values']['cached'])}"
@@ -79,7 +81,8 @@ def main():
         f"        Total: {convert_bytes(data['physical']['values']['total'])}"
         + f"{' ':<17}Cached: {convert_bytes(data['physical']['values']['cached'])}\n"
         f"         Used: {convert_bytes(data['physical']['values']['used'])} ({data['physical']['percentage']['used']}%)"
-        + " " * (20 - len(str(phys_memory_used_format)))
+        + " "
+        * (20 - len(str(phys_memory_used_format)))
         + f"Actual Used: {convert_bytes(data['physical']['values']['actual_used'])} ({data['physical']['percentage']['actual_used']}%)\n"
         f"    Available: {convert_bytes(data['physical']['values']['available'])} ({data['physical']['percentage']['available']}%)"
         + f"{' ':<9}Free: {convert_bytes(data['physical']['values']['free'])} ({data['physical']['percentage']['free']}%)\n"

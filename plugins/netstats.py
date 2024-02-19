@@ -89,7 +89,7 @@ class Speed:
         """
         set rx and tx values
         """
-        
+
         self.rx = int(rx)
         self.tx = int(tx)
 

@@ -219,7 +219,7 @@ class Cpuinfo:
 
         return data_dict
 
-    def cpu_freq(self): # FIXME
+    def cpu_freq(self):  # FIXME
         """get cpu frequency"""
 
         if self.core_file:
@@ -227,8 +227,7 @@ class Cpuinfo:
 
             return round(int(self.core_file.read().strip()) / 1000, 2)
 
-        return get_static_info["frequency"] # FIXME
-
+        return get_static_info["frequency"]  # FIXME
 
     def cpu_usage(self):
         """/proc/stat - cpu usage of the system"""
@@ -257,9 +256,7 @@ class Cpuinfo:
             + int(new_cpu_usage_data[6])
         )
 
-        total = sum(map(int, old_cpu_usage_data)) - sum(
-            map(int, new_cpu_usage_data)
-        )
+        total = sum(map(int, old_cpu_usage_data)) - sum(map(int, new_cpu_usage_data))
 
         self.cpu_usage_data = new_cpu_usage_data
 
