@@ -6,7 +6,6 @@ needed for sysmon to function
 """
 
 import os
-import sys
 
 
 # START OF IMPORTANT PART FOR THE PLUGINS
