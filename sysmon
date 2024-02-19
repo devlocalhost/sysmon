@@ -96,7 +96,6 @@ arguments = [
         "options": ["-p", "--procs"],
         "kwargs": {
             "type": int,
-            "default": 6,
             "metavar": "INT",
             "help": "how many processes to show in procpid. Default: 6",
         },

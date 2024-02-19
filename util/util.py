@@ -21,8 +21,7 @@ SHOW_TEMPERATURE = True
 SHOW_SWAP = True
 
 # procpid.py vars - how many processes to display
-PROCS = 5
-SHOW_SYSMON = True
+PROCS = 6
 
 # netstats vars - custom interface, from /sys/class/net/
 # check /sys/class/net/ for more
