@@ -24,8 +24,12 @@ def main():
         # when youre using sysmon, and your internet connection goes down or up
 
         local_ip = data["local_ip"]
-        human_received = convert_bytes(data["statistics"]["received"])
-        human_transferred = convert_bytes(data["statistics"]["transferred"])
+        raw_received = data["statistics"]["received"]
+        raw_transferred = data["statistics"]["transferred"]
+
+        human_received = convert_bytes(raw_received)
+        human_transferred = convert_bytes(raw_transferred)
+        
         human_received_speed = convert_bytes(data["statistics"]["speeds"]["received"])
         human_transferred_speed = convert_bytes(
             data["statistics"]["speeds"]["transferred"]
@@ -36,10 +40,10 @@ def main():
             f"      Local IP: {local_ip}{' ' * max(15 - len(local_ip), 0)} | Interface: {device_name}\n"
             f"      Received: {human_received}"
             + " " * (14 - len(human_received))
-            + f"({human_received} bytes)\n"
+            + f"({raw_received} bytes)\n"
             f"   Transferred: {human_transferred}"
             + " " * (14 - len(human_transferred))
-            + f"({human_transferred} bytes)\n"
+            + f"({raw_transferred} bytes)\n"
             f"         Speed: Down {human_received_speed}"
             + " " * (14 - len(human_received_speed))
             + f"| Up {human_transferred_speed}\n"
