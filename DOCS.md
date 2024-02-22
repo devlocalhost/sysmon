@@ -130,3 +130,118 @@ For values key:
 - `free`: raw (bytes) free memory value
 - `total`: raw (bytes) total memory value
 - `used`: raw (bytes) used memory value
+
+## loadavg
+loadavg shows load times, uptime, and boot time. The available details are:
+1. Load times (1, 5, and 15 mins)
+2. Entities (processes [?]) (¹) (active and total)
+3. Uptime and boot time
+
+### Usage
+```
+from plugins import loadavg
+loadavg_class = loadavg.Loadavg()
+print(loadavg_class.get_data())
+loadavg_class.close_files()
+```
+
+### Output
+```
+{'entities': {'active': '2', 'total': '1586'},
+ 'load_times': {'1': '1.23', '15': '1.42', '5': '1.80'},
+ 'uptime': {'since': 'Thursday February 22 2024, 03:37:58 PM',
+            'uptime': '2 hours, and 50 minutes'}}
+```
+
+Under:
+- entities, the active and total running processes (?) are reported. The values are ints
+- load_times, system load for 1, 5  and 15 mins are reported. The values are float.
+- uptime:
+  - since: the date the system has been up since
+  - uptime: uptime in human readable format
+
+## procpid
+procpid shows (by default) the 6 most VmRSS consuming processes. The available details are:
+1. process name
+2. process id
+3. process vmrss
+4. process state
+
+### Usage
+```
+from plugins import procpid
+procpid_class = procpid.Procpid()
+print(procpid_class.get_data())
+procpid_class.close_files()
+```
+
+### Output
+```
+{'processes': [{'name': 'e.android.music',
+                'pid': '5864',
+                'state': 'Sleeping',
+                'vmrss': 465547264},
+               {'name': 'firefox',
+                'pid': '3759',
+                'state': 'Sleeping',
+                'vmrss': 354238464},
+               {'name': 'system_server',
+                'pid': '4895',
+                'state': 'Sleeping',
+                'vmrss': 352677888},
+               {'name': 'ndroid.systemui',
+                'pid': '5062',
+                'state': 'Sleeping',
+                'vmrss': 305909760},
+               {'name': 'AndroidUI',
+                'pid': '6421',
+                'state': 'Sleeping',
+                'vmrss': 294662144},
+               {'name': 'droid.launcher3',
+                'pid': '5452',
+                'state': 'Sleeping',
+                'vmrss': 242987008}]}
+```
+
+Note: name is truncated to 15 characters by the kernel, not sysmon.
+
+Under processes:
+`name`: process name
+`pid`: process id (int)
+`state`: process state
+`vmrss`: process vmrss usage (int)
+
+## netstats
+netstats shows network status such as network adapter name, and more. The available details are:
+1. local ip
+2. network interface
+3. received and transferred bytes since boot time
+4. received and transferred bytes one second ago (network speed meter)
+
+### Usage
+```
+from plugins import netstats
+netstats_class = netstats.Netstats()
+print(netstats_class.get_data())
+netstats_class.close_files()
+```
+
+### Output
+```
+{'interface': 'waydroid0',
+ 'local_ip': '192.168.240.1',
+ 'statistics': {'received': 9024248,
+                'speeds': {'received': 9024248, 'transferred': 556928103},
+                'transferred': 556928103}}
+```
+
+`interface`: the network interface name
+`local_ip`: the local ip
+
+Under statistics:
+`received`: total received bytes
+`transferred`: total transferred bytes
+
+Under speeds:
+`received`: total received bytes one second ago
+`transferred`: total transferred bytes one second ago
