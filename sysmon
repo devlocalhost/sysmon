@@ -96,7 +96,6 @@ arguments = [
         "options": ["-p", "--procs"],
         "kwargs": {
             "type": int,
-            "default": 6,
             "metavar": "INT",
             "help": "how many processes to show in procpid. Default: 6",
         },
@@ -153,6 +152,8 @@ def start_sysmon(stdscr, plugins, sleep):
     curses.curs_set(0)
     curses.use_default_colors()
 
+    formatters = [importlib.import_module(func) for func in plugins]
+
     try:
         while True:
             stdscr.erase()
@@ -163,8 +164,8 @@ def start_sysmon(stdscr, plugins, sleep):
                 + "\n"
             )
 
-            for func in plugins:
-                stdscr.addstr(importlib.import_module(func).main())
+            for formatter in formatters:
+                stdscr.addstr(formatter.main())
 
             stdscr.addstr(f" {'—' * 67}")
             stdscr.refresh()
@@ -175,7 +176,15 @@ def start_sysmon(stdscr, plugins, sleep):
                 kinput = stdscr.getch()
 
                 if kinput == ord("q"):
+                    for formatter in formatters:
+                        try:
+                            formatter.end()
+
+                        except AttributeError:
+                            pass
+
                     curses.curs_set(1)
+
                     break
 
     except curses.error:
@@ -191,18 +200,25 @@ def start_sysmon(stdscr, plugins, sleep):
 def main():
     """execute sysmon"""
 
+    # plugins_array = [
+    #     "plugins.cpuinfo",
+    #     "plugins.meminfo",
+    #     "plugins.loadavg",
+    #     "plugins.procpid",
+    #     "plugins.netstats",
+    # ]
     plugins_array = [
-        "plugins.cpuinfo",
-        "plugins.meminfo",
-        "plugins.loadavg",
-        "plugins.procpid",
-        "plugins.netstats",
+        "formatters.cpuinfo",
+        "formatters.meminfo",
+        "formatters.loadavg",
+        "formatters.procpid",
+        "formatters.netstats",
     ]
 
     for argument in args.__dict__:
         if argument.startswith("no"):
             if getattr(args, argument):
-                argument = f"plugins.{argument.replace('no', '')}"
+                argument = f"formatters.{argument.replace('no', '')}"
                 plugins_array.pop(plugins_array.index(argument))
 
     curses.wrapper(start_sysmon, plugins_array, args.sleep)

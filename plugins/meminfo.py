@@ -2,126 +2,140 @@
 
 """meminfo plugin for sysmon"""
 
-from util.util import (
-    convert_bytes,
-    to_bytes,
-    clean_output,
-    file_has,
-    SHOW_SWAP,
-    en_open,
-)
+from util.util import en_open
 from util.logger import setup_logger
 
-logger = setup_logger(__name__)
 
-logger.debug("[init] initializing")
+class Meminfo:
+    """
+    Meminfo class - get physical and swap memory usage
 
-logger.debug("[open] /proc/meminfo")
-meminfo_file = en_open("/proc/meminfo")
+    Usage:
+        call get_data() to get data
+            returns dict
 
+    DO:
+        NOT CALL print_data(). That function
+    is intended to be used by sysmon. (might change in the future...?)
+        CALL close_files() when your program ends
+        to avoid opened files
+    """
 
-def main():
-    """/proc/meminfo - system memory information"""
+    def __init__(self):
+        """
+        initializing important stuff
+        """
 
-    meminfo_file.seek(0)
-    logger.debug("[seek] /proc/meminfo")
+        self.logger = setup_logger(__name__)
 
-    meminfo_data = meminfo_file.readlines()
+        self.logger.debug("[init] initializing")
 
-    memory_total = to_bytes(int(clean_output(file_has("MemTotal", meminfo_data))))
-    memory_available = to_bytes(
-        int(clean_output(file_has("MemAvailable", meminfo_data)))
-    )
+        self.meminfo_file = en_open("/proc/meminfo")
+        self.logger.debug("[open] /proc/meminfo")
 
-    raw_memory_cached = to_bytes(int(clean_output(file_has("Cached", meminfo_data))))
-    sreclaimable_memory = to_bytes(
-        int(clean_output(file_has("SReclaimable", meminfo_data)))
-    )
-    memory_buffers = to_bytes(int(clean_output(file_has("Buffers", meminfo_data))))
+        self.files_opened = [self.meminfo_file]
 
-    memory_cached = raw_memory_cached + memory_buffers + sreclaimable_memory
+    def close_files(self):
+        """
+        closing the opened files. always call this
+        when ending the program
+        """
 
-    memory_free = to_bytes(int(clean_output(file_has("MemFree", meminfo_data))))
-    memory_used = round(memory_total - memory_available)
+        for file in self.files_opened:
+            try:
+                self.logger.debug(f"[close] {file.name}")
+                file.close()
 
-    memory_actual_used = round(
-        memory_total
-        - memory_free
-        - memory_buffers
-        - raw_memory_cached
-        - sreclaimable_memory
-    )
+            except:
+                pass
 
-    memory_used_percent = round((int(memory_used) / int(memory_total)) * 100, 1)
+    def get_data(self):
+        """
+        returns a json dict with data
+        """
 
-    memory_actual_used_percent = round(
-        (int(memory_actual_used) / int(memory_total)) * 100, 1
-    )
+        for file in self.files_opened:
+            self.logger.debug(f"[seek] {file.name}")
+            file.seek(0)
 
-    memory_available_percent = round(100 - memory_used_percent, 1)
-    memory_free_percent = round((int(memory_free) / int(memory_total)) * 100, 1)
-
-    memory_used_format = f"{convert_bytes(memory_used)} ({memory_used_percent}%)"
-    memory_avail_format = (
-        f"{convert_bytes(memory_available)} " f"({memory_available_percent}%)"
-    )
-
-    if (
-        to_bytes(int(clean_output(file_has("SwapTotal", meminfo_data)))) != 0
-        and SHOW_SWAP is not False
-    ):
-        logger.debug("[memory] swap stats")
-
-        swap_total = to_bytes(int(clean_output(file_has("SwapTotal", meminfo_data))))
-        swap_available = to_bytes(int(clean_output(file_has("SwapFree", meminfo_data))))
-        swap_cached = to_bytes(int(clean_output(file_has("SwapCached", meminfo_data))))
-
-        swap_used = round(swap_total - swap_available)
-        swap_used_percent = round((int(swap_used) / int(swap_total)) * 100, 1)
-        swap_available_percent = round(100 - swap_used_percent, 1)
-
-        total_memory = memory_total + swap_total
-        total_actual_used = memory_actual_used + swap_used
-        total_used = memory_used + swap_used
-        total_available = memory_available + swap_available
-
-        used_perc = round((memory_used_percent + swap_used_percent) / 2, 1)
-        available_perc = round(
-            (memory_available_percent + swap_available_percent) / 2, 1
+        # thanks to https://stackoverflow.com/a/28161352
+        meminfo_data = dict(
+            (i.split()[0].rstrip(":"), int(i.split()[1]) * 1024)
+            for i in self.meminfo_file.readlines()
         )
 
-        logger.debug("[data] print out")
+        phy_memory_total = meminfo_data.get("MemTotal", 0)
+        phy_memory_available = meminfo_data.get("MemAvailable", 0)
+        phy_memory_free = meminfo_data.get("MemFree", 0)
 
-        return (
-            f"  ——— /proc/meminfo {'—' * 47}\n"
-            f"     RAM: {' ' * 25}Swap:\n"
-            f"         Total: {convert_bytes(memory_total)}"
-            + f"{' ':<16}Total: {convert_bytes(swap_total)}\n"
-            f"          Used: {memory_used_format}"
-            + " " * (25 - len(memory_used_format))
-            + f"Used: {convert_bytes(swap_used)} ({swap_used_percent}%)\n"
-            f"   Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
-            f"     Available: {memory_avail_format}"
-            + " " * (20 - len(memory_avail_format))
-            + f"Available: {convert_bytes(swap_available)} ({swap_available_percent}%)\n"
-            f"          Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
-            f"        Cached: {convert_bytes(memory_cached)}"
-            + " " * (23 - len(convert_bytes(memory_cached)))
-            + f"Cached: {convert_bytes(swap_cached)}\n   — Combined: {'— ' * 26}\n"
-            + f"         Total: {convert_bytes(total_memory)}{' ':<17}Used: {convert_bytes(total_used)} ({used_perc}%)\n"
-            f"     Available: {convert_bytes(total_available)} ({available_perc}%){' ':<2}Actual Used: {convert_bytes(total_actual_used)}\n"
+        phy_memory_raw_cached = meminfo_data.get("Cached", 0)
+        phy_memory_sreclaimable = meminfo_data.get("SReclaimable", 0)
+        phy_memory_buffers = meminfo_data.get("Buffers", 0)
+
+        phy_memory_cached = (
+            phy_memory_raw_cached + phy_memory_buffers + phy_memory_sreclaimable
+        )
+        phy_memory_actual_used = round(
+            phy_memory_total
+            - phy_memory_free
+            - phy_memory_buffers
+            - phy_memory_raw_cached
+            - phy_memory_sreclaimable
+        )
+        phy_memory_used = round(phy_memory_total - phy_memory_available)
+        phy_memory_used_percent = round(
+            (int(phy_memory_used) / int(phy_memory_total)) * 100, 1
         )
 
-    logger.debug("[data] print out")
+        swap_memory_total = meminfo_data.get("SwapTotal", 0)
+        swap_memory_available = meminfo_data.get("SwapFree", 0)
+        # NOTE: Swap available (in output) = this.
+        # NOTE: Rename to Free instead?
 
-    return (
-        f"  ——— /proc/meminfo {'—' * 47}\n"
-        f"   RAM: {' ' * 25}\n"
-        f"        Total: {convert_bytes(memory_total)}"
-        + f"{' ':<17}Cached: {convert_bytes(memory_cached)}\n"
-        f"         Used: {convert_bytes(memory_used)} ({memory_used_percent}%)"
-        + " " * (20 - len(str(memory_used_format)))
-        + f"Actual Used: {convert_bytes(memory_actual_used)} ({memory_actual_used_percent}%)\n"
-        f"    Available: {convert_bytes(memory_available)} ({memory_available_percent}%)"
-        + f"{' ':<9}Free: {convert_bytes(memory_free)} ({memory_free_percent}%)\n"
-    )
+        swap_memory_cached = meminfo_data.get("SwapCached", 0)
+        swap_memory_used = round(swap_memory_total - swap_memory_available)
+
+        try:
+            swap_memory_used_percent = round(
+                (int(swap_memory_used) / int(swap_memory_total)) * 100, 1
+            )  # TODO: fix ZeroDivisionError
+
+        except ZeroDivisionError:
+            swap_memory_used_percent = 0
+
+        data = {
+            "physical": {
+                "values": {
+                    "total": phy_memory_total,
+                    "used": phy_memory_used,
+                    "actual_used": phy_memory_actual_used,
+                    "available": phy_memory_available,
+                    "free": phy_memory_free,
+                    "cached": phy_memory_cached,
+                },
+                "percentage": {
+                    "used": phy_memory_used_percent,
+                    "actual_used": round(
+                        (int(phy_memory_actual_used) / int(phy_memory_total)) * 100, 1
+                    ),
+                    "available": round(100 - phy_memory_used_percent, 1),
+                    "free": round(
+                        (int(phy_memory_free) / int(phy_memory_total)) * 100, 1
+                    ),
+                },
+            },
+            "virtual": {
+                "values": {
+                    "total": swap_memory_total,
+                    "used": swap_memory_used,
+                    "available": swap_memory_available,
+                    "cached": swap_memory_cached,
+                },
+                "percentage": {
+                    "used": swap_memory_used_percent,
+                    "available": round(100 - swap_memory_used_percent, 1),
+                },
+            },
+        }
+
+        return data

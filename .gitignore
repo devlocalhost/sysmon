@@ -1,5 +1,6 @@
-rewrite/
-tests/
-TODO.md
+TODO
+sysmon.log
 */__pycache__/
+__pycache__/
 *.so
+dump/

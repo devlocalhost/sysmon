@@ -8,3 +8,6 @@
 
 ## rooted android phone
 ![sysmon preview 3](preview-3.png)
+
+## laptop
+![sysmon_preview_4](preview-4.png)

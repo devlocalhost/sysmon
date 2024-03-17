@@ -6,7 +6,6 @@ needed for sysmon to function
 """
 
 import os
-import sys
 
 
 # START OF IMPORTANT PART FOR THE PLUGINS
@@ -23,7 +22,6 @@ SHOW_SWAP = True
 
 # procpid.py vars - how many processes to display
 PROCS = 6
-SHOW_SYSMON = True
 
 # netstats vars - custom interface, from /sys/class/net/
 # check /sys/class/net/ for more
