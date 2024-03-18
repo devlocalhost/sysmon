@@ -126,17 +126,17 @@ def main():
 
     output_list_phys[2] = (
         output_list_phys[2]
-        + " " * max(0, 34 - len(output_list_phys[2]))
+        + " " * max(0, 32 - len(output_list_phys[2]))
         + f"         Free: {convert_bytes(data['physical']['values']['free'])} ({data['physical']['percentage']['free']}%)\n"
     )
     output_list_phys[3] = (
         output_list_phys[3]
-        + " " * max(0, 33 - len(output_list_phys[3]))
+        + " " * max(0, 31 - len(output_list_phys[3]))
         + f"   Actual Used: {convert_bytes(data['physical']['values']['actual_used'])} ({data['physical']['percentage']['actual_used']}%)\n"
     )
     output_list_phys[4] = (
         output_list_phys[4]
-        + " " * max(0, 33 - len(output_list_phys[4]))
+        + " " * max(0, 31 - len(output_list_phys[4]))
         + f"        Cached: {convert_bytes(data['physical']['values']['cached'])}\n"
     )
 
