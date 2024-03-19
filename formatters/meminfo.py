@@ -112,9 +112,9 @@ def main():
     output_list_phys = [
         f"  ——— /proc/meminfo {'—' * 47}\n",
         f"   RAM: {' ' * 25}\n",
-        f"        Total: {convert_bytes(data['physical']['values']['total'])}",
-        f"         Used: {convert_bytes(data['physical']['values']['used'])} ({data['physical']['percentage']['used']}%)",
-        f"    Available: {convert_bytes(data['physical']['values']['available'])} ({data['physical']['percentage']['available']}%)",
+        f"       Total: {convert_bytes(data['physical']['values']['total'])}",
+        f"        Used: {convert_bytes(data['physical']['values']['used'])} ({data['physical']['percentage']['used']}%)",
+        f"   Available: {convert_bytes(data['physical']['values']['available'])} ({data['physical']['percentage']['available']}%)",
     ]
     # 0. plugin name
     # 1. table row
@@ -126,18 +126,18 @@ def main():
 
     output_list_phys[2] = (
         output_list_phys[2]
-        + " " * max(0, 32 - len(output_list_phys[2]))
-        + f"         Free: {convert_bytes(data['physical']['values']['free'])} ({data['physical']['percentage']['free']}%)\n"
+        + " " * max(0, 41 - len(output_list_phys[2]))
+        + f"Free: {convert_bytes(data['physical']['values']['free'])} ({data['physical']['percentage']['free']}%)\n"
     )
     output_list_phys[3] = (
         output_list_phys[3]
-        + " " * max(0, 31 - len(output_list_phys[3]))
-        + f"   Actual Used: {convert_bytes(data['physical']['values']['actual_used'])} ({data['physical']['percentage']['actual_used']}%)\n"
+        + " " * max(0, 34 - len(output_list_phys[3]))
+        + f"Actual Used: {convert_bytes(data['physical']['values']['actual_used'])} ({data['physical']['percentage']['actual_used']}%)\n"
     )
     output_list_phys[4] = (
         output_list_phys[4]
-        + " " * max(0, 31 - len(output_list_phys[4]))
-        + f"        Cached: {convert_bytes(data['physical']['values']['cached'])}\n"
+        + " " * max(0, 39 - len(output_list_phys[4]))
+        + f"Cached: {convert_bytes(data['physical']['values']['cached'])}\n"
     )
 
     return "".join(output_list_phys)
