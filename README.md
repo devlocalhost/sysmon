@@ -64,4 +64,3 @@ If you want to suggest a new feature or report incorrect data (e.g., CPU tempera
 Many thanks to [skyblueborb](https://github.com/skyblueborb) for helping to test, fix, and improve the CPU temperature feature.
 
 Also, many thanks to [ari](https://ari-web.xyz/gh) for assistance with padding and text formatting.
-```
