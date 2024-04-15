@@ -61,6 +61,8 @@ class Cpuinfo:
         self.logger.debug("[init] initializing")
 
         self.hwmon_dirs = glob.glob("/sys/class/hwmon/*")
+        self.thermal_dirs = glob.glob("/sys/class/thermal/*")
+
         self.temperature_file = self.set_temperature_file()
 
         try:  # FIXME: there has to be a better way for this
@@ -282,19 +284,27 @@ class Cpuinfo:
     def set_temperature_file(self):
         """Get the CPU temperature from /sys/class/hwmon"""
 
-        allowed_types = ("coretemp", "k10temp", "acpitz", "cpu_1_0_usr")
+        allowed_types = ("coretemp", "k10temp", "acpitz", "cpu_1_0_usr", "cpu-1-0-usr")
 
-        for temp_dir in self.hwmon_dirs:
-            with en_open(os.path.join(temp_dir, "name")) as temp_type_file:
-                sensor_type = temp_type_file.read().strip()
+        combined_dirs = [*self.hwmon_dirs, *self.thermal_dirs]
 
-                self.logger.debug(f"[sensors] {temp_dir}: {sensor_type}")
+        self.logger.debug(f"[sensors list] {combined_dirs}")
 
-                if sensor_type in allowed_types:
-                    temperature_files = glob.glob(os.path.join(temp_dir, "temp*_input"))
+        for temp_dir in combined_dirs:
+            try:
+                with en_open(os.path.join(temp_dir, "type")) as temp_type_file:
+                    sensor_type = temp_type_file.read().strip()
 
-                    if temperature_files:
-                        return en_open(temperature_files[-1])
+                    self.logger.debug(f"[sensors] {temp_dir}: {sensor_type}")
+
+                    if sensor_type in allowed_types:
+                        temperature_files = glob.glob(os.path.join(temp_dir, "temp*"))
+
+                        if temperature_files:
+                            return en_open(temperature_files[-1])
+
+            except FileNotFoundError: # fucking ugly.
+                pass
 
         return None
 
