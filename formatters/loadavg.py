@@ -17,7 +17,7 @@ def main():
     data = loadavg_class.get_data()
 
     output_list = [
-        f"  ——— /proc/loadavg {'—' * 47}\n",
+        f"  --- /proc/loadavg {'-' * 47}\n",
         f"     Load: {data['load_times']['1']}, {data['load_times']['5']}, {data['load_times']['15']}",
         f"\n   Uptime: {data['uptime']['uptime']}\n   Booted: {data['uptime']['since']}\n",
     ]

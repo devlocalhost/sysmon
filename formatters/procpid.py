@@ -18,7 +18,7 @@ def main():
     data = procpid_class.get_data()
 
     formatted_data = [
-        f"  ——— /proc/pid/status {'—' * 44}\n   Name            PID         RSS            State"
+        f"  --- /proc/pid/status {'-' * 44}\n   Name            PID         RSS            State"
     ]
 
     for proc in data["processes"]:

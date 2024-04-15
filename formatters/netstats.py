@@ -36,7 +36,7 @@ def main():
         )
 
         return (
-            f"  ——— /sys/class/net {'—' * 46}\n"
+            f"  --- /sys/class/net {'-' * 46}\n"
             f"      Local IP: {local_ip}{' ' * max(15 - len(local_ip), 0)} | Interface: {device_name}\n"
             f"      Received: {human_received}"
             + " "
@@ -51,7 +51,7 @@ def main():
             + f"| Up {human_transferred_speed}\n"
         )
 
-    return f"  ——— /sys/class/net/!?!? {'—' * 41}\n"
+    return f"  --- /sys/class/net/!?!? {'-' * 41}\n"
 
 
 def end():

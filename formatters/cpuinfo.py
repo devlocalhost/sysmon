@@ -39,7 +39,7 @@ def main():
         cpu_cores_phys = data["cores"]["logical"]  # um, what the fuck?
 
     output_text = (
-        f"  ——— /proc/cpuinfo {'—' * 47}\n"
+        f"  --- /proc/cpuinfo {'-' * 47}\n"
         f"   Usage: {data['usage']:>5}% {arch_model_temp_line}" + "\n"
         f"   Cores: {cpu_cores_phys}c/{data['cores']['logical']}t | Frequency: {data['frequency']:>7} MHz | Cache: {data['cache_size']}"
     )

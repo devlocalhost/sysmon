@@ -51,7 +51,7 @@ def main():
         )
 
         output_list_phys_virt = [
-            f"  ——— /proc/meminfo {'—' * 47}\n",
+            f"  --- /proc/meminfo {'-' * 47}\n",
             f"     RAM: {' ' * 25}Swap:\n",
             f"         Total: {convert_bytes(data['physical']['values']['total'])}",
             f"          Used: {convert_bytes(data['physical']['values']['used'])} ({data['physical']['percentage']['used']}%)",
@@ -59,7 +59,7 @@ def main():
             f"     Available: {convert_bytes(data['physical']['values']['available'])} ({data['physical']['percentage']['available']}%)",
             f"          Free: {convert_bytes(data['physical']['values']['free'])} ({data['physical']['percentage']['free']}%)\n",
             f"        Cached: {convert_bytes(data['physical']['values']['cached'])}",
-            f"   — Combined: {'— ' * 26}\n",
+            f"   - Combined: {'- ' * 26}\n",
             f"         Total: {convert_bytes(combined_total_memory)}",
             f"     Available: {convert_bytes(combined_total_available)} ({combined_available_percent}%)",
         ]
@@ -110,7 +110,7 @@ def main():
         return "".join(output_list_phys_virt)
 
     output_list_phys = [
-        f"  ——— /proc/meminfo {'—' * 47}\n",
+        f"  --- /proc/meminfo {'-' * 47}\n",
         f"   RAM: {' ' * 25}\n",
         f"       Total: {convert_bytes(data['physical']['values']['total'])}",
         f"        Used: {convert_bytes(data['physical']['values']['used'])} ({data['physical']['percentage']['used']}%)",
