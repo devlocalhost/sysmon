@@ -176,43 +176,7 @@ class Cpuinfo:
             )
 
         try:  # reading from cpuinfo file
-            with en_open("/proc/cpuinfo") as cpuinfo_file:
-                cpu_info = {}
-
-                for line in cpuinfo_file:
-                    if line.strip():
-                        key, value = [s.strip() for s in line.split(":", 1)]
-                        cpu_info[key.replace(" ", "_").lower()] = value
-
-                # self.logger.debug(f"[cpuinfo file] {cpu_info}")
-
-                if (
-                    "arm" not in data_dict["architecture"]
-                    and "aarch" not in data_dict["architecture"]
-                ):
-                    # arm platforms have some different values in cpuinfo file
-                    # it differs from a desktop cpuinfo file
-
-                    cache = cpu_info.get("cache_size")
-                    frequency = cpu_info.get("cpu_mhz")
-
-                    if data_dict["cache_size"] == "Unknown":
-                        self.logger.debug("[cache] fallback to /proc/cpuinfo cache")
-
-                        if cache:
-                            data_dict["cache"] = convert_bytes(
-                                to_bytes(int(cache.split()[0]))
-                            )
-
-                    if frequency:
-                        data_dict["frequency"] = round(float(frequency), 2)
-
-                    model = clean_cpu_model(cpu_info.get("model_name"))
-
-                else:  # is this a good idea?
-                    model = clean_cpu_model(cpu_info.get("hardware"))
-
-            data_dict["model"] = model if len(model) < 25 else model[:22] + "..."
+            cpuinfo_file = en_open("/proc/cpuinfo")
 
         except FileNotFoundError:
             sys.exit("Couldnt find /proc/stat file")
@@ -221,6 +185,42 @@ class Cpuinfo:
             sys.exit(
                 "Couldnt read the file. Do you have read permissions for /proc/stat file?"
             )
+
+        if cpuinfo_file:
+            cpu_info = {}
+
+            for line in cpuinfo_file:
+                if line.strip():
+                    key, value = [s.strip() for s in line.split(":", 1)]
+                    cpu_info[key.replace(" ", "_").lower()] = value
+
+            # self.logger.debug(f"[cpuinfo file] {cpu_info}")
+
+            if (
+                "arm" not in data_dict["architecture"]
+                and "aarch" not in data_dict["architecture"]
+            ):
+                # this code applies only for desktop platforms
+
+                cache = cpu_info.get("cache_size")
+                frequency = cpu_info.get("cpu_mhz")
+
+                if data_dict["cache_size"] == "Unknown" and cache:
+                    self.logger.debug("[cache] fallback to /proc/cpuinfo cache")
+                    
+                    data_dict["cache"] = convert_bytes(
+                        to_bytes(int(cache.split()[0]))
+                    )
+
+                if frequency:
+                    data_dict["frequency"] = round(float(frequency), 2)
+
+                model = clean_cpu_model(cpu_info.get("model_name"))
+
+            else: # in case this is an arm system, grab hardware
+                model = clean_cpu_model(cpu_info.get("hardware"))
+
+        data_dict["model"] = model if len(model) < 25 else model[:22] + "..."
 
         return data_dict
 
