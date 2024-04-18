@@ -107,7 +107,8 @@ class Procpid:
             if process_info:
                 processes.append(process_info)
 
-        self.logger.debug("[procs] sorting")
+        self.logger.debug("[get_data] sorting")
+        
         processes = sorted(
             processes, key=lambda x: int(x.get("VmRSS", 0)), reverse=True
         )

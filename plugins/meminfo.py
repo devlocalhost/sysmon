@@ -31,7 +31,7 @@ class Meminfo:
         self.logger.debug("[init] initializing")
 
         self.meminfo_file = en_open("/proc/meminfo")
-        self.logger.debug("[open] /proc/meminfo")
+        self.logger.debug("[init] /proc/meminfo")
 
         self.files_opened = [self.meminfo_file]
 
@@ -43,7 +43,7 @@ class Meminfo:
 
         for file in self.files_opened:
             try:
-                self.logger.debug(f"[close] {file.name}")
+                self.logger.debug(f"[close_files] {file.name}")
                 file.close()
 
             except:
@@ -55,7 +55,7 @@ class Meminfo:
         """
 
         for file in self.files_opened:
-            self.logger.debug(f"[seek] {file.name}")
+            self.logger.debug(f"[get_data] {file.name}")
             file.seek(0)
 
         # thanks to https://stackoverflow.com/a/28161352

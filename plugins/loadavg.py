@@ -60,10 +60,10 @@ class Loadavg:
         self.logger.debug("[init] initializing")
 
         self.loadavg_file = en_open("/proc/loadavg")
-        self.logger.debug("[open] /proc/loadavg")
+        self.logger.debug("[init] /proc/loadavg")
 
         self.uptime_file = en_open("/proc/uptime")
-        self.logger.debug("[open] /proc/uptime")
+        self.logger.debug("[init] /proc/uptime")
 
         self.files_opened = [self.loadavg_file, self.uptime_file]
 
@@ -75,7 +75,7 @@ class Loadavg:
 
         for file in self.files_opened:
             try:
-                self.logger.debug(f"[close] {file.name}")
+                self.logger.debug(f"[close_files] {file.name}")
                 file.close()
 
             except:
@@ -87,7 +87,7 @@ class Loadavg:
         """
 
         for file in self.files_opened:
-            self.logger.debug(f"[seek] {file.name}")
+            self.logger.debug(f"[get_data] {file.name}")
             file.seek(0)
 
         loadavg_data = self.loadavg_file.read().split()

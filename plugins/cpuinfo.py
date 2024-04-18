@@ -69,7 +69,7 @@ class Cpuinfo:
             self.core_file = en_open(
                 "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"
             )
-            self.logger.debug(f"[core_file] {self.core_file}")
+            self.logger.debug(f"[init] {self.core_file}")
 
         except FileNotFoundError:
             self.core_file = None
@@ -99,7 +99,7 @@ class Cpuinfo:
 
         for file in self.files_opened:
             try:
-                self.logger.debug(f"[close] {file.name}")
+                self.logger.debug(f"[close_files] {file.name}")
                 file.close()
 
             except:
@@ -132,11 +132,11 @@ class Cpuinfo:
 
             # prioritize in-tree shared object
             if os.path.exists("util/sysmon_cpu_utils.so"):
-                # logger.debug("[cache lib] using lib from util/")
+                self.logger.debug("[get_static_info] using lib from util/")
                 cpu_utils = ctypes.CDLL("util/sysmon_cpu_utils.so")
 
             else:
-                # logger.debug("[cache lib] using global lib")
+                self.logger.debug("[get_static_info] using global lib")
                 cpu_utils = ctypes.CDLL("sysmon_cpu_utils.so")
 
             buffer_cores_phys = cpu_utils.get_cores(1)
@@ -158,7 +158,7 @@ class Cpuinfo:
                 data_dict["cache_type"] = output[1]
 
         except OSError as exc:
-            self.logger.debug(f"[cache lib] failed, {exc}")
+            self.logger.debug(f"[get_static_info] failed, {exc}")
 
         try:
             with en_open("/sys/devices/system/cpu/smt/active") as smt_file:
@@ -206,7 +206,7 @@ class Cpuinfo:
                 frequency = cpu_info.get("cpu_mhz")
 
                 if data_dict["cache_size"] == "Unknown" and cache:
-                    self.logger.debug("[cache] fallback to /proc/cpuinfo cache")
+                    self.logger.debug("[get_static_info] fallback to /proc/cpuinfo cache")
 
                     data_dict["cache"] = convert_bytes(to_bytes(int(cache.split()[0])))
 
@@ -284,7 +284,7 @@ class Cpuinfo:
 
         combined_dirs = [*self.hwmon_dirs, *self.thermal_dirs]
 
-        self.logger.debug(f"[sensors list] {combined_dirs}")
+        self.logger.debug(f"[set_temperature_file] {combined_dirs}")
 
         for temp_dir in combined_dirs:  # NEEDS TESTING
             sensor_type_file = (
@@ -298,16 +298,17 @@ class Cpuinfo:
                 with en_open(sensor_type_file) as temp_type_file:
                     sensor_type = temp_type_file.read().strip()
 
-                    self.logger.debug(f"[sensors] {temp_dir}: {sensor_type}")
+                    self.logger.debug(f"[set_temperature_file] {temp_dir}: {sensor_type}")
 
                     if sensor_type in allowed_types:
                         temperature_files = glob.glob(os.path.join(temp_dir, "temp*"))
 
                         if temperature_files:
+                            self.logger.debug(f"[set_temperature_file] using {temperature_files[-1]} as sensor file")
                             return en_open(temperature_files[-1])
 
             except FileNotFoundError:
-                pass
+                self.logger.debug(f"[set_temperature_file] COULD NOT OPEN FILE. NO SENSOR SET")
 
         return None
 
@@ -320,7 +321,7 @@ class Cpuinfo:
             "usage": self.cpu_usage(),
         }
 
-        data = data | self.get_static_info()  # merge the twop dicts into one
+        data = data | self.get_static_info()  # merge the two dicts into one
 
         data["frequency"] = self.cpu_freq()
 
