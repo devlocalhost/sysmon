@@ -269,18 +269,18 @@ class Cpuinfo:
         except ZeroDivisionError:
             return 0
 
-        # except FileNotFoundError:
-        #     sys.exit(
-        #         "Couldnt find /proc/stat file"
-        #     )  # FIXME: this has to be moved, possibly in __init__
+        except FileNotFoundError:
+            sys.exit(
+                "Couldnt find /proc/stat file"
+            )
 
-        # except PermissionError:
-        #     sys.exit(
-        #         "Couldnt read the file. Do you have read permissions for /proc/stat file?"
-        #     )  # FIXME: this has to be moved, possibly in __init__
+        except PermissionError:
+            sys.exit(
+                "Couldnt read the file. Do you have read permissions for /proc/stat file?"
+            )
 
     def set_temperature_file(self):
-        """Get the CPU temperature from /sys/class/hwmon"""
+        """Get the CPU temperature from /sys/class/hwmon and /sys/class/thermal"""
 
         allowed_types = ("coretemp", "k10temp", "acpitz", "cpu_1_0_usr", "cpu-1-0-usr")
 
@@ -288,9 +288,11 @@ class Cpuinfo:
 
         self.logger.debug(f"[sensors list] {combined_dirs}")
 
-        for temp_dir in combined_dirs:
+        for temp_dir in combined_dirs: # NEEDS TESTING
+            sensor_type_file = os.path.join(temp_dir, "type") if os.path.isfile(os.path.join(temp_dir, "type")) and os.path.exists(os.path.join(temp_dir, "type")) else os.path.join(temp_dir, "name")
+
             try:
-                with en_open(os.path.join(temp_dir, "type")) as temp_type_file:
+                with en_open(sensor_type_file) as temp_type_file:
                     sensor_type = temp_type_file.read().strip()
 
                     self.logger.debug(f"[sensors] {temp_dir}: {sensor_type}")
@@ -301,7 +303,7 @@ class Cpuinfo:
                         if temperature_files:
                             return en_open(temperature_files[-1])
 
-            except FileNotFoundError:  # fucking ugly.
+            except FileNotFoundError:
                 pass
 
         return None
