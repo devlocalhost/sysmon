@@ -41,6 +41,7 @@ def parse_arguments():
         for arg in data:
             # Get the type string from JSON and convert it to the actual type
             arg_type = arg["kwargs"].get("type")
+            
             if arg_type:
                 arg["kwargs"]["type"] = types_map[arg_type]
 

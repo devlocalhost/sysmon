@@ -207,17 +207,15 @@ class Cpuinfo:
 
                 if data_dict["cache_size"] == "Unknown" and cache:
                     self.logger.debug("[cache] fallback to /proc/cpuinfo cache")
-                    
-                    data_dict["cache"] = convert_bytes(
-                        to_bytes(int(cache.split()[0]))
-                    )
+
+                    data_dict["cache"] = convert_bytes(to_bytes(int(cache.split()[0])))
 
                 if frequency:
                     data_dict["frequency"] = round(float(frequency), 2)
 
                 model = clean_cpu_model(cpu_info.get("model_name"))
 
-            else: # in case this is an arm system, grab hardware
+            else:  # in case this is an arm system, grab hardware
                 model = clean_cpu_model(cpu_info.get("hardware"))
 
         data_dict["model"] = model if len(model) < 25 else model[:22] + "..."
@@ -303,7 +301,7 @@ class Cpuinfo:
                         if temperature_files:
                             return en_open(temperature_files[-1])
 
-            except FileNotFoundError: # fucking ugly.
+            except FileNotFoundError:  # fucking ugly.
                 pass
 
         return None
