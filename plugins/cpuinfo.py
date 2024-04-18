@@ -270,9 +270,7 @@ class Cpuinfo:
             return 0
 
         except FileNotFoundError:
-            sys.exit(
-                "Couldnt find /proc/stat file"
-            )
+            sys.exit("Couldnt find /proc/stat file")
 
         except PermissionError:
             sys.exit(
@@ -288,8 +286,13 @@ class Cpuinfo:
 
         self.logger.debug(f"[sensors list] {combined_dirs}")
 
-        for temp_dir in combined_dirs: # NEEDS TESTING
-            sensor_type_file = os.path.join(temp_dir, "type") if os.path.isfile(os.path.join(temp_dir, "type")) and os.path.exists(os.path.join(temp_dir, "type")) else os.path.join(temp_dir, "name")
+        for temp_dir in combined_dirs:  # NEEDS TESTING
+            sensor_type_file = (
+                os.path.join(temp_dir, "type")
+                if os.path.isfile(os.path.join(temp_dir, "type"))
+                and os.path.exists(os.path.join(temp_dir, "type"))
+                else os.path.join(temp_dir, "name")
+            )
 
             try:
                 with en_open(sensor_type_file) as temp_type_file:
