@@ -49,13 +49,6 @@
         }
     },
     {
-        "options": ["-nss", "--showsysmon"],
-        "kwargs": {
-            "action": "store_true",
-            "help": "disable sysmon stats in procpid"
-        }
-    },
-    {
         "options": ["-ni", "--ip"],
         "kwargs": {
             "action": "store_true",
