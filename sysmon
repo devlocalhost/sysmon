@@ -33,7 +33,7 @@ def parse_arguments():
         "str": str,
     }
 
-    parser = argparse.ArgumentParser(description="sysmon, a system monitor made in python | github.com/devlocalhost/sysmon")
+    parser = argparse.ArgumentParser(description="sysmon, a system monitor made in python | github.com/devlocalhost/sysmon", formatter_class=custom_help_formatter)
 
     with open("util/arguments.json") as arguments:
         data = json.load(arguments)
