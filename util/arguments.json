@@ -1,0 +1,104 @@
+[
+    {
+        "options": ["-nc", "--nocpuinfo"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disables cpuinfo (cpu information, like usage, model, and more)"
+        }
+    },
+    {
+        "options": ["-nm", "--nomeminfo"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disables meminfo (memory information, like total, used and more)"
+        }
+    },
+    {
+        "options": ["-nl", "--noloadavg"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disables loadavg (load times information, including uptime, and more)"
+        }
+    },
+    {
+        "options": ["-np", "--noprocpid"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disables procpid (shows the most vmrss consuming processes)"
+        }
+    },
+    {
+        "options": ["-nn", "--nonetstats"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disables network_stats (network stats, like received/transfered bytes, and more)"
+        }
+    },
+    {
+        "options": ["-nt", "--temp"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disables cpu temperature"
+        }
+    },
+    {
+        "options": ["-ns", "--swap"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disables swap information in meminfo"
+        }
+    },
+    {
+        "options": ["-nss", "--showsysmon"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disable sysmon stats in procpid"
+        }
+    },
+    {
+        "options": ["-ni", "--ip"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "disable IP in netstat"
+        }
+    },
+    {
+        "options": ["-m", "--metric"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "use metric (1000) instead of IEC (1024) unit for data conversion"
+        }
+    },
+    {
+        "options": ["-d", "--debug"],
+        "kwargs": {
+            "action": "store_true",
+            "help": "enable logs (debugging)"
+        }
+    },
+    {
+        "options": ["-p", "--procs"],
+        "kwargs": {
+            "type": "int",
+            "metavar": "INT",
+            "help": "how many processes to show in procpid. Default: 6"
+        }
+    },
+    {
+        "options": ["-s", "--sleep"],
+        "kwargs": {
+            "type": "float",
+            "default": 1,
+            "metavar": "FLOAT",
+            "help": "refresh time. Default: 1.0"
+        }
+    },
+    {
+        "options": ["-i", "--interface"],
+        "kwargs": {
+            "type": "str",
+            "help": "select which interface to use for netstats"
+        }
+    }
+]
+

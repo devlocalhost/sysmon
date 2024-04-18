@@ -8,6 +8,7 @@ made by dev64 (also known as .dev, devlocalhost)
 """
 
 import sys
+import json
 import curses
 import select
 import argparse
@@ -16,125 +17,34 @@ import importlib
 from datetime import datetime
 from util import util
 
-arguments = [
-    {
-        "options": ["-nc", "--nocpuinfo"],
-        "kwargs": {
-            "action": "store_true",
-            "help": "disables cpuinfo (cpu information, like usage, model, and more)",
-        },
-    },
-    {
-        "options": ["-nm", "--nomeminfo"],
-        "kwargs": {
-            "action": "store_true",
-            "help": "disables meminfo (memory information, like total, used and more)",
-        },
-    },
-    {
-        "options": ["-nl", "--noloadavg"],
-        "kwargs": {
-            "action": "store_true",
-            "help": "disables loadavg (load times information, including uptime, and more)",
-        },
-    },
-    {
-        "options": ["-np", "--noprocpid"],
-        "kwargs": {
-            "action": "store_true",
-            "help": "disables procpid (shows the most vmrss consuming processes)",
-        },
-    },
-    {
-        "options": ["-nn", "--nonetstats"],
-        "kwargs": {
-            "action": "store_true",
-            "help": "disables network_stats (network stats, like received/transfered "
-            "bytes, and more)",
-        },
-    },
-    {
-        "options": ["-nt", "--temp"],
-        "kwargs": {"action": "store_true", "help": "disables cpu temperature"},
-    },
-    {
-        "options": ["-ns", "--swap"],
-        "kwargs": {
-            "action": "store_true",
-            "help": "disables swap information in meminfo",
-        },
-    },
-    {
-        "options": ["-nss", "--showsysmon"],
-        "kwargs": {
-            "action": "store_true",
-            "help": "disable sysmon stats in procpid",
-        },
-    },
-    {
-        "options": ["-ni", "--ip"],
-        "kwargs": {
-            "action": "store_true",
-            "help": "disable IP in netstat",
-        },
-    },
-    {
-        "options": ["-m", "--metric"],
-        "kwargs": {
-            "action": "store_true",
-            "help": "use metric (1000) instead of IEC (1024) unit for data convertion",
-        },
-    },
-    {
-        "options": ["-d", "--debug"],
-        "kwargs": {
-            "action": "store_true",
-            "help": "enable logs (debugging)",
-        },
-    },
-    {
-        "options": ["-p", "--procs"],
-        "kwargs": {
-            "type": int,
-            "metavar": "INT",
-            "help": "how many processes to show in procpid. Default: 6",
-        },
-    },
-    {
-        "options": ["-s", "--sleep"],
-        "kwargs": {
-            "type": float,
-            "default": 1,
-            "metavar": "FLOAT",
-            "help": "refresh time. Default: 1.0",
-        },
-    },
-    {
-        "options": ["-i", "--interface"],
-        "kwargs": {
-            "type": str,
-            "help": "select which interface to use for netstats",
-        },
-    },
-]
-
 
 def custom_help_formatter(prog):
     """fixing the ugly looking help menu"""
 
-    return argparse.HelpFormatter(prog, max_help_position=46)
+    return argparse.HelpFormatter(prog, max_help_position=60)
 
 
 def parse_arguments():
     """create arguments"""
 
-    parser = argparse.ArgumentParser(
-        formatter_class=custom_help_formatter,
-        description="sysmon, a system monitor made in python | github.com/devlocalhost/sysmon",
-    )
+    types_map = {
+        "int": int,
+        "float": float,
+        "str": str,
+    }
 
-    for arg in arguments:
-        parser.add_argument(*arg["options"], **arg["kwargs"])
+    parser = argparse.ArgumentParser(description="sysmon, a system monitor made in python | github.com/devlocalhost/sysmon")
+
+    with open("util/arguments.json") as arguments:
+        data = json.load(arguments)
+
+        for arg in data:
+            # Get the type string from JSON and convert it to the actual type
+            arg_type = arg["kwargs"].get("type")
+            if arg_type:
+                arg["kwargs"]["type"] = types_map[arg_type]
+
+            parser.add_argument(*arg["options"], **arg["kwargs"])
 
     return parser.parse_args()
 
