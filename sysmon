@@ -41,7 +41,7 @@ def parse_arguments():
         for arg in data:
             # Get the type string from JSON and convert it to the actual type
             arg_type = arg["kwargs"].get("type")
-
+            
             if arg_type:
                 arg["kwargs"]["type"] = types_map[arg_type]
 
@@ -155,6 +155,9 @@ if __name__ == "__main__":
 
     if args.ip:
         util.SHOW_LOCAL_IP = False
+
+    if args.showsysmon:
+        util.SHOW_SYSMON = False
 
     if args.debug:
         util.DEBUGGING = True
