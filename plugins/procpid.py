@@ -3,6 +3,9 @@
 """procpid plugin for sysmon"""
 
 import os
+import sys
+
+
 from util.util import (
     en_open,
     to_bytes,
@@ -11,59 +14,35 @@ from util.util import (
 
 from util.logger import setup_logger
 
-# logger = setup_logger(__name__)
-
-# logger.debug("[init] initializing")
-
-# sysmon_pid = os.getpid()
-# logger.debug(f"[pid] sysmon pid: {sysmon_pid}")
-
 
 def read_process_status(pid):
     """get pid data, like name, state, vmrss"""
 
+    pid_data = {}
+
     try:
-        with en_open(f"/proc/{pid}/status") as status_file:
-            process_info = {}
-            vmrss_found = False
-            process_info["pid"] = pid
+        with en_open(f"/proc/{pid}/status") as pid_status_file:
+            pid_file_lines = {}
+            pid_data["pid"] = pid
 
-            for line in status_file:
-                parts = line.split()
+            for line in pid_status_file:
+                line = line.split()
 
-                if len(parts) >= 2:
-                    key = parts[0].rstrip(":")
+                key = line[0].rstrip(":").lower()
+                
+                try:
+                    value = line[1:][1].strip("(").strip(")").title() if key == "state" else line[1:][0]
 
-                    if (
-                        key == "Name"
-                        or key == "State"
-                        or (key == "VmRSS" and len(parts) >= 3)
-                    ):
-                        if key != "State":
-                            value = parts[1]
+                except IndexError:
+                    value = "!?!?"
+                    
+                pid_file_lines[key] = value
 
-                        else:
-                            value = (
-                                " ".join(parts[2:])
-                                .partition("(")[2]
-                                .partition(")")[0]
-                                .title()
-                                # parts[2].partition("(")[2].partition(")")[0].title()
-                                # " ".join(parts[:2]).partition("(")[2].partition(")")[0].title()
-                            )
+        return pid_file_lines
 
-                        process_info[key] = value
-
-                        if key == "VmRSS":
-                            vmrss_found = True
-
-            if vmrss_found:
-                return process_info
 
     except FileNotFoundError:
-        pass
-
-    return None
+        sys.exit(f"PID {pid} does not exist (anymore?)")
 
 
 class Procpid:
@@ -110,16 +89,16 @@ class Procpid:
         self.logger.debug("[get_data] sorting")
         
         processes = sorted(
-            processes, key=lambda x: int(x.get("VmRSS", 0)), reverse=True
+            processes, key=lambda x: int(x.get("vmrss", 0)), reverse=True
         )
 
         for proc_data in processes[:PROCS]:
             data["processes"].append(
                 {
-                    "name": proc_data["Name"],
+                    "name": proc_data["name"],
                     "pid": int(proc_data["pid"]),
-                    "vmrss": to_bytes(int(proc_data["VmRSS"])),
-                    "state": proc_data["State"],
+                    "vmrss": to_bytes(int(proc_data["vmrss"])),
+                    "state": proc_data["state"],
                 }
             )
 
