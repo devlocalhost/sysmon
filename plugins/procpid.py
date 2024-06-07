@@ -29,17 +29,20 @@ def read_process_status(pid):
                 line = line.split()
 
                 key = line[0].rstrip(":").lower()
-                
+
                 try:
-                    value = line[1:][1].strip("(").strip(")").title() if key == "state" else line[1:][0]
+                    value = (
+                        line[1:][1].strip("(").strip(")").title()
+                        if key == "state"
+                        else line[1:][0]
+                    )
 
                 except IndexError:
                     value = "!?!?"
-                    
+
                 pid_file_lines[key] = value
 
         return pid_file_lines
-
 
     except FileNotFoundError:
         sys.exit(f"PID {pid} does not exist (anymore?)")
@@ -87,7 +90,7 @@ class Procpid:
                 processes.append(process_info)
 
         self.logger.debug("[get_data] sorting")
-        
+
         processes = sorted(
             processes, key=lambda x: int(x.get("vmrss", 0)), reverse=True
         )
