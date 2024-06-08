@@ -32,16 +32,10 @@ def main():
 
     cpu_cores_phys = data["cores"]["physical"]
 
-    if cpu_cores_phys == 0:
-        if data["uses_smt"] is True:
-            cpu_cores_phys = data["cores"]["logical"] / 2
-
-        cpu_cores_phys = data["cores"]["logical"]  # um, what the fuck?
-
     output_text = (
         f"  --- /proc/cpuinfo {'-' * 47}\n"
         f"   Usage: {data['usage']:>5}% {arch_model_temp_line}" + "\n"
-        f"   Cores: {cpu_cores_phys}C/{data['cores']['logical']}T | Frequency: {data['frequency']:>7} MHz | Cache: {data['cache_type']} {data['cache_size']}\n"
+        f"   Cores: {data['cores']['physical']}C/{data['cores']['logical']}T | Frequency: {data['frequency']:>7} MHz | Cache: {data['cache_type']} {data['cache_size']}\n"
     )
 
     return output_text
