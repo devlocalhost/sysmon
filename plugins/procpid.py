@@ -32,7 +32,7 @@ def read_process_status(pid):
 
                 try:
                     value = (
-                        line[1:][1].strip("(").strip(")").title()
+                        " ".join(line[1:][1:]).strip("(").strip(")").title()
                         if key == "state"
                         else line[1:][0]
                     )
