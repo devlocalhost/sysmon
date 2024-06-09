@@ -229,9 +229,6 @@ if __name__ == "__main__":
     if args.ip:
         util.SHOW_LOCAL_IP = False
 
-    if args.showsysmon:
-        util.SHOW_SYSMON = False
-
     if args.debug:
         util.DEBUGGING = True
 
