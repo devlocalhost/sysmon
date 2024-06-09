@@ -116,7 +116,7 @@ class Cpuinfo:
                 "physical": 0,
                 "logical": 0,
             },
-            "uses_smt": "Unknown",
+            "uses_smt": False,
             "model": "Unknown",
             "architecture": "Unknown",
             "cache_type": "Unknown",
