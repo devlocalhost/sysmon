@@ -65,7 +65,7 @@ class Cpuinfo:
 
         self.temperature_file = self.set_temperature_file()
 
-        try:  # FIXME: there has to be a better way for this
+        try:
             self.core_file = en_open(
                 "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"
             )
@@ -153,6 +153,7 @@ class Cpuinfo:
             self.logger.debug(f"[get_static_info] buffer_cores_phys: {buffer_cores_phys}")
             self.logger.debug(f"[get_static_info] buffer_cores_log: {buffer_cores_log}")
 
+            # getting cpu cache size & type
             cpu_utils.get_cache_size(buffer)
             output = buffer.value.decode().split(".")
 
@@ -163,7 +164,7 @@ class Cpuinfo:
         except OSError as exc:
             self.logger.debug(f"[get_static_info] failed, {exc}")
 
-        try:
+        try:  # finding out if cpu uses smt (is this even needed??)
             with en_open("/sys/devices/system/cpu/smt/active") as smt_file:
                 content = smt_file.read().strip()
 
@@ -283,7 +284,7 @@ class Cpuinfo:
 
         self.logger.debug(f"[set_temperature_file] {combined_dirs}")
 
-        for temp_dir in combined_dirs:  # NEEDS TESTING
+        for temp_dir in combined_dirs:
             sensor_type_file = (
                 os.path.join(temp_dir, "type")
                 if os.path.isfile(os.path.join(temp_dir, "type"))
