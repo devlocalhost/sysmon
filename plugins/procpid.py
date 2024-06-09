@@ -45,7 +45,7 @@ def read_process_status(pid):
         return pid_file_lines
 
     except FileNotFoundError:
-        sys.exit(f"PID {pid} does not exist (anymore?)")
+        pass
 
 
 class Procpid:
