@@ -116,7 +116,7 @@ class Cpuinfo:
                 "physical": 0,
                 "logical": 0,
             },
-            "uses_smt": False,
+            "uses_smt": "Unknown",
             "model": "Unknown",
             "architecture": "Unknown",
             "cache_type": "Unknown",
@@ -150,6 +150,9 @@ class Cpuinfo:
                 data_dict["cores"]["physical"] = buffer_cores_phys
                 data_dict["cores"]["logical"] = buffer_cores_log
 
+            self.logger.debug(f"[get_static_info] buffer_cores_phys: {buffer_cores_phys}")
+            self.logger.debug(f"[get_static_info] buffer_cores_log: {buffer_cores_log}")
+
             cpu_utils.get_cache_size(buffer)
             output = buffer.value.decode().split(".")
 
@@ -170,59 +173,53 @@ class Cpuinfo:
         except (FileNotFoundError, PermissionError):
             pass
 
-        if data_dict["cores"]["logical"] == 0:
-            data_dict["cores"]["logical"] = os.sysconf(
-                os.sysconf_names["SC_NPROCESSORS_CONF"]
-            )
-
         try:  # reading from cpuinfo file
-            cpuinfo_file = en_open("/proc/cpuinfo")
+            with en_open("/proc/cpuinfo") as cpuinfo_file:
+                cpuinfo_file_data = {}
+
+                for line in cpuinfo_file:
+                    if line.strip():
+                        key, value = [s.strip() for s in line.split(":", 1)]
+                        cpuinfo_file_data[key.replace(" ", "_").lower()] = value
+
+                # self.logger.debug(f"[cpuinfo file] {cpu_info}")
+
+                if (
+                    "arm" not in data_dict["architecture"]
+                    and "aarch" not in data_dict["architecture"]
+                ):
+                    # this code applies only for desktop platforms
+
+                    cache = cpuinfo_file_data.get("cache_size")
+                    frequency = cpuinfo_file_data.get("cpu_mhz")
+
+                    if data_dict["cache_size"] == "Unknown" and cache:
+                        self.logger.debug("[get_static_info] fallback to /proc/cpuinfo cache")
+
+                        data_dict["cache"] = convert_bytes(to_bytes(int(cache.split()[0])))
+
+                    if frequency:
+                        data_dict["frequency"] = round(float(frequency), 2)
+
+                    model = clean_cpu_model(cpuinfo_file_data.get("model_name"))
+
+                else:  # in case this is an arm system, grab hardware
+                    model = clean_cpu_model(cpuinfo_file_data.get("hardware"))
+
+            data_dict["model"] = model if len(model) < 25 else model[:22] + "..."
+
+            return data_dict
 
         except FileNotFoundError:
-            sys.exit("Couldnt find /proc/stat file")
+            sys.exit("Couldnt find /proc/cpuinfo file")
 
         except PermissionError:
             sys.exit(
-                "Couldnt read the file. Do you have read permissions for /proc/stat file?"
+                "Couldnt read the file. Do you have read permissions for /proc/cpuinfo file?"
             )
 
-        if cpuinfo_file:
-            cpu_info = {}
 
-            for line in cpuinfo_file:
-                if line.strip():
-                    key, value = [s.strip() for s in line.split(":", 1)]
-                    cpu_info[key.replace(" ", "_").lower()] = value
-
-            # self.logger.debug(f"[cpuinfo file] {cpu_info}")
-
-            if (
-                "arm" not in data_dict["architecture"]
-                and "aarch" not in data_dict["architecture"]
-            ):
-                # this code applies only for desktop platforms
-
-                cache = cpu_info.get("cache_size")
-                frequency = cpu_info.get("cpu_mhz")
-
-                if data_dict["cache_size"] == "Unknown" and cache:
-                    self.logger.debug("[get_static_info] fallback to /proc/cpuinfo cache")
-
-                    data_dict["cache"] = convert_bytes(to_bytes(int(cache.split()[0])))
-
-                if frequency:
-                    data_dict["frequency"] = round(float(frequency), 2)
-
-                model = clean_cpu_model(cpu_info.get("model_name"))
-
-            else:  # in case this is an arm system, grab hardware
-                model = clean_cpu_model(cpu_info.get("hardware"))
-
-        data_dict["model"] = model if len(model) < 25 else model[:22] + "..."
-
-        return data_dict
-
-    def cpu_freq(self):  # FIXME
+    def cpu_freq(self):
         """get cpu frequency"""
 
         if self.core_file:
@@ -230,7 +227,7 @@ class Cpuinfo:
 
             return round(int(self.core_file.read().strip()) / 1000, 2)
 
-        return self.static_data["frequency"]  # FIXME
+        return self.static_data["frequency"]
 
     def cpu_usage(self):
         """/proc/stat - cpu usage of the system"""
@@ -316,7 +313,6 @@ class Cpuinfo:
         """/proc/cpuinfo - cpu information"""
 
         data = {
-            # "static": self.get_static_info(),
             "temperature": None,
             "usage": self.cpu_usage(),
         }
@@ -324,9 +320,6 @@ class Cpuinfo:
         data = data | self.get_static_info()  # merge the two dicts into one
 
         data["frequency"] = self.cpu_freq()
-
-        # the dict self.get_static_info() is not into static key anymore
-        # because i think its better this way
 
         if self.temperature_file:
             self.temperature_file.seek(0)
