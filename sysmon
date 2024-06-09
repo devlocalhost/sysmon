@@ -65,13 +65,6 @@ arguments = [
         },
     },
     {
-        "options": ["-nss", "--showsysmon"],
-        "kwargs": {
-            "action": "store_true",
-            "help": "disable sysmon stats in procpid",
-        },
-    },
-    {
         "options": ["-ni", "--ip"],
         "kwargs": {
             "action": "store_true",
@@ -197,13 +190,6 @@ def start_sysmon(stdscr, plugins, sleep):
 def main():
     """execute sysmon"""
 
-    # plugins_array = [
-    #     "plugins.cpuinfo",
-    #     "plugins.meminfo",
-    #     "plugins.loadavg",
-    #     "plugins.procpid",
-    #     "plugins.netstats",
-    # ]
     plugins_array = [
         "formatters.cpuinfo",
         "formatters.meminfo",
