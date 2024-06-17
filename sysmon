@@ -197,6 +197,7 @@ def main():
         "formatters.loadavg",
         "formatters.procpid",
         "formatters.netstats",
+        "formatters.battery",
     ]
 
     for argument in args.__dict__:
