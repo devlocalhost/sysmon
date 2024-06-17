@@ -22,7 +22,7 @@ def read_process_status(pid):
 
     try:
         with en_open(f"/proc/{pid}/status") as pid_status_file:
-            pid_file_lines = {}
+            process_data = {}
             pid_data["pid"] = pid
 
             for line in pid_status_file:
@@ -40,9 +40,21 @@ def read_process_status(pid):
                 except IndexError:
                     value = "!?!?"
 
-                pid_file_lines[key] = value
+                process_data[key] = value
 
-        return pid_file_lines
+                try:
+                    pid_exe = os.readlink(f"/proc/{pid}/exe").split("/")[3]
+
+                    process_data["name"] = pid_exe
+
+                    if len(pid_exe) > 19:
+                        process_data["name"] = pid_exe[:19] + "..."
+
+                except PermissionError:
+                    # i only faced this issue when io was testing with Xorg.
+                    pass
+
+        return process_data
 
     except FileNotFoundError:
         pass
