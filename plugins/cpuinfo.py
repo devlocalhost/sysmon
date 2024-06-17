@@ -112,10 +112,11 @@ class Cpuinfo:
 
         data_dict = {
             "frequency": "Unknown",
-            "cores": {
-                "physical": 0,
-                "logical": 0,
-            },
+            "cores": 0,
+            # "cores": {
+                # "physical": 0,
+                # "logical": 0,
+            # },
             "uses_smt": False,
             "model": "Unknown",
             "architecture": "Unknown",
@@ -139,19 +140,22 @@ class Cpuinfo:
                 self.logger.debug("[get_static_info] using global lib")
                 cpu_utils = ctypes.CDLL("sysmon_cpu_utils.so")
 
-            buffer_cores_phys = cpu_utils.get_cores(1)
-            buffer_cores_log = cpu_utils.get_cores(0)
+            # buffer_cores_phys = cpu_utils.get_cores(1)
+            # buffer_cores_log = cpu_utils.get_cores(0)
 
-            if (
-                buffer_cores_phys < buffer_cores_log
-                and buffer_cores_log != 0
-                and buffer_cores_phys != 0
-            ):
-                data_dict["cores"]["physical"] = buffer_cores_phys
-                data_dict["cores"]["logical"] = buffer_cores_log
+            # if (
+            #     buffer_cores_phys < buffer_cores_log
+            #     and buffer_cores_log != 0
+            #     and buffer_cores_phys != 0
+            # ):
+            #     data_dict["cores"]["physical"] = buffer_cores_phys
+            #     data_dict["cores"]["logical"] = buffer_cores_log
 
-            self.logger.debug(f"[get_static_info] buffer_cores_phys: {buffer_cores_phys}")
-            self.logger.debug(f"[get_static_info] buffer_cores_log: {buffer_cores_log}")
+            # self.logger.debug(f"[get_static_info] buffer_cores_phys: {buffer_cores_phys}")
+            # self.logger.debug(f"[get_static_info] buffer_cores_log: {buffer_cores_log}")
+
+            with open("/sys/devices/system/cpu/present") as present_cores:
+                data_dict["cores"] = int(present_cores.read().strip().split("-")[1]) + 1
 
             # getting cpu cache size & type
             cpu_utils.get_cache_size(buffer)

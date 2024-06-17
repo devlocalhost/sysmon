@@ -30,12 +30,10 @@ def main():
     else:
         arch_model_temp_line = f"| CPU: {data['architecture']} {data['model']}"
 
-    cpu_cores_phys = data["cores"]["physical"]
-
     output_text = (
         f"  --- /proc/cpuinfo {'-' * 47}\n"
         f"   Usage: {data['usage']:>5}% {arch_model_temp_line}" + "\n"
-        f"   Cores: {data['cores']['physical']}C/{data['cores']['logical']}T | Frequency: {data['frequency']:>7} MHz | Cache: {data['cache_type']} {data['cache_size']}\n"
+        f"   Cores: {data['cores']} | Frequency: {data['frequency']:>7} MHz | Cache: {data['cache_type']} {data['cache_size']}\n"
     )
 
     return output_text
