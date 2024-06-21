@@ -126,6 +126,9 @@ class Cpuinfo:
 
         data_dict["architecture"] = platform.machine()
 
+        with open("/sys/devices/system/cpu/present") as present_cores:
+            data_dict["cores"] = int(present_cores.read().strip().split("-")[1]) + 1
+
         try:  # getting cache using the c library
             buffer = ctypes.create_string_buffer(64)
             buffer_cores_phys = ctypes.c_uint
@@ -153,9 +156,6 @@ class Cpuinfo:
 
             # self.logger.debug(f"[get_static_info] buffer_cores_phys: {buffer_cores_phys}")
             # self.logger.debug(f"[get_static_info] buffer_cores_log: {buffer_cores_log}")
-
-            with open("/sys/devices/system/cpu/present") as present_cores:
-                data_dict["cores"] = int(present_cores.read().strip().split("-")[1]) + 1
 
             # getting cpu cache size & type
             cpu_utils.get_cache_size(buffer)
