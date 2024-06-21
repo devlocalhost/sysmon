@@ -47,8 +47,8 @@ def read_process_status(pid):
 
                     process_data["name"] = pid_exe
 
-                    if len(pid_exe) > 21:
-                        process_data["name"] = pid_exe[:21] + "..."
+                    if len(pid_exe) > 19:
+                        process_data["name"] = pid_exe[:19] + "..."
 
                 except PermissionError:
                     # i only faced this issue when io was testing with Xorg.
