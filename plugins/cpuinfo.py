@@ -129,7 +129,7 @@ class Cpuinfo:
         with open("/sys/devices/system/cpu/present") as present_cores:
             data_dict["cores"] = int(present_cores.read().strip().split("-")[1]) + 1
 
-        core_last_index = glob.glob("/sys/devices/system/cpu/cpu0/cache/index*/")[0]
+        core_last_index = sorted(glob.glob("/sys/devices/system/cpu/cpu0/cache/index*/"))[-1]
 
         with open(os.path.join(core_last_index, "size")) as cache_size:
             data_dict["cache"]["size"] = convert_bytes(to_bytes(int(cache_size.read().lower().replace("k", "").strip())))
