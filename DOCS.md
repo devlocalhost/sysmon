@@ -68,27 +68,27 @@ Format the retrieved data as required; the output is in JSON format. You can als
 The `cpuinfo` plugin provides detailed information about the CPU, including:
 
 - `architecture`: CPU architecture
-- `cache_size`: Cache size (human-readable format)
-- `cache_type`: Cache type
-- `logical`: Logical cores count
-- `physical`: Physical cores count
+- `cache`:
+  1. `size`: size (human-readable format)
+  2. `level`: level
+- `cores`: cores count¹
 - `frequency`: CPU frequency
 - `model`: CPU model
 - `uses_smt`: Whether CPU uses simultaneous multithreading (SMT)
 - `temperature`: CPU temperature in Celsius
 - `usage`: CPU usage
 
+¹: cores count could be physical OR logical. the value is taken from /sys/devices/system/cpu/present.
+
 ### Output
 ```
 {'architecture': 'x86_64',
- 'cache_size': '3.00 MiB',
- 'cache_type': 'L2',
- 'cores': {'logical': 2, 'physical': 0},
- 'frequency': 1064.02,
+ 'cache': {'level': 'L2', 'size': '3.00 MiB'},
+ 'cores': 2,
+ 'frequency': 1063.99,
  'model': 'Intel Core2 Duo P7450',
- 'temperature': 50.0,
- 'usage': 77.0,
- 'uses_smt': False}
+ 'temperature': 48.0,
+ 'usage': 21.7}
 ```
 
 ## meminfo Plugin
