@@ -5,7 +5,6 @@
 import os
 import sys
 import glob
-import ctypes
 import platform
 
 from util.util import (
@@ -127,45 +126,6 @@ class Cpuinfo:
 
         with open("/sys/devices/system/cpu/present") as present_cores:
             data_dict["cores"] = int(present_cores.read().strip().split("-")[1]) + 1
-
-        try:  # getting cache using the c library
-            buffer = ctypes.create_string_buffer(64)
-            buffer_cores_phys = ctypes.c_uint
-            buffer_cores_log = ctypes.c_uint
-
-            # prioritize in-tree shared object
-            if os.path.exists("util/sysmon_cpu_utils.so"):
-                self.logger.debug("[get_static_info] using lib from util/")
-                cpu_utils = ctypes.CDLL("util/sysmon_cpu_utils.so")
-
-            else:
-                self.logger.debug("[get_static_info] using global lib")
-                cpu_utils = ctypes.CDLL("sysmon_cpu_utils.so")
-
-            # buffer_cores_phys = cpu_utils.get_cores(1)
-            # buffer_cores_log = cpu_utils.get_cores(0)
-
-            # if (
-            #     buffer_cores_phys < buffer_cores_log
-            #     and buffer_cores_log != 0
-            #     and buffer_cores_phys != 0
-            # ):
-            #     data_dict["cores"]["physical"] = buffer_cores_phys
-            #     data_dict["cores"]["logical"] = buffer_cores_log
-
-            # self.logger.debug(f"[get_static_info] buffer_cores_phys: {buffer_cores_phys}")
-            # self.logger.debug(f"[get_static_info] buffer_cores_log: {buffer_cores_log}")
-
-            # getting cpu cache size & type
-            cpu_utils.get_cache_size(buffer)
-            output = buffer.value.decode().split(".")
-
-            if output[0] != "Unknown":
-                data_dict["cache_size"] = convert_bytes(int(output[0]))
-                data_dict["cache_type"] = output[1]
-
-        except OSError as exc:
-            self.logger.debug(f"[get_static_info] failed, {exc}")
 
         try:  # reading from cpuinfo file
             with en_open("/proc/cpuinfo") as cpuinfo_file:
