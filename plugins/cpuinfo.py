@@ -118,14 +118,24 @@ class Cpuinfo:
             # },
             "model": "Unknown",
             "architecture": "Unknown",
-            "cache_type": "Unknown",
-            "cache_size": "Unknown",
+            "cache": {
+                "level": "Unknown",
+                "size": "Unknown",
+            }
         }
 
         data_dict["architecture"] = platform.machine()
 
         with open("/sys/devices/system/cpu/present") as present_cores:
             data_dict["cores"] = int(present_cores.read().strip().split("-")[1]) + 1
+
+        core_last_index = glob.glob("/sys/devices/system/cpu/cpu0/cache/index*/")[0]
+
+        with open(os.path.join(core_last_index, "size")) as cache_size:
+            data_dict["cache"]["size"] = convert_bytes(to_bytes(int(cache_size.read().lower().replace("k", "").strip())))
+
+        with open(os.path.join(core_last_index, "level")) as cache_level:
+            data_dict["cache"]["level"] = "L" + cache_level.read().strip()
 
         try:  # reading from cpuinfo file
             with en_open("/proc/cpuinfo") as cpuinfo_file:
@@ -147,10 +157,10 @@ class Cpuinfo:
                     cache = cpuinfo_file_data.get("cache_size")
                     frequency = cpuinfo_file_data.get("cpu_mhz")
 
-                    if data_dict["cache_size"] == "Unknown" and cache:
+                    if data_dict["cache"]["size"] == "Unknown" and cache:
                         self.logger.debug("[get_static_info] fallback to /proc/cpuinfo cache")
 
-                        data_dict["cache"] = convert_bytes(to_bytes(int(cache.split()[0])))
+                        data_dict["cache"]["size"] = convert_bytes(to_bytes(int(cache.split()[0])))
 
                     if frequency:
                         data_dict["frequency"] = round(float(frequency), 2)
