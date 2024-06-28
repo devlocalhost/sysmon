@@ -117,7 +117,6 @@ class Cpuinfo:
                 # "physical": 0,
                 # "logical": 0,
             # },
-            "uses_smt": False,
             "model": "Unknown",
             "architecture": "Unknown",
             "cache_type": "Unknown",
@@ -167,16 +166,6 @@ class Cpuinfo:
 
         except OSError as exc:
             self.logger.debug(f"[get_static_info] failed, {exc}")
-
-        try:  # finding out if cpu uses smt (is this even needed??)
-            with en_open("/sys/devices/system/cpu/smt/active") as smt_file:
-                content = smt_file.read().strip()
-
-                if content == "1":
-                    data_dict["uses_smt"] = True
-
-        except (FileNotFoundError, PermissionError):
-            pass
 
         try:  # reading from cpuinfo file
             with en_open("/proc/cpuinfo") as cpuinfo_file:
