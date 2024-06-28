@@ -42,6 +42,14 @@ def read_process_status(pid):
 
                 pid_file_lines[key] = value
 
+        with open(f"/proc/{pid}/cmdline") as pid_cmdline:
+            exec_name = pid_cmdline.read().replace('\x00',' ').strip().split("/")[-1].split(" ")[0]
+
+            if len(exec_name) > 22:
+                exec_name = exec_name[:19] + "..."
+
+            pid_file_lines["name"] = exec_name
+
         return pid_file_lines
 
     except FileNotFoundError:
