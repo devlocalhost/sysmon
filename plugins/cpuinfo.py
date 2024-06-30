@@ -262,7 +262,7 @@ class Cpuinfo:
                     self.logger.debug(f"[set_temperature_file] {temp_dir}: {sensor_type}")
 
                     if sensor_type in allowed_types:
-                        temperature_files = glob.glob(os.path.join(temp_dir, "temp*"))
+                        temperature_files = glob.glob(os.path.join(temp_dir, "temp*_input*"))
 
                         if temperature_files:
                             self.logger.debug(f"[set_temperature_file] using {temperature_files[-1]} as sensor file")
