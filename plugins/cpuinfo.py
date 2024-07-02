@@ -131,11 +131,15 @@ class Cpuinfo:
 
         core_last_index = sorted(glob.glob("/sys/devices/system/cpu/cpu0/cache/index*/"))[-1]
 
-        with open(os.path.join(core_last_index, "size")) as cache_size:
-            data_dict["cache"]["size"] = convert_bytes(to_bytes(int(cache_size.read().lower().replace("k", "").strip())))
+        try:
+            with open(os.path.join(core_last_index, "size")) as cache_size:
+                data_dict["cache"]["size"] = convert_bytes(to_bytes(int(cache_size.read().lower().replace("k", "").strip())))
 
-        with open(os.path.join(core_last_index, "level")) as cache_level:
-            data_dict["cache"]["level"] = "L" + cache_level.read().strip()
+            with open(os.path.join(core_last_index, "level")) as cache_level:
+                data_dict["cache"]["level"] = "L" + cache_level.read().strip()
+
+        except FileNotFoundError:
+            self.logger.debug(f"[get_static_info]: 'size' or 'level' files not found? available files in core_last_index: {os.listdir(core_last_index)}")
 
         try:  # reading from cpuinfo file
             with en_open("/proc/cpuinfo") as cpuinfo_file:
