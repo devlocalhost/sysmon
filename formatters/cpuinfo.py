@@ -4,7 +4,7 @@
 formatter for cpuinfo plugin
 """
 
-from util.util import SHOW_TEMPERATURE
+from util.util import SHOW_TEMPERATURE, convert_bytes
 from plugins import cpuinfo
 
 cpuinfo_class = cpuinfo.Cpuinfo()
@@ -40,7 +40,7 @@ def main():
     output_text = (
         f"  --- /proc/cpuinfo {'-' * 47}\n"
         f"   Usage: {data['usage']:>5}% {arch_model_temp_line}" + "\n"
-        f"   {cores_count_text} | Frequency: {data['frequency']:>7} MHz | Cache: {data['cache']['level']} {data['cache']['size']}\n"
+        f"   {cores_count_text} | Frequency: {data['frequency']:>7} MHz | Cache: {data['cache']['level']} {convert_bytes(data['cache']['size'])}\n"
     )
 
     return output_text

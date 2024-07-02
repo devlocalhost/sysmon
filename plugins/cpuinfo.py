@@ -111,7 +111,6 @@ class Cpuinfo:
 
         data_dict = {
             "frequency": "Unknown",
-            # "cores": 0,
             "cores": {
                 "physical": 0,
                 "logical": 0,
@@ -133,7 +132,7 @@ class Cpuinfo:
 
         try:
             with open(os.path.join(core_last_index, "size")) as cache_size:
-                data_dict["cache"]["size"] = convert_bytes(to_bytes(int(cache_size.read().lower().replace("k", "").strip())))
+                data_dict["cache"]["size"] = to_bytes(int(cache_size.read().lower().replace("k", "").strip()))
 
             with open(os.path.join(core_last_index, "level")) as cache_level:
                 data_dict["cache"]["level"] = "L" + cache_level.read().strip()
@@ -165,7 +164,7 @@ class Cpuinfo:
                     if data_dict["cache"]["size"] == "Unknown" and cache:
                         self.logger.debug("[get_static_info] fallback to /proc/cpuinfo cache")
 
-                        data_dict["cache"]["size"] = convert_bytes(to_bytes(int(cache.split()[0])))
+                        data_dict["cache"]["size"] = to_bytes(int(cache.split()[0]))
 
                     if frequency:
                         data_dict["frequency"] = round(float(frequency), 2)

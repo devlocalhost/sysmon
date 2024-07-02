@@ -69,7 +69,7 @@ The `cpuinfo` plugin provides detailed information about the CPU, including:
 
 - `architecture`: CPU architecture
 - `cache`:
-  1. `size`: size (human-readable format)
+  1. `size`: size (in bytes)
   2. `level`: level
 - `cores`:
   1. `physical`: physical cores count
@@ -83,7 +83,7 @@ The `cpuinfo` plugin provides detailed information about the CPU, including:
 ### Output
 ```
 {'architecture': 'x86_64',
- 'cache': {'level': 'L2', 'size': '3.00 MiB'},
+ 'cache': {'level': 'L2', 'size': 3145728},
  'cores': {'logical': 2, 'physical': 2},
  'frequency': 1064.03,
  'model': 'Intel Core2 Duo P7450',
