@@ -30,10 +30,17 @@ def main():
     else:
         arch_model_temp_line = f"| CPU: {data['architecture']} {data['model']}"
 
+
+    cores_count_text = f"Cores: {data['cores']['physical']}C/{data['cores']['logical']}T" if data["cores"]["physical"] != 0 else f"Cores: {data['cores']['logical']}"
+    # this fuckery can only happen on arm platforms  since for some
+    # fucking reason some retard thought it would be a good idea for
+    # the cpuinfo file to be different on x86 and arm platforms
+    # fuck you.
+
     output_text = (
         f"  --- /proc/cpuinfo {'-' * 47}\n"
         f"   Usage: {data['usage']:>5}% {arch_model_temp_line}" + "\n"
-        f"   Cores: {data['cores']} | Frequency: {data['frequency']:>7} MHz | Cache: {data['cache']['level']} {data['cache']['size']}\n"
+        f"   {cores_count_text} | Frequency: {data['frequency']:>7} MHz | Cache: {data['cache']['level']} {data['cache']['size']}\n"
     )
 
     return output_text

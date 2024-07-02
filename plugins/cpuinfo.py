@@ -111,11 +111,11 @@ class Cpuinfo:
 
         data_dict = {
             "frequency": "Unknown",
-            "cores": 0,
-            # "cores": {
-                # "physical": 0,
-                # "logical": 0,
-            # },
+            # "cores": 0,
+            "cores": {
+                "physical": 0,
+                "logical": 0,
+            },
             "model": "Unknown",
             "architecture": "Unknown",
             "cache": {
@@ -127,7 +127,7 @@ class Cpuinfo:
         data_dict["architecture"] = platform.machine()
 
         with open("/sys/devices/system/cpu/present") as present_cores:
-            data_dict["cores"] = int(present_cores.read().strip().split("-")[1]) + 1
+            data_dict["cores"]["logical"] = int(present_cores.read().strip().split("-")[1]) + 1
 
         core_last_index = sorted(glob.glob("/sys/devices/system/cpu/cpu0/cache/index*/"))[-1]
 
@@ -150,13 +150,14 @@ class Cpuinfo:
                         key, value = [s.strip() for s in line.split(":", 1)]
                         cpuinfo_file_data[key.replace(" ", "_").lower()] = value
 
-                # self.logger.debug(f"[cpuinfo file] {cpu_info}")
-
                 if (
                     "arm" not in data_dict["architecture"]
                     and "aarch" not in data_dict["architecture"]
                 ):
                     # this code applies only for desktop platforms
+
+                    cpuinfo_file.seek(0)
+                    data_dict["cores"]["physical"] = sum(1 for item in list(set(cpuinfo_file.readlines())) if "core id" in item)
 
                     cache = cpuinfo_file_data.get("cache_size")
                     frequency = cpuinfo_file_data.get("cpu_mhz")
