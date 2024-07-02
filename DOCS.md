@@ -71,24 +71,24 @@ The `cpuinfo` plugin provides detailed information about the CPU, including:
 - `cache`:
   1. `size`: size (human-readable format)
   2. `level`: level
-- `cores`: cores count¹
+- `cores`:
+  1. `physical`: physical cores count
+  2. `logical`: logical cores count
 - `frequency`: CPU frequency
 - `model`: CPU model
 - `uses_smt`: Whether CPU uses simultaneous multithreading (SMT)
 - `temperature`: CPU temperature in Celsius
 - `usage`: CPU usage
 
-¹: cores count could be physical OR logical. the value is taken from /sys/devices/system/cpu/present.
-
 ### Output
 ```
 {'architecture': 'x86_64',
  'cache': {'level': 'L2', 'size': '3.00 MiB'},
- 'cores': 2,
- 'frequency': 1063.99,
+ 'cores': {'logical': 2, 'physical': 2},
+ 'frequency': 1064.03,
  'model': 'Intel Core2 Duo P7450',
- 'temperature': 48.0,
- 'usage': 21.7}
+ 'temperature': 45.0,
+ 'usage': 94.2}
 ```
 
 ## meminfo Plugin
