@@ -124,14 +124,15 @@ The `loadavg` plugin provides load times, uptime, and boot time information. It 
 
 - `entities`: Active and total running processes
 - `load_times`: System load for 1, 5, and 15 minutes
-- `uptime`: System uptime and boot time
+- `uptime`:
+  1. `seconds`: uptime, in seconds
+  2. `timestamp`: unix timestamp. use strftime to convert it to human readable format
 
 ### Output
 ```
-{'entities': {'active': 2, 'total': 1526},
- 'load_times': {'1': 1.94, '15': 1.94, '5': 2.21},
- 'uptime': {'since': 'Thursday February 22 2024, 03:37:58 PM',
-            'uptime': '3 hours, and 17 minutes'}}
+{'entities': {'active': 4, 'total': 557},
+ 'load_times': {'1': 1.26, '15': 1.0, '5': 1.11},
+ 'uptime': {'seconds': 166860, 'timestamp': 1719750035.6097515}}
 ```
 
 ## procpid Plugin
