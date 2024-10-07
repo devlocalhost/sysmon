@@ -29,8 +29,7 @@ def main():
             data["physical"]["values"]["used"] + data["virtual"]["values"]["used"]
         )
         combined_total_available = (
-            data["physical"]["values"]["available"]
-            + data["virtual"]["values"]["available"]
+            data["physical"]["values"]["available"] + data["virtual"]["values"]["free"]
         )
 
         combined_used_percent = round(
@@ -44,7 +43,7 @@ def main():
         combined_available_percent = round(
             (
                 data["physical"]["percentage"]["available"]
-                + data["virtual"]["percentage"]["available"]
+                + data["virtual"]["percentage"]["free"]
             )
             / 2,
             1,
@@ -55,10 +54,10 @@ def main():
             f"     RAM: {' ' * 25}Swap:\n",
             f"         Total: {convert_bytes(data['physical']['values']['total'])}",
             f"          Used: {convert_bytes(data['physical']['values']['used'])} ({data['physical']['percentage']['used']}%)",
-            f"   Actual Used: {convert_bytes(data['physical']['values']['actual_used'])} ({data['physical']['percentage']['actual_used']}%)\n",
-            f"     Available: {convert_bytes(data['physical']['values']['available'])} ({data['physical']['percentage']['available']}%)",
-            f"          Free: {convert_bytes(data['physical']['values']['free'])} ({data['physical']['percentage']['free']}%)\n",
-            f"        Cached: {convert_bytes(data['physical']['values']['cached'])}",
+            f"      Ac. Used: {convert_bytes(data['physical']['values']['actual_used'])} ({data['physical']['percentage']['actual_used']}%)\n",
+            f"     Available: {convert_bytes(data['physical']['values']['available'])} ({data['physical']['percentage']['available']}%)\n",
+            f"          Free: {convert_bytes(data['physical']['values']['free'])} ({data['physical']['percentage']['free']}%)",
+            f"        Cached: {convert_bytes(data['physical']['values']['cached'])} ({data['physical']['percentage']['cached']}%)",
             f"   - Combined: {'- ' * 26}\n",
             f"         Total: {convert_bytes(combined_total_memory)}",
             f"     Available: {convert_bytes(combined_total_available)} ({combined_available_percent}%)",
@@ -86,10 +85,10 @@ def main():
             + " " * max(0, 41 - len(output_list_phys_virt[3]))
             + f"Used: {convert_bytes(data['virtual']['values']['used'])} ({data['virtual']['percentage']['used']}%)\n"
         )
-        output_list_phys_virt[5] = (
-            output_list_phys_virt[5]
-            + " " * max(0, 36 - len(output_list_phys_virt[5]))
-            + f"Available: {convert_bytes(data['virtual']['values']['available'])} ({data['virtual']['percentage']['available']}%)\n"
+        output_list_phys_virt[6] = (
+            output_list_phys_virt[6]
+            + " " * max(0, 36 - len(output_list_phys_virt[6]))
+            + f"     Free: {convert_bytes(data['virtual']['values']['free'])} ({data['virtual']['percentage']['free']}%)\n"
         )
         output_list_phys_virt[7] = (
             output_list_phys_virt[7]
@@ -103,8 +102,8 @@ def main():
         )
         output_list_phys_virt[10] = (
             output_list_phys_virt[10]
-            + " " * max(0, 34 - len(output_list_phys_virt[10]))
-            + f"Actual Used: {convert_bytes(combined_total_actual_used)}\n"
+            + " " * max(0, 37 - len(output_list_phys_virt[10]))
+            + f"Ac. Used: {convert_bytes(combined_total_actual_used)}\n"
         )
 
         return "".join(output_list_phys_virt)
@@ -131,13 +130,13 @@ def main():
     )
     output_list_phys[3] = (
         output_list_phys[3]
-        + " " * max(0, 34 - len(output_list_phys[3]))
-        + f"Actual Used: {convert_bytes(data['physical']['values']['actual_used'])} ({data['physical']['percentage']['actual_used']}%)\n"
+        + " " * max(0, 37 - len(output_list_phys[3]))
+        + f"Ac. Used: {convert_bytes(data['physical']['values']['actual_used'])} ({data['physical']['percentage']['actual_used']}%)\n"
     )
     output_list_phys[4] = (
         output_list_phys[4]
         + " " * max(0, 39 - len(output_list_phys[4]))
-        + f"Cached: {convert_bytes(data['physical']['values']['cached'])}\n"
+        + f"Cached: {convert_bytes(data['physical']['values']['cached'])} ({data['physical']['percentage']['cached']}%)\n"
     )
 
     return "".join(output_list_phys)

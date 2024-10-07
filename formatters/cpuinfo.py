@@ -4,7 +4,7 @@
 formatter for cpuinfo plugin
 """
 
-from util.util import SHOW_TEMPERATURE
+from util.util import SHOW_TEMPERATURE, convert_bytes
 from plugins import cpuinfo
 
 cpuinfo_class = cpuinfo.Cpuinfo()
@@ -30,27 +30,33 @@ def main():
     else:
         arch_model_temp_line = f"| CPU: {data['architecture']} {data['model']}"
 
-    cpu_cores_phys = data["cores"]["physical"]
-
-    if cpu_cores_phys == 0:
-        if data["uses_smt"] is True:
-            cpu_cores_phys = data["cores"]["logical"] / 2
-
-        cpu_cores_phys = data["cores"]["logical"]  # um, what the fuck?
-
-    output_text = (
-        f"  --- /proc/cpuinfo {'-' * 47}\n"
-        f"   Usage: {data['usage']:>5}% {arch_model_temp_line}" + "\n"
-        f"   Cores: {cpu_cores_phys}c/{data['cores']['logical']}t | Frequency: {data['frequency']:>7} MHz | Cache: {data['cache_size']}"
+    cores_count_text = (
+        f"Cores: {data['cores']['physical']}C/{data['cores']['logical']}T"
+        if data["cores"]["physical"] != 0
+        else f"Cores: {data['cores']['logical']}"
     )
+    # this fuckery can only happen on arm platforms  since for some
+    # fucking reason some retard thought it would be a good idea for
+    # the cpuinfo file to be different on x86 and arm platforms
+    # fuck you.
 
-    if data["cache_type"] != 0:
-        output_text += f", {data['cache_type']}\n"
+    cache_line = " | Cache: No data\n"
 
-    else:
-        output_text += "\n"
+    if data["cache"]["level"]:
+        cache_line = f" | Cache: {data['cache']['level']}"
+        if data["cache"]["size"]:
+            cache_line += f" {convert_bytes(data['cache']['size'])}\n"
 
-    return output_text
+    output_text = [
+        f"  --- /proc/cpuinfo {'-' * 47}\n",
+        f"   Usage: {data['usage']:>5}% {arch_model_temp_line}" + "\n",
+        f"   {cores_count_text} | Frequency: {data['frequency']:>7} MHz",
+    ]
+
+    output_text[2] += cache_line
+    # output_text[2] = output_text[2] + cache_line
+
+    return "".join(output_text)
 
 
 def end():

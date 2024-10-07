@@ -126,7 +126,7 @@ class Netstats:
 
             self.files_opened = [self.rx_file, self.tx_file]
 
-        self.logger.debug("[open] net_save")
+        self.logger.debug("[init] net_save")
 
         self.speed_track = Speed()
 
@@ -138,7 +138,7 @@ class Netstats:
 
         for file in self.files_opened:
             try:
-                self.logger.debug(f"[close] {file.name}")
+                self.logger.debug(f"[close_files] {file.name}")
                 file.close()
 
             except:

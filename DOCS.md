@@ -68,10 +68,12 @@ Format the retrieved data as required; the output is in JSON format. You can als
 The `cpuinfo` plugin provides detailed information about the CPU, including:
 
 - `architecture`: CPU architecture
-- `cache_size`: Cache size (human-readable format)
-- `cache_type`: Cache type
-- `logical`: Logical cores count
-- `physical`: Physical cores count
+- `cache`:
+  1. `size`: size (in bytes)
+  2. `level`: level
+- `cores`:
+  1. `physical`: physical cores count
+  2. `logical`: logical cores count
 - `frequency`: CPU frequency
 - `model`: CPU model
 - `uses_smt`: Whether CPU uses simultaneous multithreading (SMT)
@@ -81,14 +83,12 @@ The `cpuinfo` plugin provides detailed information about the CPU, including:
 ### Output
 ```
 {'architecture': 'x86_64',
- 'cache_size': '3.00 MiB',
- 'cache_type': 'L2',
- 'cores': {'logical': 2, 'physical': 0},
- 'frequency': 1064.02,
+ 'cache': {'level': 'L2', 'size': 3145728},
+ 'cores': {'logical': 2, 'physical': 2},
+ 'frequency': 1064.03,
  'model': 'Intel Core2 Duo P7450',
- 'temperature': 50.0,
- 'usage': 77.0,
- 'uses_smt': False}
+ 'temperature': 45.0,
+ 'usage': 94.2}
 ```
 
 ## meminfo Plugin
@@ -110,8 +110,8 @@ Under the `physical` and `virtual` sections:
                          'free': 141074432,
                          'total': 3826864128,
                          'used': 2915536896}},
- 'virtual': {'percentage': {'available': 27.1, 'used': 72.9},
-             'values': {'available': 874192896,
+ 'virtual': {'percentage': {'free': 27.1, 'used': 72.9},
+             'values': {'free': 874192896,
                         'cached': 39645184,
                         'total': 3221221376,
                         'used': 2347028480}}}
@@ -124,14 +124,15 @@ The `loadavg` plugin provides load times, uptime, and boot time information. It 
 
 - `entities`: Active and total running processes
 - `load_times`: System load for 1, 5, and 15 minutes
-- `uptime`: System uptime and boot time
+- `uptime`:
+  1. `seconds`: uptime, in seconds
+  2. `timestamp`: unix timestamp. use strftime to convert it to human readable format
 
 ### Output
 ```
-{'entities': {'active': 2, 'total': 1526},
- 'load_times': {'1': 1.94, '15': 1.94, '5': 2.21},
- 'uptime': {'since': 'Thursday February 22 2024, 03:37:58 PM',
-            'uptime': '3 hours, and 17 minutes'}}
+{'entities': {'active': 4, 'total': 557},
+ 'load_times': {'1': 1.26, '15': 1.0, '5': 1.11},
+ 'uptime': {'seconds': 166860, 'timestamp': 1719750035.6097515}}
 ```
 
 ## procpid Plugin

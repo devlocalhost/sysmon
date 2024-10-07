@@ -21,61 +21,57 @@ arguments = [
         "options": ["-nc", "--nocpuinfo"],
         "kwargs": {
             "action": "store_true",
-            "help": "disables cpuinfo (cpu information, like usage, model, and more)",
+            "help": "disable cpuinfo plugin (cpu information, like usage, model, and more)",
         },
     },
     {
         "options": ["-nm", "--nomeminfo"],
         "kwargs": {
             "action": "store_true",
-            "help": "disables meminfo (memory information, like total, used and more)",
+            "help": "disable meminfo plugin (memory information, like total, used and more)",
         },
     },
     {
         "options": ["-nl", "--noloadavg"],
         "kwargs": {
             "action": "store_true",
-            "help": "disables loadavg (load times information, including uptime, and more)",
+            "help": "disable loadavg plugin (load times information, including uptime, and more)",
         },
     },
     {
         "options": ["-np", "--noprocpid"],
         "kwargs": {
             "action": "store_true",
-            "help": "disables procpid (shows the most vmrss consuming processes)",
+            "help": "disable procpid plugin (shows the most vmrss consuming processes)",
         },
     },
     {
         "options": ["-nn", "--nonetstats"],
         "kwargs": {
             "action": "store_true",
-            "help": "disables network_stats (network stats, like received/transfered "
+            "help": "disable netstats plugin (network stats, like received/transfered "
             "bytes, and more)",
         },
     },
     {
         "options": ["-nt", "--temp"],
-        "kwargs": {"action": "store_true", "help": "disables cpu temperature"},
+        "kwargs": {
+            "action": "store_true",
+            "help": "hide cpu temperature in cpuinfo plugin",
+        },
     },
     {
         "options": ["-ns", "--swap"],
         "kwargs": {
             "action": "store_true",
-            "help": "disables swap information in meminfo",
-        },
-    },
-    {
-        "options": ["-nss", "--showsysmon"],
-        "kwargs": {
-            "action": "store_true",
-            "help": "disable sysmon stats in procpid",
+            "help": "hide swap information in meminfo plugin",
         },
     },
     {
         "options": ["-ni", "--ip"],
         "kwargs": {
             "action": "store_true",
-            "help": "disable IP in netstat",
+            "help": "hide IP in netstats plugin",
         },
     },
     {
@@ -89,7 +85,7 @@ arguments = [
         "options": ["-d", "--debug"],
         "kwargs": {
             "action": "store_true",
-            "help": "enable logs (debugging)",
+            "help": "enable debugging/logging",
         },
     },
     {
@@ -97,7 +93,7 @@ arguments = [
         "kwargs": {
             "type": int,
             "metavar": "INT",
-            "help": "how many processes to show in procpid. Default: 6",
+            "help": "show INT processes in procpid instead of default value. Default: 6",
         },
     },
     {
@@ -106,14 +102,15 @@ arguments = [
             "type": float,
             "default": 1,
             "metavar": "FLOAT",
-            "help": "refresh time. Default: 1.0",
+            "help": "refresh data every FLOAT seconds instead of the default value. Default: 1.0",
         },
     },
     {
         "options": ["-i", "--interface"],
         "kwargs": {
             "type": str,
-            "help": "select which interface to use for netstats",
+            "metavar": "INTERFACE",
+            "help": "use INTERFACE instead of detected interface in netstats plugin",
         },
     },
 ]
@@ -129,8 +126,8 @@ def parse_arguments():
     """create arguments"""
 
     parser = argparse.ArgumentParser(
-        formatter_class=custom_help_formatter,
         description="sysmon, a system monitor made in python | github.com/devlocalhost/sysmon",
+        formatter_class=custom_help_formatter,
     )
 
     for arg in arguments:
@@ -159,15 +156,15 @@ def start_sysmon(stdscr, plugins, sleep):
             stdscr.erase()
 
             stdscr.addstr(
-                f" ——— Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
-                + "—" * 42
+                f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} "
+                + "-" * 42
                 + "\n"
             )
 
             for formatter in formatters:
                 stdscr.addstr(formatter.main())
 
-            stdscr.addstr(f" {'—' * 67}")
+            stdscr.addstr(f" {'-' * 67}")
             stdscr.refresh()
 
             rlist = select.select([sys.stdin], [], [], sleep)
@@ -200,13 +197,6 @@ def start_sysmon(stdscr, plugins, sleep):
 def main():
     """execute sysmon"""
 
-    # plugins_array = [
-    #     "plugins.cpuinfo",
-    #     "plugins.meminfo",
-    #     "plugins.loadavg",
-    #     "plugins.procpid",
-    #     "plugins.netstats",
-    # ]
     plugins_array = [
         "formatters.cpuinfo",
         "formatters.meminfo",
@@ -244,9 +234,6 @@ if __name__ == "__main__":
 
     if args.ip:
         util.SHOW_LOCAL_IP = False
-
-    if args.showsysmon:
-        util.SHOW_SYSMON = False
 
     if args.debug:
         util.DEBUGGING = True

@@ -31,7 +31,7 @@ class Meminfo:
         self.logger.debug("[init] initializing")
 
         self.meminfo_file = en_open("/proc/meminfo")
-        self.logger.debug("[open] /proc/meminfo")
+        self.logger.debug("[init] /proc/meminfo")
 
         self.files_opened = [self.meminfo_file]
 
@@ -43,7 +43,7 @@ class Meminfo:
 
         for file in self.files_opened:
             try:
-                self.logger.debug(f"[close] {file.name}")
+                self.logger.debug(f"[close_files] {file.name}")
                 file.close()
 
             except:
@@ -55,7 +55,7 @@ class Meminfo:
         """
 
         for file in self.files_opened:
-            self.logger.debug(f"[seek] {file.name}")
+            self.logger.debug(f"[get_data] {file.name}")
             file.seek(0)
 
         # thanks to https://stackoverflow.com/a/28161352
@@ -88,12 +88,10 @@ class Meminfo:
         )
 
         swap_memory_total = meminfo_data.get("SwapTotal", 0)
-        swap_memory_available = meminfo_data.get("SwapFree", 0)
-        # NOTE: Swap available (in output) = this.
-        # NOTE: Rename to Free instead?
+        swap_memory_free = meminfo_data.get("SwapFree", 0)
 
         swap_memory_cached = meminfo_data.get("SwapCached", 0)
-        swap_memory_used = round(swap_memory_total - swap_memory_available)
+        swap_memory_used = round(swap_memory_total - swap_memory_free)
 
         try:
             swap_memory_used_percent = round(
@@ -122,18 +120,19 @@ class Meminfo:
                     "free": round(
                         (int(phy_memory_free) / int(phy_memory_total)) * 100, 1
                     ),
+                    "cached": round((phy_memory_cached / phy_memory_total) * 100, 1),
                 },
             },
             "virtual": {
                 "values": {
                     "total": swap_memory_total,
                     "used": swap_memory_used,
-                    "available": swap_memory_available,
+                    "free": swap_memory_free,
                     "cached": swap_memory_cached,
                 },
                 "percentage": {
                     "used": swap_memory_used_percent,
-                    "available": round(100 - swap_memory_used_percent, 1),
+                    "free": round(100 - swap_memory_used_percent, 1),
                 },
             },
         }
