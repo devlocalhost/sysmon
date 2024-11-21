@@ -34,15 +34,6 @@ DEBUGGING = False
 # END OF IMPORTANT PART FOR THE PLUGINS
 
 
-try:
-    os.makedirs("/tmp/sysmon_save", exist_ok=True)
-    SAVE_DIR = "/tmp/sysmon_save"
-
-except OSError:
-    os.makedirs(".sysmon_save", exist_ok=True)
-    SAVE_DIR = ".sysmon_save"
-
-
 def convert_bytes(fsize, units=("bytes", "KiB", "MiB", "GiB", "TiB")):
     """convert bytes to human readable format"""
 
