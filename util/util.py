@@ -52,25 +52,6 @@ def en_open(file, method="r"):
     return open(file, mode=method, encoding="utf-8")
 
 
-def file_has(string, lines):
-    """checking if file contains string. return string if contains else return None"""
-
-    for line in lines:
-        if line.startswith(string):
-            return line.strip().split(":")[1]
-
-    return None
-
-
-def clean_output(text):
-    """
-    cleans the output that sysmon reads, so it gets only 1005744
-    instead of MemTotal:        1005744 kB
-    """
-
-    return text.split(":")[0].strip().replace("kB", "")
-
-
 def to_bytes(kilobytes):
     """convert kilobytes to bytes"""
 
