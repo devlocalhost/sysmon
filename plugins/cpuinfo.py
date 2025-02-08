@@ -3,6 +3,7 @@
 """cpuinfo plugin for sysmon"""
 
 import os
+import re
 import sys
 import glob
 import platform
@@ -16,27 +17,33 @@ from util.util import (
 from util.logger import setup_logger
 
 
+import re
+
 def clean_cpu_model(model):
-    """cleaning cpu model"""
+    """
+    clean and remove garbage from cpu model string
+    """
 
     replace_stuff = [
-        "(R)",
-        "(TM)",
-        "(tm)",
-        "Processor",
-        "processor",
-        '"AuthenticAMD"',
-        "Chip Revision",
-        "Technologies, Inc",
-        "CPU",
-        "with Radeon HD Graphics",
-        "with Radeon Graphics",
+        r"\(R\)",
+        r"\(TM\)",
+        r"\(tm\)",
+        r"Processor",
+        r"processor",
+        r'"AuthenticAMD"',
+        r"Chip Revision",
+        r"Technologies, Inc",
+        r"CPU",
+        r"with Radeon HD Graphics",
+        r"with Radeon Graphics",
     ]
 
-    for text in replace_stuff:
-        model = model.replace(text, "")
+    model = re.sub(r"\b\d{1,2}(?:st|nd|rd|th)?\s*(?:Gen|Generation)\b", "", model, flags=re.IGNORECASE)
 
-    return " ".join(model.split()).split("@", maxsplit=1)[0].rstrip(" ")
+    for pattern in replace_stuff:
+        model = re.sub(pattern, "", model, flags=re.IGNORECASE)
+
+    return " ".join(model.split()).split("@", maxsplit=1)[0].rstrip()
 
 
 class Cpuinfo:
