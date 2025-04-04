@@ -8,13 +8,13 @@ import sys
 import glob
 import platform
 
-from util.util import (
+from nsysmon.util.util import (
     en_open,
     convert_bytes,
     to_bytes,
 )
 
-from util.logger import setup_logger
+from nsysmon.util.logger import setup_logger
 
 
 import re

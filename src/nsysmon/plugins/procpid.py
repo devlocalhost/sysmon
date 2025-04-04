@@ -6,13 +6,13 @@ import os
 import sys
 
 
-from util.util import (
+from nsysmon.util.util import (
     en_open,
     to_bytes,
     PROCS,
 )
 
-from util.logger import setup_logger
+from nsysmon.util.logger import setup_logger
 
 
 def read_process_status(pid):

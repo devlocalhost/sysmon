@@ -5,8 +5,8 @@
 import time
 
 from datetime import datetime
-from util.util import en_open
-from util.logger import setup_logger
+from nsysmon.util.util import en_open
+from nsysmon.util.logger import setup_logger
 
 
 class Loadavg:

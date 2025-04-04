@@ -8,12 +8,12 @@ import glob
 import socket
 import struct
 
-from util.util import (
+from nsysmon.util.util import (
     en_open,
     INTERFACE,
     SHOW_LOCAL_IP,
 )
-from util.logger import setup_logger
+from nsysmon.util.logger import setup_logger
 
 
 def interface_is_not_blacklisted(iface):
