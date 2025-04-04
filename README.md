@@ -3,6 +3,9 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
+## NOTE
+Sysmon might soon have a new name! For now, it will be temporarily called "nSysmon". ncurses Sysmon.
+
 ## Preview
 For a preview, see the [PREVIEW.md file](screens/PREVIEW.md).
 
