@@ -18,7 +18,7 @@ def main():
 
     data = loadavg_class.get_data()
 
-    intervals = (("week", 604800), ("day", 86400), ("hour", 3600), ("minute", 60))
+    intervals = (("month", 2628288), ("week", 604800), ("day", 86400), ("hour", 3600), ("minute", 60))
     result = []
 
     seconds = data["uptime"]["seconds"]
