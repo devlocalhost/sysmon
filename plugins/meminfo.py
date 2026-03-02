@@ -59,9 +59,7 @@ class MeminfoPlugin(BasePlugin):
             self.logger.error(f"error opening file: {exc}")
 
     def get_data(self):
-        for file in self.opened_files:
-            self.logger.debug(f"seeking {file.name}")
-            file.seek(0)
+        self.seek_files()
             
         meminfo_file_data = dict(
             (i.split()[0].rstrip(":"), int(i.split()[1]) * 1024)
