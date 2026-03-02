@@ -1,18 +1,5 @@
 from utils.logger import define_logger
 
-# class PluginData:
-#     """
-#     this class will hold a plugin's data
-#     which will then be accessible in a nice way
-#     """
-    
-#     def __init__(self, **kwargs):
-#         for key, value in kwargs.items():
-#             if isinstance(value, dict):
-#                 setattr(self, key, PluginData(**value))
-
-#             else:
-#                 setattr(self, key, value)
 
 class BasePlugin:
     """base plugin, which all others are based on"""
