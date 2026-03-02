@@ -10,6 +10,11 @@ class BasePlugin:
         self.logger = define_logger(self.__class__.__name__)
         self.opened_files = []
 
+    def seek_files(self):
+        for file in self.opened_files:
+            self.logger.debug(f"seeking {file.name}")
+            file.seek(0)
+
     def get_data(self):
         """
         where the magic happens. this function 
