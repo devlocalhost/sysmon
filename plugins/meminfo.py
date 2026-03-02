@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from plugins.base import BasePlugin
 from utils.util import en_open
 
+
 @dataclass
 class PhysicalValues:
     MemTotal: int = 0
@@ -15,12 +16,14 @@ class PhysicalValues:
     Used: int = 0
     ActualUsed: int = 0
 
+
 @dataclass
 class VirtualValues:
     SwapTotal: int = 0
     SwapFree: int = 0
     SwapCached: int = 0
     Used: int = 0
+
 
 @dataclass
 class PhysicalPercentages:
@@ -30,10 +33,12 @@ class PhysicalPercentages:
     Free: int = 0
     Cached: int = 0
 
+
 @dataclass
 class VirtualPercentages:
     Used: int = 0
     Free: int = 0
+
 
 @dataclass
 class MeminfoData:
@@ -41,7 +46,7 @@ class MeminfoData:
     virtual_values: VirtualValues = None
     physical_percentages: PhysicalPercentages = None
     virtual_percentages: VirtualPercentages = None
-    
+
 
 class MeminfoPlugin(BasePlugin):
     def __init__(self):
@@ -60,7 +65,7 @@ class MeminfoPlugin(BasePlugin):
 
     def get_data(self):
         self.seek_files()
-            
+
         meminfo_file_data = dict(
             (i.split()[0].rstrip(":"), int(i.split()[1]) * 1024)
             for i in self.meminfo_file.readlines()
@@ -105,11 +110,17 @@ class MeminfoPlugin(BasePlugin):
         phy_memory_free_percent = round(
             (int(phy_memory_free) / int(phy_memory_total)) * 100, 1
         )
-        phy_memory_cached_percent = round((phy_memory_cached / phy_memory_total) * 100, 1)
+        phy_memory_cached_percent = round(
+            (phy_memory_cached / phy_memory_total) * 100, 1
+        )
 
         # percentages value section: virtual
         try:
-            swap_memory_used_percent = round((int(swap_memory_used) / int(swap_memory_total)) * 100, 1) if swap_memory_total > 0 else 0
+            swap_memory_used_percent = (
+                round((int(swap_memory_used) / int(swap_memory_total)) * 100, 1)
+                if swap_memory_total > 0
+                else 0
+            )
 
         except ZeroDivisionError:
             swap_memory_used_percent = 0
@@ -146,5 +157,5 @@ class MeminfoPlugin(BasePlugin):
                 Free=swap_memory_free_percent,
             ),
         )
-        
+
         return data
