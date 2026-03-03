@@ -12,8 +12,9 @@ from plugins.base import BasePlugin
 from utils.util import (
     en_open,
     to_bytes,
-    PROCS, # obsolete? check __init__
+    PROCS,  # obsolete? check __init__
 )
+
 
 @dataclass
 class ProcessValues:
@@ -21,6 +22,7 @@ class ProcessValues:
     PID: int = 0
     VmRSS: float = 0.0
     State: str = "!?!?"
+
 
 def get_process_data(pid):
     """get pid data, like name, state, vmrss"""
@@ -30,7 +32,7 @@ def get_process_data(pid):
     try:
         with open(f"/proc/{pid}/status") as process_status_file:
             process_file_lines = {}
-            
+
             for line in process_status_file:
                 line = line.split()
                 key = line[0].rstrip(":").lower()
@@ -91,6 +93,8 @@ class ProcsPlugin(BasePlugin):
         for process_id in [pid for pid in os.listdir("/proc") if pid.isdigit()]:
             process_data.append(get_process_data(process_id))
 
-        sorted_processes = sorted(process_data, key=lambda x: int(x.VmRSS), reverse=True)
+        sorted_processes = sorted(
+            process_data, key=lambda x: int(x.VmRSS), reverse=True
+        )
 
-        return sorted_processes[:self.processes_to_show]
+        return sorted_processes[: self.processes_to_show]

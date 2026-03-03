@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from plugins.base import BasePlugin
 from utils.util import en_open
 
+
 @dataclass
 class InterfaceDetails:
     name: str = "!?!?"
@@ -15,16 +16,19 @@ class InterfaceDetails:
     rx_bytes_file: str = None
     tx_bytes_file: str = None
 
+
 @dataclass
 class TransferSpeeds:
     received: int = 0
     transferred: int = 0
+
 
 @dataclass
 class TransferStatistics:
     total_received: int = 0
     total_transferred: int = 0
     speeds: TransferSpeeds = None
+
 
 @dataclass
 class NetstatsData:
@@ -72,10 +76,9 @@ class NetstatsPlugin(BasePlugin):
 
         with en_open(f"/sys/class/net/{interface_name}/type") as device_type:
             device_type_int = int(device_type.read())
-            
+
             self.logger.debug(f"interface {interface_name} type {device_type_int}")
             return device_type_int not in blacklist
-
 
     def _interface_is_up(self, interface_name):
         """
@@ -84,8 +87,10 @@ class NetstatsPlugin(BasePlugin):
 
         with en_open(f"/sys/class/net/{interface_name}/operstate") as device_status:
             device_status_str = device_status.read().strip()
-            
-            self.logger.debug(f"interface {interface_name} operstate {device_status_str}")
+
+            self.logger.debug(
+                f"interface {interface_name} operstate {device_status_str}"
+            )
             return device_status_str == "up"
 
     def _get_interface_ip(self, interface_name):
@@ -106,7 +111,6 @@ class NetstatsPlugin(BasePlugin):
 
         return local_ip
 
-
     def get_current_interface(self):
         """
         detect which interface is being used right now
@@ -123,8 +127,10 @@ class NetstatsPlugin(BasePlugin):
 
                 self.logger.debug(f"found interface: {interface_data}")
 
-                if interface_data[1] == "00000000": # this means default route, which is what we want
-                    if int(interface_data[3], 16) >= 2: 
+                if (
+                    interface_data[1] == "00000000"
+                ):  # this means default route, which is what we want
+                    if int(interface_data[3], 16) >= 2:
                         # more than 2 bits means destination is a gateway, we want that
                         # !!  BUT  !! what if its more than 2? if it was 3, that would be fine
                         # !!  BUT  !! what if its more than 4? 5? 6? is it still valid?
@@ -136,24 +142,24 @@ class NetstatsPlugin(BasePlugin):
             interface_statistics_dir = f"{interface_dir}/statistics"
             interface_rx_bytes = f"{interface_statistics_dir}/rx_bytes"
             interface_tx_bytes = f"{interface_statistics_dir}/tx_bytes"
-            
+
             try:
                 if (
-                    self._interface_is_not_blacklisted(interface) and
-                    self._interface_is_up(interface) and
-                    os.listdir(interface_dir) and
-                    os.listdir(interface_statistics_dir) and
-                    os.stat(interface_rx_bytes) and
-                    os.stat(interface_tx_bytes)
+                    self._interface_is_not_blacklisted(interface)
+                    and self._interface_is_up(interface)
+                    and os.listdir(interface_dir)
+                    and os.listdir(interface_statistics_dir)
+                    and os.stat(interface_rx_bytes)
+                    and os.stat(interface_tx_bytes)
                 ):
                     self.logger.debug(f"interface {interface} passes all checks")
                     return InterfaceDetails(
                         name=interface,
                         directory=interface_dir,
                         rx_bytes_file=interface_rx_bytes,
-                        tx_bytes_file=interface_tx_bytes
-                    ) # then return interface name
-                    
+                        tx_bytes_file=interface_tx_bytes,
+                    )  # then return interface name
+
                     # maybe its not a good idea to return the first result
                     # but all of them, then choose randomly? idk
 
@@ -161,7 +167,9 @@ class NetstatsPlugin(BasePlugin):
                     # anyway if statistics dir doesnt exist?
 
             except FileNotFoundError as exc:
-                self.logger.debug(f"one of the checks has failed. check if statistics dir and rx/tx_bytes files exist for {interface}. {exc}")
+                self.logger.debug(
+                    f"one of the checks has failed. check if statistics dir and rx/tx_bytes files exist for {interface}. {exc}"
+                )
                 return None
 
         self.logger.debug("nothing found?")
@@ -169,7 +177,7 @@ class NetstatsPlugin(BasePlugin):
 
     def get_data(self):
         self.seek_files()
-        
+
         transfer_speeds = TransferSpeeds()
 
         current_rx_bytes = int(self._rx_file.read().strip())
@@ -189,6 +197,6 @@ class NetstatsPlugin(BasePlugin):
                 speeds=TransferSpeeds(
                     received=rx_speed,
                     transferred=tx_speed,
-                )
-            )
+                ),
+            ),
         )
