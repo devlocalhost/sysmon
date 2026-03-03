@@ -3,15 +3,12 @@
 """procpid plugin for sysmon"""
 
 import os
-import sys
 
 from dataclasses import dataclass
 
 from plugins.base import BasePlugin
 
 from utils.util import (
-    en_open,
-    to_bytes,
     PROCS,  # obsolete? check __init__
 )
 
@@ -71,7 +68,7 @@ def get_process_data(pid):
         )
 
     except FileNotFoundError:
-        pass
+        return ProcessValues()
 
 
 class ProcsPlugin(BasePlugin):

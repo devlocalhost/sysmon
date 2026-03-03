@@ -127,9 +127,8 @@ class NetstatsPlugin(BasePlugin):
 
                 self.logger.debug(f"found interface: {interface_data}")
 
-                if (
-                    interface_data[1] == "00000000"
-                ):  # this means default route, which is what we want
+                if interface_data[1] == "00000000":
+                    # this means default route, which is what we want
                     if int(interface_data[3], 16) >= 2:
                         # more than 2 bits means destination is a gateway, we want that
                         # !!  BUT  !! what if its more than 2? if it was 3, that would be fine
@@ -177,8 +176,6 @@ class NetstatsPlugin(BasePlugin):
 
     def get_data(self):
         self.seek_files()
-
-        transfer_speeds = TransferSpeeds()
 
         current_rx_bytes = int(self._rx_file.read().strip())
         current_tx_bytes = int(self._tx_file.read().strip())
