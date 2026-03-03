@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+
+"""procpid plugin for sysmon"""
+
+import os
+import sys
+
+from dataclasses import dataclass
+
+from plugins.base import BasePlugin
+
+from utils.util import (
+    en_open,
+    to_bytes,
+    PROCS, # obsolete? check __init__
+)
+
+@dataclass
+class ProcessValues:
+    Name: str = "!?!?"
+    PID: int = 0
+    VmRSS: float = 0.0
+    State: str = "!?!?"
+
+def get_process_data(pid):
+    """get pid data, like name, state, vmrss"""
+
+    # this whole function might need a rewrite?
+
+    try:
+        with open(f"/proc/{pid}/status") as process_status_file:
+            process_file_lines = {}
+            
+            for line in process_status_file:
+                line = line.split()
+                key = line[0].rstrip(":").lower()
+
+                try:
+                    value = (
+                        " ".join(line[1:][1:]).strip("(").strip(")").title()
+                        if key == "state"
+                        else line[1:][0]
+                    )
+
+                except IndexError:
+                    value = "!?!?"
+
+                process_file_lines[key] = value
+
+        with open(f"/proc/{pid}/cmdline") as pid_cmdline:
+            exec_name = (
+                pid_cmdline.read()
+                .replace("\x00", " ")
+                .strip()
+                .split("/")[-1]
+                .split(" ")[0]
+            )
+
+            if len(exec_name) > 28:
+                exec_name = exec_name[:25] + "..."
+
+            process_file_lines["name"] = exec_name
+
+        return ProcessValues(
+            Name=process_file_lines.get("name", "!?!?"),
+            PID=process_file_lines.get("pid", 0),
+            VmRSS=process_file_lines.get("vmrss", 0),
+            State=process_file_lines.get("state", "!?!?"),
+        )
+
+    except FileNotFoundError:
+        pass
+
+
+class ProcsPlugin(BasePlugin):
+    def __init__(self):
+        super().__init__()
+
+        self.processes_to_show = 6
+        self.logger.debug("initialize plugin")
+
+        self.logger.debug(f"showing only {self.processes_to_show} processes")
+
+    def get_data(self):
+        # self.seek_files()
+
+        process_data = []
+
+        # i dont like how im repeatedly opening and closing files
+        # but theres probably not a better way
+        for process_id in [pid for pid in os.listdir("/proc") if pid.isdigit()]:
+            process_data.append(get_process_data(process_id))
+
+        sorted_processes = sorted(process_data, key=lambda x: int(x.VmRSS), reverse=True)
+
+        return sorted_processes[:self.processes_to_show]

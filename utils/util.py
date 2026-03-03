@@ -9,6 +9,7 @@ import os
 
 
 # START OF IMPORTANT PART FOR THE PLUGINS
+# TODO: MOVE THIS TO A TOML FILE.
 
 # general vars, save data directory and IEC or metric conversion (size)
 SAVE_DIR = None
@@ -31,6 +32,7 @@ SHOW_LOCAL_IP = True
 # debugging - for logger.py
 DEBUGGING = False
 
+# TODO: MOVE THIS TO A TOML FILE.
 # END OF IMPORTANT PART FOR THE PLUGINS
 
 
