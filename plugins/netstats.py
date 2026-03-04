@@ -169,7 +169,7 @@ class NetstatsPlugin(BasePlugin):
                 self.logger.debug(
                     f"one of the checks has failed. check if statistics dir and rx/tx_bytes files exist for {interface}. {exc}"
                 )
-                return None
+                continue
 
         self.logger.debug("nothing found?")
         return None
