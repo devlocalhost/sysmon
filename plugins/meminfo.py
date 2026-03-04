@@ -115,15 +115,11 @@ class MeminfoPlugin(BasePlugin):
         )
 
         # percentages value section: virtual
-        try:
-            swap_memory_used_percent = (
-                round((int(swap_memory_used) / int(swap_memory_total)) * 100, 1)
-                if swap_memory_total > 0
-                else 0
-            )
-
-        except ZeroDivisionError:
-            swap_memory_used_percent = 0
+        swap_memory_used_percent = (
+            round((int(swap_memory_used) / int(swap_memory_total)) * 100, 1)
+            if swap_memory_total > 0
+            else 0
+        )
 
         swap_memory_free_percent = round(100 - swap_memory_used_percent, 1)
 
