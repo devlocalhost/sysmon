@@ -8,7 +8,7 @@ from datetime import datetime
 from dataclasses import dataclass
 
 from plugins.base import BasePlugin
-from utils.util import en_open
+from utils.util import self._open_file
 
 
 @dataclass
@@ -44,11 +44,11 @@ class LoadavgPlugin(BasePlugin):
         self.logger.debug("initialize plugin")
 
         try:
-            self._loadavg_file = en_open("/proc/loadavg")
+            self._loadavg_file = self._open_file("/proc/loadavg")
             self.logger.debug("opened file /proc/loadavg")
             self._opened_files.append(self._loadavg_file)
 
-            self._uptime_file = en_open("/proc/uptime")
+            self._uptime_file = self._open_file("/proc/uptime")
             self.logger.debug("opened file /proc/uptime")
             self._opened_files.append(self._uptime_file)
 

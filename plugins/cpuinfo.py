@@ -5,7 +5,7 @@ import platform
 from dataclasses import dataclass
 
 from plugins.base import BasePlugin
-from utils.util import en_open
+from utils.util import self._open_file
 
 
 @dataclass
@@ -54,7 +54,7 @@ class CpuinfoPlugin(BasePlugin):
         self._old_user_time, self._old_system_time, self._old_idle = 0, 0, 0
 
         try:
-            self._stat_file = en_open("/proc/stat")
+            self._stat_file = self._open_file("/proc/stat")
             self._opened_files.append(self._stat_file)
 
             self.logger.debug(f"opened file {self._stat_file.name}")
@@ -102,7 +102,7 @@ class CpuinfoPlugin(BasePlugin):
             # maybe the thing above is a better alternative?
             for scaling in ("scaling_min_freq", "scaling_max_freq"):
                 try:
-                    with en_open(f"{cpu}/cpufreq/{scaling}") as scaling_file:
+                    with self._open_file(f"{cpu}/cpufreq/{scaling}") as scaling_file:
                         frequencies.append(int(scaling_file.read()))
 
                 except FileNotFoundError as exc:
@@ -120,7 +120,7 @@ class CpuinfoPlugin(BasePlugin):
             "/sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list"
         ):
             try:
-                with en_open(file) as f:
+                with self._open_file(file) as f:
                     siblings.append(f.read().strip())
 
             except FileNotFoundError as exc:
@@ -139,7 +139,7 @@ class CpuinfoPlugin(BasePlugin):
             # TODO: using the data from ProcessorDetails
             self.logger.debug(ProcessorDetails())
 
-            with en_open("/proc/cpuinfo") as f:
+            with self._open_file("/proc/cpuinfo") as f:
                 lines = f.readlines()
                 for line in lines:
                     if line.startswith("model name"):
@@ -154,7 +154,7 @@ class CpuinfoPlugin(BasePlugin):
 
                 else:
                     # arm platform
-                    with en_open("/proc/device-tree/compatible", "rb") as f:
+                    with self._open_file("/proc/device-tree/compatible", "rb") as f:
                         model_name = (
                             f.read()
                             .replace(b"\x00", b"")
@@ -169,7 +169,7 @@ class CpuinfoPlugin(BasePlugin):
     def get_data(self):
         self._seek_files()
 
-        with en_open("/sys/devices/system/cpu/present") as _present_cores:
+        with self._open_file("/sys/devices/system/cpu/present") as _present_cores:
             logical_cores = int(_present_cores.read().strip().split("-")[1]) + 1
             # maybe this could be merged (and renamed) with _get_physical_cores_count?
 

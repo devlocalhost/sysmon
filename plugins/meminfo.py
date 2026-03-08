@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from plugins.base import BasePlugin
-from utils.util import en_open
+from utils.util import self._open_file
 
 
 @dataclass
@@ -55,7 +55,7 @@ class MeminfoPlugin(BasePlugin):
         self.logger.debug("initialize plugin")
 
         try:
-            self._meminfo_file = en_open("/proc/meminfo")
+            self._meminfo_file = self._open_file("/proc/meminfo")
             self._opened_files.append(self._meminfo_file)
 
             self.logger.debug(f"opened file {self._meminfo_file.name}")

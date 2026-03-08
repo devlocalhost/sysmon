@@ -6,7 +6,7 @@ import struct
 from dataclasses import dataclass
 
 from plugins.base import BasePlugin
-from utils.util import en_open
+from utils.util import self._open_file
 
 
 @dataclass
@@ -55,8 +55,8 @@ class NetstatsPlugin(BasePlugin):
         self.interface_data = self._get_current_interface()
 
         try:
-            self._rx_file = en_open(self.interface_data.rx_bytes_file)
-            self._tx_file = en_open(self.interface_data.tx_bytes_file)
+            self._rx_file = self._open_file(self.interface_data.rx_bytes_file)
+            self._tx_file = self._open_file(self.interface_data.tx_bytes_file)
 
             self._opened_files.append(self._rx_file)
             self._opened_files.append(self._tx_file)
@@ -74,7 +74,7 @@ class NetstatsPlugin(BasePlugin):
 
         blacklist = [768, 769, 770, 771, 772, 777, 778, 779, 783, 65534]
 
-        with en_open(f"/sys/class/net/{interface_name}/type") as device_type:
+        with self._open_file(f"/sys/class/net/{interface_name}/type") as device_type:
             device_type_int = int(device_type.read())
 
             self.logger.debug(f"interface {interface_name} type {device_type_int}")
@@ -85,7 +85,7 @@ class NetstatsPlugin(BasePlugin):
         check if interface is up
         """
 
-        with en_open(f"/sys/class/net/{interface_name}/operstate") as device_status:
+        with self._open_file(f"/sys/class/net/{interface_name}/operstate") as device_status:
             device_status_str = device_status.read().strip()
 
             self.logger.debug(
@@ -119,7 +119,7 @@ class NetstatsPlugin(BasePlugin):
         interfaces = []
 
         # first check: kernel routing
-        with en_open("/proc/net/route") as proc_net:
+        with self._open_file("/proc/net/route") as proc_net:
             for iface in proc_net.readlines()[1:]:
                 # Iface	Destination	Gateway 	Flags
                 # 'wlan0', '00000000', 'FE01A8C0', '0003', '0', '0', '600', '00000000', '0', '0', '0'
