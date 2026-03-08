@@ -48,12 +48,6 @@ def convert_bytes(fsize, units=("bytes", "KiB", "MiB", "GiB", "TiB")):
     return f"{fsize:.2f} {units[-1]}"
 
 
-def en_open(file, method="r"):
-    """modifying the default open method so i dont have to define encoding every time"""
-
-    return open(file, mode=method, encoding="utf-8")
-
-
 def to_bytes(kilobytes):
     """convert kilobytes to bytes"""
 

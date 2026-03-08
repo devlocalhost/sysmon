@@ -20,13 +20,20 @@ class BasePlugin:
             # maybe i should use a try except block?
             # im already handling that in the plugins though...
 
-    def get_data(self):
-        """
-        where the magic happens. this function
-        gets then returns data
-        """
+    def _open_file(self, file, mode="r", encoding="utf-8"):
+        """modifying the default open method so i dont have to define encoding every time"""
 
-        pass
+        self.logger.debug(f"opening file {file} in {mode} mode and {encoding} encoding")
+
+        try:
+            f = open(file, mode=mode, encoding=encoding)
+            self.logger.debug(f"opened  file {file}")
+            
+            return f
+
+        except Exception as exc:
+            self.logger.debug(f"failed opening file {file}: {exc}")
+            raise
 
     def close_files(self):
         """
@@ -41,3 +48,11 @@ class BasePlugin:
 
             except Exception as exc:
                 self.logger.debug(f"error closing file: {exc}")
+
+    def get_data(self):
+        """
+        where the magic happens. this function
+        gets then returns data
+        """
+
+        pass
