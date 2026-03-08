@@ -56,7 +56,7 @@ class CpuinfoPlugin(BasePlugin):
             self._stat_file = self._open_file("/proc/stat")
             self._opened_files.append(self._stat_file)
 
-            self.logger.debug(f"opened file {self._stat_file.name}")
+            self.logger.debug(f"opened file /proc/stat")
 
         except Exception as exc:
             self.logger.error(f"error opening file: {exc}")

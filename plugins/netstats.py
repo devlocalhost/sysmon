@@ -59,7 +59,7 @@ class NetstatsPlugin(BasePlugin):
 
             self._opened_files.append(self._rx_file)
             self._opened_files.append(self._tx_file)
-            self.logger.debug("opened rx and tx files")
+            self.logger.debug("opened interface rx and tx files")
 
         except Exception as exc:
             self.logger.debug(f"could not open files: {exc}")

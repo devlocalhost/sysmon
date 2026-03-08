@@ -57,7 +57,7 @@ class MeminfoPlugin(BasePlugin):
             self._meminfo_file = self._open_file("/proc/meminfo")
             self._opened_files.append(self._meminfo_file)
 
-            self.logger.debug(f"opened file {self._meminfo_file.name}")
+            self.logger.debug(f"opened file /proc/meminfo}")
 
         except Exception as exc:
             self.logger.error(f"error opening file: {exc}")
