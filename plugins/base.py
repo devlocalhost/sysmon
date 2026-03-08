@@ -1,4 +1,4 @@
-from utils.logger import define_logger
+from utils.logger import create_logger
 
 
 class BasePlugin:
