@@ -17,7 +17,7 @@ class BasePlugin:
         for file in self._opened_files:
             self.logger.debug(f"seeking {file.name}")
             file.seek(0)
-            # maybe i should use a try except block? 
+            # maybe i should use a try except block?
             # im already handling that in the plugins though...
 
     def get_data(self):

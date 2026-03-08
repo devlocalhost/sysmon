@@ -78,7 +78,7 @@ class ProcsPlugin(BasePlugin):
     def __init__(self):
         super().__init__()
 
-        self.processes_to_show = 6 # THIS NEEDS TO BE IN CONFIG FILE!!
+        self.processes_to_show = 6  # THIS NEEDS TO BE IN CONFIG FILE!!
         self.logger.debug("initialize plugin")
 
         self.logger.debug(f"showing only {self.processes_to_show} processes")
