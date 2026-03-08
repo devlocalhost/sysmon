@@ -5,7 +5,6 @@ import platform
 from dataclasses import dataclass
 
 from plugins.base import BasePlugin
-
 from utils.util import en_open
 
 
@@ -64,6 +63,8 @@ class CpuinfoPlugin(BasePlugin):
             self.logger.error(f"error opening file: {exc}")
 
     def _get_processor_utilization(self):
+        # credit: https://beta.stackoverflow.com/q/58257596
+        
         stat_file = self._stat_file.readlines()
         # cpuN user-time nice-time system-time idle-time io-wait ireq   softirq steal guest guest_nice
         # cpu  2432102   96139     671184      40452630  28234   141491 43214   0     0     0
@@ -92,6 +93,8 @@ class CpuinfoPlugin(BasePlugin):
         return round(utilization, 2)
 
     def _get_frequency_ranges(self):
+        # credit: https://beta.stackoverflow.com/q/12483399
+        
         frequencies = []
 
         for cpu in glob.glob("/sys/devices/system/cpu/cpu[0-9]*"):
@@ -109,6 +112,7 @@ class CpuinfoPlugin(BasePlugin):
 
     def _get_physical_cores_count(self):
         # this might be highly inaccurate, testing needed
+        # credit: https://beta.stackoverflow.com/q/73489422
 
         siblings = []
 
