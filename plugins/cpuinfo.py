@@ -5,7 +5,6 @@ import platform
 from dataclasses import dataclass
 
 from plugins.base import BasePlugin
-from utils.util import self._open_file
 
 
 @dataclass
@@ -97,18 +96,16 @@ class CpuinfoPlugin(BasePlugin):
         
         frequencies = []
 
-        for cpu in glob.glob("/sys/devices/system/cpu/cpu[0-9]*"):
-            # glob.glob("/sys/devices/system/cpu/cpu[0-9]*/cpufreq/scaling_m*_freq")
-            # maybe the thing above is a better alternative?
-            for scaling in ("scaling_min_freq", "scaling_max_freq"):
-                try:
-                    with self._open_file(f"{cpu}/cpufreq/{scaling}") as scaling_file:
-                        frequencies.append(int(scaling_file.read()))
+        for scaling_file in glob.glob("/sys/devices/system/cpu/cpu[0-9]*/cpufreq/scaling_m*_freq"):
+            try:
+                with self._open_file(scaling_file) as f:
+                    frequencies.append(int(f.read()))
 
-                except FileNotFoundError as exc:
-                    self.logger.debug(f"failed to open file: {exc}")
+            except FileNotFoundError as exc:
+                self.logger.debug(f"failed to open file: {exc}")
 
-        return frequencies
+        frequencies_sorted = sorted(frequencies)
+        return (frequencies_sorted[0], frequencies_sorted[-1])
 
     def _get_physical_cores_count(self):
         # this might be highly inaccurate, testing needed
@@ -173,14 +170,13 @@ class CpuinfoPlugin(BasePlugin):
             logical_cores = int(_present_cores.read().strip().split("-")[1]) + 1
             # maybe this could be merged (and renamed) with _get_physical_cores_count?
 
-        sorted_freqs = sorted(self._get_frequency_ranges())
-        freq_min_range, freq_max_range = sorted_freqs[0], sorted_freqs[-1]
+        frequency_ranges = sorted(self._get_frequency_ranges())
 
         return ProcessorDetails(
             model=self._get_processor_model(),  # static!
             utilization=self._get_processor_utilization(),
-            frequency_min=freq_min_range,  # static!
-            frequency_max=freq_max_range,  # static!
+            frequency_min=frequency_ranges[0],  # static!
+            frequency_max=frequency_ranges[1],  # static!
             physical_cores=self._get_physical_cores_count(),  # static!
             logical_cores=logical_cores,  # static!
             architecture=platform.machine(),  # static!
