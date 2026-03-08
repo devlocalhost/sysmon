@@ -61,6 +61,20 @@ class CpuinfoPlugin(BasePlugin):
         except Exception as exc:
             self.logger.error(f"error opening file: {exc}")
 
+        frequency_ranges = sorted(self._get_frequency_ranges())
+        cores_count = self._get_cores_count() # physical,logical
+
+        self._processor_details = ProcessorDetails(
+            model=self._get_processor_model(),
+            frequency_min=frequency_ranges[0],
+            frequency_max=frequency_ranges[1],
+            physical_cores=cores_count[0],
+            logical_cores=cores_count[1],
+            architecture=platform.machine()
+        )
+
+        self.logger.debug(f"initialize static processor details: {self._processor_details}")
+
     def _get_processor_utilization(self):
         # credit: https://beta.stackoverflow.com/q/58257596
         
@@ -134,53 +148,27 @@ class CpuinfoPlugin(BasePlugin):
         return (physical_cores, logical_cores)
 
     def _get_processor_model(self):
-        model_name = None
-
         try:
-            # TODO: remove the if else block below. read the comments in the get_data function
-            # TODO: after making the static details static/available, test if the below line works (has data)
-            # TODO: if it works, then replace the below if else block, by checking the architecture
-            # TODO: using the data from ProcessorDetails
-            self.logger.debug(ProcessorDetails())
+            if platform.machine() in ("aarch64", "aarch", "arm", "arm64"):
+                # we need to read a different file on arm platforms
+                with self._open_file("/proc/device-tree/compatible", "rb") as f:
+                    return f.read().replace(b"\x00", b"").decode().split(",")[-1].upper()
 
-            with self._open_file("/proc/cpuinfo") as f:
-                lines = f.readlines()
-                for line in lines:
-                    if line.startswith("model name"):
-                        model_name = line
-                        break
-
-                if model_name:
-                    # x86 platform
-                    return _clean_processor_model_string(
-                        "".join(model_name.split(":")[1:])
-                    )
-
-                else:
-                    # arm platform
-                    with self._open_file("/proc/device-tree/compatible", "rb") as f:
-                        model_name = (
-                            f.read()
-                            .replace(b"\x00", b"")
-                            .decode()
-                            .split(",")[-1]
-                            .upper()
-                        )
+            else: # we are not on arm, proceed "normally"
+                with self._open_file("/proc/cpuinfo") as f:
+                    lines = f.readlines()
+                    for line in lines:
+                        if line.startswith("model name"):
+                            model_name = line
+                            break
 
         except Exception as exc:
             self.logger.debug(f"could not open file: {exc}")
 
+        return _clean_processor_model_string("".join(model_name.split(":")[1:]))
+
     def get_data(self):
         self._seek_files()
-        frequency_ranges = sorted(self._get_frequency_ranges())
-        cores_count = self._get_cores_count() # physical,logical
+        self._processor_details.utilization = self._get_processor_utilization()
 
-        return ProcessorDetails(
-            model=self._get_processor_model(),  # static!
-            utilization=self._get_processor_utilization(),
-            frequency_min=frequency_ranges[0],  # static!
-            frequency_max=frequency_ranges[1],  # static!
-            physical_cores=cores_count[0],  # static!
-            logical_cores=cores_count[1],  # static!
-            architecture=platform.machine(),  # static!
-        )
+        return self._processor_details
