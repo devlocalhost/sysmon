@@ -3,7 +3,7 @@ import logging
 # from . import util
 
 
-def define_logger(plugin_name):
+def create_logger(plugin_name):
     logging.basicConfig(
         filename="sysmon.log",
         # filename="sysmon.log" if util.DEBUGGING else "/dev/null",

@@ -7,7 +7,7 @@ class BasePlugin:
     def __init__(self):
         """init function, defining basics"""
 
-        self.logger = define_logger(self.__class__.__name__)
+        self.logger = create_logger(self.__class__.__name__)
         self._opened_files = []
         # maybe this should be a function instead?
         # try opening file. if it opens, log
