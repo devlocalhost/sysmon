@@ -55,20 +55,20 @@ class MeminfoPlugin(BasePlugin):
         self.logger.debug("initialize plugin")
 
         try:
-            self.meminfo_file = en_open("/proc/meminfo")
-            self.opened_files.append(self.meminfo_file)
+            self._meminfo_file = en_open("/proc/meminfo")
+            self._opened_files.append(self._meminfo_file)
 
-            self.logger.debug(f"opened file {self.meminfo_file.name}")
+            self.logger.debug(f"opened file {self._meminfo_file.name}")
 
         except Exception as exc:
             self.logger.error(f"error opening file: {exc}")
 
     def get_data(self):
-        self.seek_files()
+        self._seek_files()
 
         meminfo_file_data = dict(
             (i.split()[0].rstrip(":"), int(i.split()[1]) * 1024)
-            for i in self.meminfo_file.readlines()
+            for i in self._meminfo_file.readlines()
         )
 
         # raw values section: physical

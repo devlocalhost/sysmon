@@ -45,23 +45,23 @@ class LoadavgPlugin(BasePlugin):
         self.logger.debug("initialize plugin")
 
         try:
-            self.loadavg_file = en_open("/proc/loadavg")
+            self._loadavg_file = en_open("/proc/loadavg")
             self.logger.debug("opened file /proc/loadavg")
-            self.opened_files.append(self.loadavg_file)
+            self._opened_files.append(self._loadavg_file)
 
-            self.uptime_file = en_open("/proc/uptime")
+            self._uptime_file = en_open("/proc/uptime")
             self.logger.debug("opened file /proc/uptime")
-            self.opened_files.append(self.uptime_file)
+            self._opened_files.append(self._uptime_file)
 
         except Exception as exc:
             self.logger.error(f"error opening file: {exc}")
 
     def get_data(self):
-        self.seek_files()
+        self._seek_files()
 
-        loadavg_file_data = self.loadavg_file.read().split()
+        loadavg_file_data = self._loadavg_file.read().split()
 
-        uptime_seconds = int(float(self.uptime_file.readline().split()[0]))
+        uptime_seconds = int(float(self._uptime_file.readline().split()[0]))
         uptime_timestamp = time.time() - uptime_seconds
 
         data = LoadavgData(

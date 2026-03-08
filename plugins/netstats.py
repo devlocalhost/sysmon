@@ -52,20 +52,20 @@ class NetstatsPlugin(BasePlugin):
         super().__init__()
 
         self.logger.debug("initialize plugin")
-        self.interface_data = self.get_current_interface()
+        self.interface_data = self._get_current_interface()
 
         try:
             self._rx_file = en_open(self.interface_data.rx_bytes_file)
             self._tx_file = en_open(self.interface_data.tx_bytes_file)
 
-            self.opened_files.append(self._rx_file)
-            self.opened_files.append(self._tx_file)
+            self._opened_files.append(self._rx_file)
+            self._opened_files.append(self._tx_file)
             self.logger.debug("opened rx and tx files")
 
         except Exception as exc:
             self.logger.debug(f"could not open files: {exc}")
 
-        self.transfer_speed_track = _TrackTranferSpeeds()
+        self._transfer_speed_track = _TrackTranferSpeeds()
 
     def _interface_is_not_blacklisted(self, interface_name):
         """
@@ -111,7 +111,7 @@ class NetstatsPlugin(BasePlugin):
 
         return local_ip
 
-    def get_current_interface(self):
+    def _get_current_interface(self):
         """
         detect which interface is being used right now
         """
@@ -175,15 +175,15 @@ class NetstatsPlugin(BasePlugin):
         return None
 
     def get_data(self):
-        self.seek_files()
+        self._seek_files()
 
         current_rx_bytes = int(self._rx_file.read().strip())
         current_tx_bytes = int(self._tx_file.read().strip())
 
-        rx_speed = abs(self.transfer_speed_track.rx - current_rx_bytes)
-        tx_speed = abs(self.transfer_speed_track.tx - current_tx_bytes)
+        rx_speed = abs(self._transfer_speed_track.rx - current_rx_bytes)
+        tx_speed = abs(self._transfer_speed_track.tx - current_tx_bytes)
 
-        self.transfer_speed_track.update_values(current_rx_bytes, current_tx_bytes)
+        self._transfer_speed_track.update_values(current_rx_bytes, current_tx_bytes)
 
         return NetstatsData(
             name=self.interface_data.name,

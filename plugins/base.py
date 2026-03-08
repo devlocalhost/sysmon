@@ -8,12 +8,17 @@ class BasePlugin:
         """init function, defining basics"""
 
         self.logger = define_logger(self.__class__.__name__)
-        self.opened_files = []
+        self._opened_files = []
+        # maybe this should be a function instead?
+        # try opening file. if it opens, log
+        # else log, plus exception. looks/feels cleaner to me
 
-    def seek_files(self):
-        for file in self.opened_files:
+    def _seek_files(self):
+        for file in self._opened_files:
             self.logger.debug(f"seeking {file.name}")
             file.seek(0)
+            # maybe i should use a try except block? 
+            # im already handling that in the plugins though...
 
     def get_data(self):
         """
@@ -29,7 +34,7 @@ class BasePlugin:
         when exiting
         """
 
-        for file in self.opened_files:
+        for file in self._opened_files:
             try:
                 file.close()
                 self.logger.debug(f"closing file {file.name}")
