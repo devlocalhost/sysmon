@@ -107,10 +107,11 @@ class CpuinfoPlugin(BasePlugin):
         frequencies_sorted = sorted(frequencies)
         return (frequencies_sorted[0], frequencies_sorted[-1])
 
-    def _get_physical_cores_count(self):
+    def _get_cores_count(self):
         # this might be highly inaccurate, testing needed
         # credit: https://beta.stackoverflow.com/q/73489422
 
+        # physical cores part
         siblings = []
 
         for file in glob.glob(
@@ -124,7 +125,13 @@ class CpuinfoPlugin(BasePlugin):
                 self.logger.debug(f"failed to open file: {exc}")
                 return 0
 
-        return len(list(set(siblings)))
+        physical_cores = len(list(set(siblings)))
+
+        # logical cores part
+        with self._open_file("/sys/devices/system/cpu/present") as _present_cores:
+            logical_cores = int(_present_cores.read().strip().split("-")[1]) + 1
+
+        return (physical_cores, logical_cores)
 
     def _get_processor_model(self):
         model_name = None
@@ -165,19 +172,15 @@ class CpuinfoPlugin(BasePlugin):
 
     def get_data(self):
         self._seek_files()
-
-        with self._open_file("/sys/devices/system/cpu/present") as _present_cores:
-            logical_cores = int(_present_cores.read().strip().split("-")[1]) + 1
-            # maybe this could be merged (and renamed) with _get_physical_cores_count?
-
         frequency_ranges = sorted(self._get_frequency_ranges())
+        cores_count = self._get_cores_count() # physical,logical
 
         return ProcessorDetails(
             model=self._get_processor_model(),  # static!
             utilization=self._get_processor_utilization(),
             frequency_min=frequency_ranges[0],  # static!
             frequency_max=frequency_ranges[1],  # static!
-            physical_cores=self._get_physical_cores_count(),  # static!
-            logical_cores=logical_cores,  # static!
+            physical_cores=cores_count[0],  # static!
+            logical_cores=cores_count[1],  # static!
             architecture=platform.machine(),  # static!
         )
