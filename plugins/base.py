@@ -23,17 +23,7 @@ class BasePlugin:
     def _open_file(self, file, mode="r", encoding="utf-8"):
         """modifying the default open method so i dont have to define encoding every time"""
 
-        self.logger.debug(f"opening file {file} in {mode} mode and {encoding} encoding")
-
-        try:
-            f = open(file, mode=mode, encoding=encoding)
-            self.logger.debug(f"opened  file {file}")
-            
-            return f
-
-        except Exception as exc:
-            self.logger.debug(f"failed opening file {file}: {exc}")
-            raise
+        return open(file, mode=mode, encoding=encoding)
 
     def close_files(self):
         """
