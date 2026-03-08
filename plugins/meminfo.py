@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from plugins.base import BasePlugin
-from utils.util import self._open_file
 
 
 @dataclass
