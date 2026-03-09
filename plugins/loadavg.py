@@ -36,7 +36,7 @@ class LoadavgData:
     uptime: Uptime = None
 
 
-class LoadavgPlugin(BasePlugin):
+class Plugin(BasePlugin):
     def __init__(self):
         super().__init__()
 

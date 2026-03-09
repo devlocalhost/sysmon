@@ -47,7 +47,7 @@ class MeminfoData:
     virtual_percentages: VirtualPercentages = None
 
 
-class MeminfoPlugin(BasePlugin):
+class Plugin(BasePlugin):
     def __init__(self):
         super().__init__()
 

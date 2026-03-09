@@ -45,7 +45,7 @@ def _clean_processor_model_string(model_string):
     return " ".join(model_string.split()).split("@", maxsplit=1)[0].strip()
 
 
-class CpuinfoPlugin(BasePlugin):
+class Plugin(BasePlugin):
     def __init__(self):
         super().__init__()
 

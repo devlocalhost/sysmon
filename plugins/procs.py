@@ -73,7 +73,7 @@ def get_process_data(pid):
         return ProcessValues()
 
 
-class ProcsPlugin(BasePlugin):
+class Plugin(BasePlugin):
     def __init__(self, config):
         super().__init__()
 

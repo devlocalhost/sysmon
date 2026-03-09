@@ -46,7 +46,7 @@ class _TrackTranferSpeeds:
         self.tx = tx
 
 
-class NetstatsPlugin(BasePlugin):
+class Plugin(BasePlugin):
     def __init__(self):
         super().__init__()
 
