@@ -17,7 +17,7 @@ def create_logger(plugin_name):
         filename="sysmon.log" if DEBUGGING else "/dev/null",
         level=logging.DEBUG if DEBUGGING else logging.INFO,
         datefmt="%X",
-        format="%(asctime)s.%(msecs)03d - %(name)-16s %(funcName)-30s -> %(message)s",
+        format="%(asctime)s.%(msecs)03d - %(filename)-16s %(funcName)-30s -> %(message)s",
         filemode="w",
     )
 
