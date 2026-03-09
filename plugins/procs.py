@@ -74,11 +74,11 @@ def get_process_data(pid):
 
 
 class ProcsPlugin(BasePlugin):
-    def __init__(self):
+    def __init__(self, config):
         super().__init__()
 
-        self.processes_to_show = 6  # THIS NEEDS TO BE IN CONFIG FILE!!
         self.logger.debug("initialize plugin")
+        self.processes_to_show = config["procs"]["procs_to_show"]
 
         self.logger.debug(f"showing only {self.processes_to_show} processes")
 
