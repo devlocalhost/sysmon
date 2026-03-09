@@ -1,0 +1,21 @@
+[plugins]
+cpuinfo = true
+meminfo = true
+loadavg = true
+procs = true
+netstats = true
+
+[meminfo]
+show_swap = true # show swap data in meminfo plugin
+
+[procs]
+procs_to_show = 6 # processes to show in procs plugin
+
+[netstats]
+show_local_ip = true # show the local ip of the device in netstats plugin
+use_interface = "" # if None, sysmon will autodetect the current active interface
+
+[misc]
+use_iec = true # IEC = 1024, metric = 1000. used in most plugins to convert data
+debugging = true # if enabled, sysmon will write and save logs to current directory, as sysmon.log
+refresh = 1 # refresh data every x seconds
