@@ -1,12 +1,10 @@
 import os
-import sys
-
 import toml
 
 
 class ConfigError(Exception):
     """
-    triggered when theres an issue with the config file
+    triggered when something goes wrong
     """
 
 
@@ -16,35 +14,43 @@ class Config:
     """
 
     def __init__(self, config_path=None):
-        self.config_file = (
-            os.path.abspath(config_path)
-            if config_path
-            else os.path.abspath("config.toml")
-        )
+        self._config_file = config_path or self._get_config_file()
+        # self._loaded_config = self.load_config() # used in get_value
 
-    def read_config(self):
+    def _get_config_file(self):
+        config_file_path = os.path.expanduser("~/.config/sysmon/config.toml")
+
+        if not os.path.exists(config_file_path):
+            raise ConfigError(
+                "[_get_config_file] Config file does not exist. Did you copy 'config.toml' to '~/.config/sysmon/'?"
+            )
+
+        return config_file_path
+
+    def load_config(self):
         """
-        read the config file and return the data
+        load the config nd return the dict
         """
 
         try:
-            with open(self.config_file, encoding="utf-8") as config_file:
+            with open(self._config_file, encoding="utf-8") as config_file:
                 return toml.load(config_file)
 
-        except FileNotFoundError:
-            sys.exit(f'[read_config] Config file "{self.config_file}" not found.')
-
-    def get_config_value(self, section, key):
-        """
-        get value from config file
-        """
-
-        config = self.read_config()
-        value = config.get(section).get(key)
-
-        if value is None or (isinstance(value, str) and not value.strip()):
+        except FileNotFoundError as exc:
             raise ConfigError(
-                f"[get_config_value] Value for '{key}' in section '{section}' is missing or blank."
-            )
+                f"[load_config] Config file '{self._config_file}' not found."
+            ) from exc
 
-        return value
+    # def get_value(self, section, key):
+    #     """
+    #     get value from config file
+    #     """
+
+    #     # is this even useful or needed? developer can just do this
+    #     # their own way, idk
+
+    #     try:
+    #         return self._loaded_config[section][key]
+
+    #     except KeyError as exc:
+    #         raise ConfigError(f"[get_value] Failed reading value: {exc}") from exc
