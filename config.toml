@@ -4,21 +4,22 @@ plugins_enabled = [
     "meminfo",
     "loadavg",
     "netstats",
-    # "procs",
+    "procs",
 ]
 
 # show swap statistics in meminfo?
-[plugins_config.meminfo]
-show_swap = true
+[plugins_config]
+    [plugins_config.meminfo]
+    show_swap = true
 
-# how many processes to show in procs
-[plugins_config.procs]
-processes_count = 6
+    # how many processes to show in procs
+    [plugins_config.procs]
+    processes_count = 6
 
-[plugins_config.netstats]
-show_local_ip = true
-# useful when sysmon picks the wrong one, or you want to use a custom interface
-custom_interface = "" 
+    [plugins_config.netstats]
+    show_local_ip = true
+    # useful when sysmon picks the wrong one, or you want to use a custom interface
+    custom_interface = ""
 
 [misc]
 # binary: 1 mebibyte = 1024 kibibyes. if set to false,
