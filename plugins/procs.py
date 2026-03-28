@@ -77,11 +77,14 @@ class Plugin(BasePlugin):
     def __init__(self, config=None):
         super().__init__()
 
+        if config:
+            self.config = config
+
         self.logger.debug("initialize plugin")
         self.processes_to_show = 6
         
-        if config:
-            self.processes_to_show = config["processes_count"]
+        if self.config:
+            self.processes_to_show = self.config["processes_count"]
 
         self.logger.debug(f"showing only {self.processes_to_show} processes")
 
