@@ -1,21 +1,28 @@
-[plugins]
-cpuinfo = true
-meminfo = true
-loadavg = true
-procs = true
-netstats = true
+# order matters
+plugins_enabled = [
+    "cpuinfo",
+    "meminfo",
+    "loadavg",
+    "netstats",
+    # "procs",
+]
 
-[meminfo]
-show_swap = true # show swap data in meminfo plugin
+# show swap statistics in meminfo?
+[plugins_config.meminfo]
+show_swap = true
 
-[procs]
-procs_to_show = 6 # processes to show in procs plugin
+# how many processes to show in procs
+[plugins_config.procs]
+processes_count = 6
 
-[netstats]
-show_local_ip = true # show the local ip of the device in netstats plugin
-use_interface = "" # if None, sysmon will autodetect the current active interface
+[plugins_config.netstats]
+show_local_ip = true
+# useful when sysmon picks the wrong one, or you want to use a custom interface
+custom_interface = "" 
 
 [misc]
-use_iec = true # IEC = 1024, metric = 1000. used in most plugins to convert data
-debugging = true # if enabled, sysmon will write and save logs to current directory, as sysmon.log
-refresh = 1 # refresh data every x seconds
+# binary: 1 mebibyte = 1024 kibibyes. if set to false,
+# will use metric instead (1 megabyte = 1000 kilobytes)
+use_binary_conversion = true
+debugging = true
+refresh_sec = 1
