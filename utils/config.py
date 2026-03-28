@@ -1,5 +1,5 @@
 import os
-import toml
+import tomllib
 
 
 class ConfigError(Exception):
@@ -33,8 +33,8 @@ class Config:
         """
 
         try:
-            with open(self._config_file, encoding="utf-8") as config_file:
-                return toml.load(config_file)
+            with open(self._config_file, mode="rb") as config_file:
+                return tomllib.load(config_file)
 
         except FileNotFoundError as exc:
             raise ConfigError(
