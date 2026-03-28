@@ -7,9 +7,6 @@ import os
 from dataclasses import dataclass
 
 from plugins.base import BasePlugin
-from utils.util import (
-    PROCS,  # obsolete? check __init__ (processes_to_show)
-)
 
 
 @dataclass
