@@ -10,8 +10,8 @@ from plugins.base import BasePlugin
 
 @dataclass
 class InterfaceDetails:
-    name: str = "!?!?"
-    directory: str = "!?!?"
+    name: str | None = None
+    directory: str | None = None
     rx_bytes_file: str = None
     tx_bytes_file: str = None
 
@@ -47,11 +47,24 @@ class _TrackTranferSpeeds:
 
 
 class Plugin(BasePlugin):
-    def __init__(self):
+    def __init__(self, config=None):
         super().__init__()
 
+        if config:
+            self.config = config
+
         self.logger.debug("initialize plugin")
-        self.interface_data = self._get_current_interface()
+
+        if self.config:
+            self._custom_interface = self.config.get("custom_interface")
+        
+            if self._custom_interface:
+                self.logger.debug(f"using custom interface {self._custom_interface}")
+                self.interface_data = self.get_interface_data(self._custom_interface)
+
+            else:
+                self.logger.debug("detecting interface automatically")
+                self.interface_data = self._get_current_interface()
 
         try:
             self._rx_file = self._open_file(self.interface_data.rx_bytes_file)
@@ -110,6 +123,37 @@ class Plugin(BasePlugin):
 
         return local_ip
 
+    def get_interface_data(self, interface_name):
+        interface_dir = f"/sys/class/net/{interface_name}"
+        interface_statistics_dir = f"{interface_dir}/statistics"
+        interface_rx_bytes = f"{interface_statistics_dir}/rx_bytes"
+        interface_tx_bytes = f"{interface_statistics_dir}/tx_bytes"
+
+        try:
+            if (
+                self._interface_is_not_blacklisted(interface_name)
+                and self._interface_is_up(interface_name)
+                and os.listdir(interface_dir)
+                and os.listdir(interface_statistics_dir)
+                and os.stat(interface_rx_bytes)
+                and os.stat(interface_tx_bytes)
+            ):
+                self.logger.debug(f"interface {interface_name} passes all checks")
+                return InterfaceDetails(
+                    name=interface_name,
+                    directory=interface_dir,
+                    rx_bytes_file=interface_rx_bytes,
+                    tx_bytes_file=interface_tx_bytes,
+                )
+
+            else:
+                return InterfaceDetails()
+
+        except FileNotFoundError as exc:
+            self.logger.debug(
+                f"one of the checks has failed. check if statistics dir and rx/tx_bytes files exist for {interface_name}. {exc}"
+            )
+
     def _get_current_interface(self):
         """
         detect which interface is being used right now
@@ -136,39 +180,10 @@ class Plugin(BasePlugin):
 
         # additional check: sysfs
         for interface in interfaces:
-            interface_dir = f"/sys/class/net/{interface}"
-            interface_statistics_dir = f"{interface_dir}/statistics"
-            interface_rx_bytes = f"{interface_statistics_dir}/rx_bytes"
-            interface_tx_bytes = f"{interface_statistics_dir}/tx_bytes"
+            interface_data = self.get_interface_data(interface)
 
-            try:
-                if (
-                    self._interface_is_not_blacklisted(interface)
-                    and self._interface_is_up(interface)
-                    and os.listdir(interface_dir)
-                    and os.listdir(interface_statistics_dir)
-                    and os.stat(interface_rx_bytes)
-                    and os.stat(interface_tx_bytes)
-                ):
-                    self.logger.debug(f"interface {interface} passes all checks")
-                    return InterfaceDetails(
-                        name=interface,
-                        directory=interface_dir,
-                        rx_bytes_file=interface_rx_bytes,
-                        tx_bytes_file=interface_tx_bytes,
-                    )  # then return interface name
-
-                    # maybe its not a good idea to return the first result
-                    # but all of them, then choose randomly? idk
-
-                    # and maybe i should return interface
-                    # anyway if statistics dir doesnt exist?
-
-            except FileNotFoundError as exc:
-                self.logger.debug(
-                    f"one of the checks has failed. check if statistics dir and rx/tx_bytes files exist for {interface}. {exc}"
-                )
-                continue
+            if interface_data.name:
+                return interface_data
 
         self.logger.debug("nothing found?")
         return None
