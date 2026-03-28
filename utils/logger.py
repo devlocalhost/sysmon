@@ -1,16 +1,9 @@
 import logging
 
-# this part feels ugly to me. i do it so nicely in pyspodl...
 from .config import Config, ConfigError
 
-config = Config().read_config()
-
-try:
-    DEBUGGING = config["misc"]["debugging"]
-
-except ConfigError:
-    DEBUGGING = False
-# this part feels ugly to me. i do it so nicely in pyspodl...
+config = Config().load_config()
+DEBUGGING = config["misc"]["debugging"]
 
 def create_logger(plugin_name):
     logging.basicConfig(
