@@ -13,7 +13,7 @@ from utils.util import (
 
 
 @dataclass
-class ProcessValues:
+class ProcessData:
     Name: str = "!?!?"
     PID: int = 0
     VmRSS: float = 0.0
@@ -74,11 +74,14 @@ def get_process_data(pid):
 
 
 class Plugin(BasePlugin):
-    def __init__(self, config):
+    def __init__(self, config=None):
         super().__init__()
 
         self.logger.debug("initialize plugin")
-        self.processes_to_show = config["procs"]["procs_to_show"]
+        self.processes_to_show = 6
+        
+        if config:
+            self.processes_to_show = config["processes_count"]
 
         self.logger.debug(f"showing only {self.processes_to_show} processes")
 
