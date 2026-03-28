@@ -48,8 +48,11 @@ class MeminfoData:
 
 
 class Plugin(BasePlugin):
-    def __init__(self):
+    def __init__(self, config=None):
         super().__init__()
+
+        if config:
+            self.config = config
 
         self.logger.debug("initialize plugin")
 
@@ -92,6 +95,7 @@ class Plugin(BasePlugin):
         phy_memory_used = round(phy_memory_total - phy_memory_available)
 
         # raw values sectio: virtual
+        # TODO: send (and get) swap data only if enabled in config
         swap_memory_total = meminfo_file_data.get("SwapTotal", 0)
         swap_memory_free = meminfo_file_data.get("SwapFree", 0)
 
@@ -114,6 +118,7 @@ class Plugin(BasePlugin):
         )
 
         # percentages value section: virtual
+        # TODO: send (and get) swap data only if enabled in config
         swap_memory_used_percent = (
             round((int(swap_memory_used) / int(swap_memory_total)) * 100, 1)
             if swap_memory_total > 0
@@ -122,6 +127,7 @@ class Plugin(BasePlugin):
 
         swap_memory_free_percent = round(100 - swap_memory_used_percent, 1)
 
+        # TODO: send (and get) swap data only if enabled in config
         data = MeminfoData(
             physical_values=PhysicalValues(
                 MemTotal=phy_memory_total,
