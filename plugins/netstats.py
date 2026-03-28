@@ -176,6 +176,9 @@ class Plugin(BasePlugin):
     def get_data(self):
         self._seek_files()
 
+        if not self.interface_data:
+            return NetstatsData()
+
         current_rx_bytes = int(self._rx_file.read().strip())
         current_tx_bytes = int(self._tx_file.read().strip())
 
