@@ -62,7 +62,7 @@ def get_process_data(pid):
             # name for the process, compared to the status file
             process_file_lines["name"] = exec_name
 
-        return ProcessValues(
+        return ProcessData(
             Name=process_file_lines.get("name", "!?!?"),
             PID=process_file_lines.get("pid", 0),
             VmRSS=process_file_lines.get("vmrss", 0),
@@ -70,7 +70,7 @@ def get_process_data(pid):
         )
 
     except FileNotFoundError:
-        return ProcessValues()
+        return ProcessData()
 
 
 class Plugin(BasePlugin):
