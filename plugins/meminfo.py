@@ -159,4 +159,6 @@ class Plugin(BasePlugin):
             ),
         )
 
+        self.logger.debug("data out")
+
         return data

@@ -171,4 +171,6 @@ class Plugin(BasePlugin):
         self._seek_files()
         self._processor_details.utilization = self._get_processor_utilization()
 
+        self.logger.debug("data out")
+
         return self._processor_details

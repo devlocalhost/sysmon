@@ -202,6 +202,8 @@ class Plugin(BasePlugin):
 
         self._transfer_speed_track.update_values(current_rx_bytes, current_tx_bytes)
 
+        self.logger.debug("data out")
+
         return NetstatsData(
             name=self.interface_data.name,
             ip=self._get_interface_ip(self.interface_data.name),

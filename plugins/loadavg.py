@@ -75,4 +75,6 @@ class Plugin(BasePlugin):
             uptime=Uptime(Timestamp=uptime_timestamp, Seconds=uptime_seconds),
         )
 
+        self.logger.debug("data out")
+
         return data

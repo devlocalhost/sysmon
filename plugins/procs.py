@@ -97,4 +97,6 @@ class Plugin(BasePlugin):
             process_data, key=lambda x: int(x.VmRSS), reverse=True
         )
 
+        self.logger.debug("data out")
+
         return sorted_processes[: self.processes_to_show]
