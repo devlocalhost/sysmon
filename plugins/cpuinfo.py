@@ -92,9 +92,13 @@ class Plugin(BasePlugin):
         calculation = (current_user_time + current_system_time) - (
             self._old_user_time + self._old_system_time
         )
-        utilization = (
-            calculation / (calculation + (current_idle - self._old_idle)) * 100
-        )
+        try:
+            utilization = (
+                calculation / (calculation + (current_idle - self._old_idle)) * 100
+            )
+
+        except ZeroDivisionError:
+            utilization = 0
 
         # updating old_vars
         self._old_user_time, self._old_system_time, self._old_idle = (
@@ -103,7 +107,7 @@ class Plugin(BasePlugin):
             current_idle,
         )
 
-        return round(utilization, 2)
+        return round(utilization, 1)
 
     def _get_frequency_ranges(self):
         # credit: https://beta.stackoverflow.com/q/12483399
