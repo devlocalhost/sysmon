@@ -11,6 +11,7 @@ from plugins.base import BasePlugin
 class ProcessorDetails:
     model: str = "!?!?"
     utilization: int = 0
+    average_frequency: int = 0
     frequency_min: float = 0.0
     frequency_max: float = 0.0
     physical_cores: int = 0
@@ -109,12 +110,12 @@ class Plugin(BasePlugin):
 
         return round(utilization, 1)
 
-    def _get_frequency_ranges(self):
+    def _get_cores_frequency(self, pattern="m*"):
         # credit: https://beta.stackoverflow.com/q/12483399
         
         frequencies = []
 
-        for scaling_file in glob.glob("/sys/devices/system/cpu/cpu[0-9]*/cpufreq/scaling_m*_freq"):
+        for scaling_file in glob.glob(f"/sys/devices/system/cpu/cpu[0-9]*/cpufreq/scaling_{pattern}_freq"):
             try:
                 with self._open_file(scaling_file) as f:
                     frequencies.append(int(f.read()))
@@ -122,8 +123,18 @@ class Plugin(BasePlugin):
             except FileNotFoundError as exc:
                 self.logger.debug(f"failed to open file: {exc}")
 
-        frequencies_sorted = sorted(frequencies)
-        return (frequencies_sorted[0], frequencies_sorted[-1])
+        return frequencies
+
+    def _get_frequency_ranges(self):
+        freqs_sorted = sorted(self._get_cores_frequency())
+
+        return (freqs_sorted[0], freqs_sorted[-1])
+
+    def _get_average_frequency(self):
+        freqs = self._get_cores_frequency("cur")
+        self.logger.debug(f"freqs: {freqs}")
+        
+        return sum(freqs) / len(freqs)
 
     def _get_cores_count(self):
         # this might be highly inaccurate, testing needed
@@ -173,7 +184,9 @@ class Plugin(BasePlugin):
 
     def get_data(self):
         self._seek_files()
+        
         self._processor_details.utilization = self._get_processor_utilization()
+        self._processor_details.average_frequency = self._get_average_frequency()
 
         self.logger.debug("data out")
 
