@@ -4,6 +4,7 @@
 
 import time
 
+from decimal import Decimal
 from datetime import datetime
 from dataclasses import dataclass
 
@@ -12,9 +13,9 @@ from plugins.base import BasePlugin
 
 @dataclass
 class LoadTimes:
-    OneMin: int = 0
-    FiveMin: int = 0
-    FifteenMin: int = 0
+    OneMin: Decimal = 0
+    FiveMin: Decimal = 0
+    FifteenMin: Decimal = 0
 
 
 @dataclass
@@ -64,9 +65,9 @@ class Plugin(BasePlugin):
 
         data = LoadavgData(
             load_times=LoadTimes(
-                OneMin=float(loadavg_file_data[0]),
-                FiveMin=float(loadavg_file_data[1]),
-                FifteenMin=float(loadavg_file_data[2]),
+                OneMin=Decimal(loadavg_file_data[0]),
+                FiveMin=Decimal(loadavg_file_data[1]),
+                FifteenMin=Decimal(loadavg_file_data[2]),
             ),
             entities=Entities(
                 Active=int(loadavg_file_data[3].split("/")[0]),
