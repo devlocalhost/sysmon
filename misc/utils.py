@@ -1,6 +1,7 @@
 # TODO: this needs to be loaded using the config file
 CONVERSION_TYPE = 1024
 
+
 def to_bytes(kilobytes):
     """convert kilobytes to bytes"""
 

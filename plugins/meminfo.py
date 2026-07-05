@@ -77,14 +77,13 @@ class Plugin(BasePlugin):
         phy_memory_total = meminfo_file_data.get("MemTotal", 0)
         phy_memory_available = meminfo_file_data.get("MemAvailable", 0)
         phy_memory_free = meminfo_file_data.get("MemFree", 0)
+        phy_memory_used = round(phy_memory_total - phy_memory_available)
 
         phy_memory_raw_cached = meminfo_file_data.get("Cached", 0)
         phy_memory_sreclaimable = meminfo_file_data.get("SReclaimable", 0)
         phy_memory_buffers = meminfo_file_data.get("Buffers", 0)
-
-        phy_memory_cached = (
-            phy_memory_raw_cached + phy_memory_buffers + phy_memory_sreclaimable
-        )
+        phy_memory_cached = (phy_memory_raw_cached + phy_memory_buffers + phy_memory_sreclaimable)
+        
         phy_memory_actual_used = round(
             phy_memory_total
             - phy_memory_free
@@ -92,8 +91,7 @@ class Plugin(BasePlugin):
             - phy_memory_raw_cached
             - phy_memory_sreclaimable
         )
-        phy_memory_used = round(phy_memory_total - phy_memory_available)
-
+        
         # raw values sectio: virtual
         # TODO: send (and get) swap data only if enabled in config
         swap_memory_total = meminfo_file_data.get("SwapTotal", 0)
@@ -104,19 +102,11 @@ class Plugin(BasePlugin):
 
         # TODO: check once again if the percentage calculations are correct.
         # percentages value section: physical
-        phy_memory_used_percent = round(
-            (int(phy_memory_used) / int(phy_memory_total)) * 100, 1
-        )
-        phy_memory_actual_used_percent = round(
-            (int(phy_memory_actual_used) / int(phy_memory_total)) * 100, 1
-        )
+        phy_memory_used_percent = round((int(phy_memory_used) / int(phy_memory_total)) * 100, 1)
+        phy_memory_actual_used_percent = round((int(phy_memory_actual_used) / int(phy_memory_total)) * 100, 1)
         phy_memory_available_percent = round(100 - phy_memory_used_percent, 1)
-        phy_memory_free_percent = round(
-            (int(phy_memory_free) / int(phy_memory_total)) * 100, 1
-        )
-        phy_memory_cached_percent = round(
-            (phy_memory_cached / phy_memory_total) * 100, 1
-        )
+        phy_memory_free_percent = round((int(phy_memory_free) / int(phy_memory_total)) * 100, 1)
+        phy_memory_cached_percent = round((phy_memory_cached / phy_memory_total) * 100, 1)
 
         # TODO: check once again if the percentage calculations are correct.
         # TODO: send (and get) swap data only if enabled in config

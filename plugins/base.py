@@ -13,7 +13,7 @@ class BasePlugin:
     def _seek_files(self):
         for file in self._opened_files:
             self.logger.debug(f"seeking {file.name}")
-            
+
             try:
                 file.seek(0)
 

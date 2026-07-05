@@ -3,21 +3,6 @@ from misc.utils import to_bytes, convert_bytes
 
 meminfo_plugin = Plugin()
 
-# def get_lines():
-#     data = meminfo_plugin.get_data()
-#     lines = []
-
-#     lines.append(f"  --- /proc/meminfo {'-' * 47}")
-#     lines.append(f"   RAM:")
-#     lines.append(f"       Total: {data.physical_values.MemTotal}")
-#     lines.append(f"        Used: {data.physical_values.Used}")
-#     lines.append(f"   Available: {data.physical_values.MemAvailable}")
-
-#     lines[2] = lines[2] + " " * max(0, 44 - len(lines[2])) + f"Free: {data.physical_values.MemFree}"
-#     lines[3] = lines[3] + " " * max(0, 40 - len(lines[3])) + f"Ac. Used: {data.physical_values.ActualUsed}"
-#     lines[4] = lines[4] + " " * max(0, 42 - len(lines[4])) + f"Cached: {data.physical_values.Cached}"
-
-#     return lines
 
 def get_lines():
     data = meminfo_plugin.get_data()
@@ -41,6 +26,7 @@ def get_lines():
         lines.append(f"{l:<38}{r}")
 
     return lines
+
 
 def close_files():
     meminfo_plugin.close_files()

@@ -57,7 +57,7 @@ class Plugin(BasePlugin):
 
         if self.config:
             self._custom_interface = self.config.get("custom_interface")
-        
+
             if self._custom_interface:
                 self.logger.debug(f"using custom interface {self._custom_interface}")
                 self.interface_data = self.get_interface_data(self._custom_interface)
@@ -100,9 +100,8 @@ class Plugin(BasePlugin):
         with self._open_file(f"/sys/class/net/{interface_name}/operstate") as device_status:
             device_status_str = device_status.read().strip()
 
-            self.logger.debug(
-                f"interface {interface_name} operstate {device_status_str}"
-            )
+            self.logger.debug(f"interface {interface_name} operstate {device_status_str}")
+            
             return device_status_str == "up"
 
     def _get_interface_ip(self, interface_name):

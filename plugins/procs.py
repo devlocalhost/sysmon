@@ -79,7 +79,7 @@ class Plugin(BasePlugin):
 
         self.logger.debug("initialize plugin")
         self.processes_to_show = 6
-        
+
         if self.config:
             self.processes_to_show = self.config["processes_count"]
 

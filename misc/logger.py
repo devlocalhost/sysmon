@@ -5,6 +5,7 @@ from .config import Config, ConfigError
 config = Config().load_config()
 DEBUGGING = config["misc"]["debugging"]
 
+
 def create_logger(plugin_name):
     logging.basicConfig(
         filename="sysmon.log" if DEBUGGING else "/dev/null",
