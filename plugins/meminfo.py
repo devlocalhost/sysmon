@@ -102,6 +102,7 @@ class Plugin(BasePlugin):
         swap_memory_cached = meminfo_file_data.get("SwapCached", 0)
         swap_memory_used = round(swap_memory_total - swap_memory_free)
 
+        # TODO: check once again if the percentage calculations are correct.
         # percentages value section: physical
         phy_memory_used_percent = round(
             (int(phy_memory_used) / int(phy_memory_total)) * 100, 1
@@ -117,8 +118,9 @@ class Plugin(BasePlugin):
             (phy_memory_cached / phy_memory_total) * 100, 1
         )
 
-        # percentages value section: virtual
+        # TODO: check once again if the percentage calculations are correct.
         # TODO: send (and get) swap data only if enabled in config
+        # percentages value section: virtual
         swap_memory_used_percent = (
             round((int(swap_memory_used) / int(swap_memory_total)) * 100, 1)
             if swap_memory_total > 0
