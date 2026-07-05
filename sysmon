@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+import curses
+from datetime import datetime
+
+from formatters import cpuinfo, meminfo
+
+
+def main(stdscr):
+    curses.curs_set(0)
+    stdscr.nodelay(True)
+    stdscr.timeout(1000)
+
+    formatters = [cpuinfo, meminfo] # dont hardcode, use the config.
+
+    try:
+        while True:
+            stdscr.clear()
+            lines = [f" --- Sysmon | {datetime.now().strftime('%I:%M:%S %p')} " + "-" * 42 + "\n"]
+
+            for formatter in formatters:
+                lines += formatter.get_lines()
+
+            lines.append(f" {'-' * 67}") # this is the last line in the index
+
+            for i, line in enumerate(lines):
+                stdscr.addstr(i, 0, line)
+
+            stdscr.refresh()
+
+            if stdscr.getch() == ord('q'):
+                break
+            
+    finally:
+        for formatter in formatters:
+            formatter.close_files()
+
+curses.wrapper(main)
