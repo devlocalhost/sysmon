@@ -3,7 +3,7 @@
 import curses
 from datetime import datetime
 
-from formatters import cpuinfo, meminfo
+from formatters import cpuinfo, meminfo, loadavg
 
 
 def main(stdscr):
@@ -11,7 +11,7 @@ def main(stdscr):
     stdscr.nodelay(True)
     stdscr.timeout(1000)
 
-    formatters = [cpuinfo, meminfo] # dont hardcode, use the config.
+    formatters = [cpuinfo, meminfo, loadavg] # dont hardcode, use the config.
 
     try:
         while True:
