@@ -62,7 +62,7 @@ def get_process_data(pid):
         return ProcessData(
             Name=process_file_lines.get("name", "!?!?"),
             PID=process_file_lines.get("pid", 0),
-            VmRSS=process_file_lines.get("vmrss", 0),
+            VmRSS=int(process_file_lines.get("vmrss", 0)) * 1024,  # or maybe not? give raw value instead?
             State=process_file_lines.get("state", "!?!?"),
         )
 
@@ -71,17 +71,11 @@ def get_process_data(pid):
 
 
 class Plugin(BasePlugin):
-    def __init__(self, config=None):
+    def __init__(self):
         super().__init__()
-
-        if config:
-            self.config = config
 
         self.logger.debug("initialize plugin")
         self.processes_to_show = 6
-
-        if self.config:
-            self.processes_to_show = self.config["processes_count"]
 
         self.logger.debug(f"showing only {self.processes_to_show} processes")
 
