@@ -1,3 +1,4 @@
+import os
 import re
 import glob
 import platform
@@ -16,6 +17,7 @@ class ProcessorDetails:
     frequency_max: float = 0.0
     physical_cores: int = 0
     logical_cores: int = 0
+    temperature: float = 0
     # cache_type: str = "!?!?"
     # cache_size: float = 0.0
     # is cpu cache information even needed
@@ -52,6 +54,7 @@ class Plugin(BasePlugin):
 
         self.logger.debug("initialize plugin")
         self._old_user_time, self._old_system_time, self._old_idle = 0, 0, 0
+        self._temperature_sensor = self._get_temperature_file()
 
         try:
             self._stat_file = self._open_file("/proc/stat")
@@ -75,6 +78,50 @@ class Plugin(BasePlugin):
         )
 
         self.logger.debug(f"initialize static processor details: {self._processor_details}")
+
+    def _get_temperature_file(self):
+        """Get the CPU temperature from /sys/class/hwmon and /sys/class/thermal"""
+
+        allowed_types = ("coretemp", "k10temp", "acpitz", "cpu_1_0_usr", "cpu-1-0-usr")
+        combined_dirs = [*glob.glob("/sys/class/hwmon/*"), *glob.glob("/sys/class/thermal/*")]
+
+        self.logger.debug(f"[set_temperature_file] {combined_dirs}")
+
+        for temp_dir in combined_dirs:
+            sensor_type_file = (
+                os.path.join(temp_dir, "type")
+                if os.path.isfile(os.path.join(temp_dir, "type"))
+                and os.path.exists(os.path.join(temp_dir, "type"))
+                else os.path.join(temp_dir, "name")
+            )
+
+            self.logger.debug(f"got {sensor_type_file}")
+
+            try:
+                with self._open_file(sensor_type_file) as temp_type_file:
+                    sensor_type = temp_type_file.read().strip()
+
+                    self.logger.debug(
+                        f"[set_temperature_file] {temp_dir}: {sensor_type}"
+                    )
+
+                    if sensor_type in allowed_types:
+                        temperature_files = glob.glob(
+                            os.path.join(temp_dir, "temp*_input*")
+                        ) or glob.glob(os.path.join(temp_dir, "temp"))
+
+                        if temperature_files:
+                            self.logger.debug(
+                                f"[set_temperature_file] using {temperature_files[-1]} as sensor file"
+                            )
+                            return temperature_files[-1]
+
+            except FileNotFoundError:
+                self.logger.debug(
+                    f"[set_temperature_file] FileNotFoundError, does {sensor_type_file} exist?"
+                )
+
+        return None
 
     def _get_processor_utilization(self):
         # credit: https://beta.stackoverflow.com/q/58257596
@@ -187,6 +234,9 @@ class Plugin(BasePlugin):
         
         self._processor_details.utilization = self._get_processor_utilization()
         self._processor_details.average_frequency = self._get_average_frequency()
+        self._processor_details.temperature = float(
+            int(self._open_file(self._temperature_sensor).read().strip()) // 1000
+        )
 
         self.logger.debug("data out")
 
