@@ -84,7 +84,7 @@ class Plugin(BasePlugin):
     def _get_temperature_file(self):
         """Get the CPU temperature from /sys/class/hwmon and /sys/class/thermal"""
 
-        allowed_types = ("coretemp", "k10temp", "acpitz", "cpu_1_0_usr", "cpu-1-0-usr")
+        allowed_types = ("coretemp", "k10temp", "acpitz", "cpu_1_0_usr", "cpu-1-0-usr", "cpu_thermal", "cpu-thermal")
         combined_dirs = [
             *glob.glob("/sys/class/hwmon/*"),
             *glob.glob("/sys/class/thermal/*"),
@@ -204,15 +204,20 @@ class Plugin(BasePlugin):
         return (physical_cores, logical_cores)
 
     def _get_processor_model(self):
+        model_name = None
+        
         try:
             if platform.machine() in ("aarch64", "aarch", "arm", "arm64"):
                 # we need to read a different file on arm platforms
-                with self._open_file("/proc/device-tree/compatible", "rb") as f:
+                with self._open_file("/proc/device-tree/compatible", "rb", encoding=None) as f:
                     return f.read().replace(b"\x00", b"").decode().split(",")[-1].upper()
+                    # yes, return it instead of model_name = blabla
+                    # because the string is usally clean
 
             else:  # we are not on arm, proceed "normally"
                 with self._open_file("/proc/cpuinfo") as f:
                     lines = f.readlines()
+                    
                     for line in lines:
                         if line.startswith("model name"):
                             model_name = line
@@ -228,7 +233,9 @@ class Plugin(BasePlugin):
 
         self._processor_details.utilization = self._get_processor_utilization()
         self._processor_details.average_frequency = self._get_average_frequency()
-        self._processor_details.temperature = float(int(self._open_file(self._temperature_sensor).read().strip()) // 1000)
+        
+        if self._temperature_sensor:
+            self._processor_details.temperature = float(int(self._open_file(self._temperature_sensor).read().strip()) // 1000)
 
         self.logger.debug("data out")
 
