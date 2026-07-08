@@ -47,24 +47,28 @@ class _TrackTranferSpeeds:
 
 
 class Plugin(BasePlugin):
+    # def __init__(self, config=None):
     def __init__(self, config=None):
         super().__init__()
 
-        if config:
-            self.config = config
+        # if config:
+        #     self.config = config
 
         self.logger.debug("initialize plugin")
 
-        if self.config:
-            self._custom_interface = self.config.get("custom_interface")
+        # if self.config:
+        #     self._custom_interface = self.config.get("custom_interface")
 
-            if self._custom_interface:
-                self.logger.debug(f"using custom interface {self._custom_interface}")
-                self.interface_data = self.get_interface_data(self._custom_interface)
+        #     if self._custom_interface:
+        #         self.logger.debug(f"using custom interface {self._custom_interface}")
+        #         self.interface_data = self.get_interface_data(self._custom_interface)
 
-            else:
-                self.logger.debug("detecting interface automatically")
-                self.interface_data = self._get_current_interface()
+        #     else:
+        #         self.logger.debug("detecting interface automatically")
+        #         self.interface_data = self._get_current_interface()
+
+        self.logger.debug("detecting interface automatically")
+        self.interface_data = self._get_current_interface()
 
         try:
             self._rx_file = self._open_file(self.interface_data.rx_bytes_file)
