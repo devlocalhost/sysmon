@@ -90,8 +90,6 @@ class Plugin(BasePlugin):
             *glob.glob("/sys/class/thermal/*"),
         ]
 
-        self.logger.debug(f"[set_temperature_file] {combined_dirs}")
-
         for temp_dir in combined_dirs:
             sensor_type_file = (
                 os.path.join(temp_dir, "type")
@@ -99,8 +97,6 @@ class Plugin(BasePlugin):
                 and os.path.exists(os.path.join(temp_dir, "type"))
                 else os.path.join(temp_dir, "name")
             )
-
-            self.logger.debug(f"got {sensor_type_file}")
 
             try:
                 with self._open_file(sensor_type_file) as temp_type_file:
@@ -137,7 +133,7 @@ class Plugin(BasePlugin):
         current_idle = int(f_cpu[5])
 
         calculation = (current_user_time + current_system_time) - (self._old_user_time + self._old_system_time)
-        
+
         try:
             utilization = (calculation / (calculation + (current_idle - self._old_idle)) * 100)
 
@@ -175,7 +171,6 @@ class Plugin(BasePlugin):
 
     def _get_average_frequency(self):
         freqs = self._get_cores_frequency("cur")
-        self.logger.debug(f"freqs: {freqs}")
 
         return sum(freqs) / len(freqs)
 
@@ -205,7 +200,7 @@ class Plugin(BasePlugin):
 
     def _get_processor_model(self):
         model_name = None
-        
+
         try:
             if platform.machine() in ("aarch64", "aarch", "arm", "arm64"):
                 # we need to read a different file on arm platforms
@@ -217,7 +212,7 @@ class Plugin(BasePlugin):
             else:  # we are not on arm, proceed "normally"
                 with self._open_file("/proc/cpuinfo") as f:
                     lines = f.readlines()
-                    
+
                     for line in lines:
                         if line.startswith("model name"):
                             model_name = line
@@ -233,7 +228,7 @@ class Plugin(BasePlugin):
 
         self._processor_details.utilization = self._get_processor_utilization()
         self._processor_details.average_frequency = self._get_average_frequency()
-        
+
         if self._temperature_sensor:
             self._processor_details.temperature = float(int(self._open_file(self._temperature_sensor).read().strip()) // 1000)
 
