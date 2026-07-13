@@ -18,10 +18,10 @@ def get_lines():
         lpidl = len(pid_max.read().strip())
         
     lines = [f"  --- /proc/pid/status {'-' * 44}"]
-    lines.append(f"{' ' * lpidl}PID Name {' ' * (lpnl - 5)}VmRSS         State")
+    lines.append(f"{' ' * lpidl}PID Name {' ' * (lpnl - 5)}VmRSS         CPU%  State")
 
     for process in data:
-        lines.append(f"   {process.PID:>{lpidl}} {process.Name:<{lpnl}}{convert_bytes(process.VmRSS):<14}{process.State}")
+        lines.append(f"   {process.PID:>{lpidl}} {process.Name:<{lpnl}}{convert_bytes(process.VmRSS):<14}{process.Utilization:<6}{process.State}")
 
     return lines
 
