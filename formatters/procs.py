@@ -10,13 +10,16 @@ def get_lines():
     pnl = [] # save length of proc names
     for proc in data:
         pnl.append(len(proc.Name))
-        
+
     lpnl = int(max(pnl) + 1) # longest proc name length, the length of the longest proc name
     lpidl = 7 # longest pid length, this is a default fallback value
+    # THIS WILL LOOK VERY UGLY IF PROCS ARE SORTED BY CPU USAGE
+    # the text will keep constantly jumping left and right. naybe this shiuld be
+    # hardcoded like before?
 
     with open("/proc/sys/kernel/pid_max", encoding="utf-8") as pid_max:
         lpidl = len(pid_max.read().strip())
-        
+
     lines = [f"  --- /proc/pid/status {'-' * 44}"]
     lines.append(f"{' ' * lpidl}PID Name {' ' * (lpnl - 5)}VmRSS         CPU%  State")
 
