@@ -75,7 +75,13 @@ class Plugin(BasePlugin):
 
                 # reading the cmdline file can give us a more "accurate"/better
                 # name for the process, compared to the status file
-                process_file_lines["name"] = exec_name
+                # BUT, sometimes it can be iaccurate or blank.
+
+            process_name = (
+                exec_name
+                if len(exec_name) != 0
+                else process_file_lines.get("name", "!?!?")
+            )
 
             return ProcessData(
                 Name=process_file_lines.get("name", "!?!?"),
@@ -121,10 +127,12 @@ class Plugin(BasePlugin):
             process_data.append(self._get_process_data(process_id, time_total))
 
         self._old_time_total = time_total
-        sorted_processes = sorted(process_data, key=lambda x: int(x.VmRSS), reverse=True)
+        sorted_processes = sorted(
+            process_data, key=lambda x: int(x.VmRSS), reverse=True
+        )
         # int(x.VmRSS): this part can be swapped with x.Utilization btw, which will sort
         # by cpu usage. this should definitely be a feature, and config too
 
         self.logger.debug("data out")
 
-        return sorted_processes[: self.processes_to_show]
+        return sorted_processes[:self.processes_to_show]
