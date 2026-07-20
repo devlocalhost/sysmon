@@ -84,7 +84,7 @@ class Plugin(BasePlugin):
             )
 
             return ProcessData(
-                Name=process_file_lines.get("name", "!?!?"),
+                Name=process_name,
                 PID=process_file_lines.get("pid", 0),
                 VmRSS=int(process_file_lines.get("vmrss", 0)) * 1024,  # or maybe not? give raw value instead?
                 State=process_file_lines.get("state", "!?!?"),
