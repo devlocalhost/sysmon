@@ -91,7 +91,7 @@ class Plugin(BasePlugin):
                 Utilization=self._get_process_utilization(pid, time_total),
             )
 
-        except FileNotFoundError:
+        except (FileNotFoundError, ProcessLookupError):
             return ProcessData()
 
     def _get_process_utilization(self, pid, time_total):
