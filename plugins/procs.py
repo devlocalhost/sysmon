@@ -64,23 +64,21 @@ class Plugin(BasePlugin):
             with open(f"/proc/{pid}/cmdline") as pid_cmdline:
                 exec_name = (
                     pid_cmdline.read()
-                    .replace("\x00", " ")
-                    .strip()
+                    .split("\x00")[0]
                     .split("/")[-1]
-                    .split(" ")[0]
                 )
 
-                if len(exec_name) > 28:
-                    exec_name = exec_name[:25] + "..."
+                if len(exec_name) > 25:
+                    exec_name = exec_name[:22] + "..."
 
                 # reading the cmdline file can give us a more "accurate"/better
                 # name for the process, compared to the status file
                 # BUT, sometimes it can be iaccurate or blank.
 
             process_name = (
-                exec_name
-                if len(exec_name) != 0
-                else process_file_lines.get("name", "!?!?")
+                process_file_lines.get("name")
+                if process_file_lines.get("name")
+                else exec_name
             )
 
             return ProcessData(
