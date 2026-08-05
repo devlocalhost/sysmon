@@ -18,8 +18,8 @@ class ProcessorDetails:
     physical_cores: int = 0
     logical_cores: int = 0
     temperature: float = 0
-    # cache_type: str = "!?!?"
-    # cache_size: float = 0.0
+    cache_level: str = "!?!?"
+    cache_size: float = 0.0
     # is cpu cache information even needed
     architecture: str = "!?!?"
 
@@ -48,6 +48,20 @@ def _clean_processor_model_string(model_string):
     return " ".join(model_string.split()).split("@", maxsplit=1)[0].strip()
 
 
+def _get_processor_cache_data():
+    cache_index = ""
+    highest_level = 0
+
+    for index in glob.glob("/sys/devices/system/cpu/cpu*/cache/index*/"):
+        level = int(open(f"{index}/level").read().strip())
+        type = open(f"{index}/type").read().strip()
+
+        if level > highest_level and type == "Unified":
+            highest_level = level
+            cache_index = index
+
+    return (str(highest_level), cache_index)
+
 class Plugin(BasePlugin):
     def __init__(self):
         super().__init__()
@@ -55,6 +69,12 @@ class Plugin(BasePlugin):
         self.logger.debug("initialize plugin")
         self._old_user_time, self._old_system_time, self._old_idle = 0, 0, 0
         self._temperature_sensor = self._get_temperature_file()
+        
+        self._cache_data = _get_processor_cache_data()
+        self._cache_level = "L" + self._cache_data[0]
+
+        with self._open_file(os.path.join(self._cache_data[1], "size")) as f:
+            self._cache_size = int(f.read().strip().replace("K", ""))
 
         try:
             self._stat_file = self._open_file("/proc/stat")
@@ -75,6 +95,8 @@ class Plugin(BasePlugin):
             physical_cores=cores_count[0],
             logical_cores=cores_count[1],
             architecture=platform.machine(),
+            cache_level=self._cache_level,
+            cache_size=self._cache_size,
         )
 
         self.logger.debug(
