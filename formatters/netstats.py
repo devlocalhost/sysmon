@@ -9,8 +9,8 @@ def get_lines():
     lines = [f"  --- /sys/class/net {'-' * 46}"]
     
     lines.append(f"   Local IP: {data.ip:<15} | Interface: {data.name}")
-    lines.append(f"   Download: {convert_bytes(data.transfer_statistics.speeds.received):<13} (Total: {convert_bytes(data.transfer_statistics.total_received)}, {data.transfer_statistics.total_received} bytes)")
-    lines.append(f"     Upload: {convert_bytes(data.transfer_statistics.speeds.transferred):<13} (Total: {convert_bytes(data.transfer_statistics.total_transferred)}, {data.transfer_statistics.total_transferred} bytes)")
+    lines.append(f"   Total: Down {convert_bytes(data.transfer_statistics.total_received):<13} | Up {convert_bytes(data.transfer_statistics.total_transferred)}")
+    lines.append(f"    Rate: Down {convert_bytes(data.transfer_statistics.speeds.received):<13} | Up {convert_bytes(data.transfer_statistics.speeds.transferred)}")
     
     return lines
 
