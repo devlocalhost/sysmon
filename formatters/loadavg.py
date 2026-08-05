@@ -14,7 +14,7 @@ def _format_seconds(seconds):
     wk, remainder = divmod(seconds, 7 * 24 * 3600)
     ds, remainder = divmod(remainder, 24 * 3600)
     hr, remainder = divmod(remainder, 3600)
-    mn, sec = divmod(remainder, 60)
+    mn, _ = divmod(remainder, 60)
 
     fmted = [] # formatted output
 
@@ -30,10 +30,14 @@ def _format_seconds(seconds):
     if mn:
         fmted.append(_dynamicallyAddTheLetterSForTheFormatSecondsFunction(mn, "minute"))
 
-    if sec or not fmted:
-        fmted.append(_dynamicallyAddTheLetterSForTheFormatSecondsFunction(sec, "second"))
+    # if sec or not fmted:
+    #     fmted.append(_dynamicallyAddTheLetterSForTheFormatSecondsFunction(sec, "second"))
 
-    return ", ".join(fmted)
+    if seconds < 60:
+        return _dynamicallyAddTheLetterSForTheFormatSecondsFunction(seconds, "second")
+        
+    else:
+        return ", ".join(fmted)
 
 
 def get_lines():
