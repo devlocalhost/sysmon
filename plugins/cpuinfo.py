@@ -69,7 +69,7 @@ class Plugin(BasePlugin):
         self.logger.debug("initialize plugin")
         self._old_user_time, self._old_system_time, self._old_idle = 0, 0, 0
         self._temperature_sensor = self._get_temperature_file()
-        
+
         self._cache_data = _get_processor_cache_data()
         self._cache_level = "L" + self._cache_data[0]
 
@@ -169,7 +169,7 @@ class Plugin(BasePlugin):
             current_idle,
         )
 
-        return round(utilization, 1)
+        return round(utilization)
 
     def _get_cores_frequency(self, pattern="m*"):
         # credit: https://beta.stackoverflow.com/q/12483399
@@ -252,7 +252,7 @@ class Plugin(BasePlugin):
         self._processor_details.average_frequency = self._get_average_frequency()
 
         if self._temperature_sensor:
-            self._processor_details.temperature = float(int(self._open_file(self._temperature_sensor).read().strip()) // 1000)
+            self._processor_details.temperature = round(float(self._open_file(self._temperature_sensor).read().strip()) / 1000, 1)
 
         self.logger.debug("data out")
 
